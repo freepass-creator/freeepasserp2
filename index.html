@@ -1,248 +1,229 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { initializeApp } from 'firebase/app';
-import { 
-  getAuth, 
-  signInAnonymously, 
-  signInWithCustomToken, 
-  onAuthStateChanged 
-} from 'firebase/auth';
-import { 
-  getFirestore, 
-  collection, 
-  addDoc, 
-  onSnapshot, 
-  serverTimestamp 
-} from 'firebase/firestore';
-import { Send, User, MessageCircle, LogIn } from 'lucide-react';
-
-// Firebase 설정 및 초기화
-const firebaseConfig = JSON.parse(__firebase_config);
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-chat-app';
-
-export default function App() {
-  const [view, setView] = useState('login'); // 'login' | 'chat'
-  const [user, setUser] = useState(null);
-  const [nickname, setNickname] = useState('');
-  const [messages, setMessages] = useState([]);
-  const [newMessage, setNewMessage] = useState('');
-  const [loading, setLoading] = useState(true);
-  const scrollRef = useRef(null);
-
-  // 1. 인증 처리
-  useEffect(() => {
-    const initAuth = async () => {
-      try {
-        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-          await signInWithCustomToken(auth, __initial_auth_token);
-        } else {
-          await signInAnonymously(auth);
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>실시간 채팅 테스트</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;800&display=swap');
+        body { font-family: 'Pretendard', sans-serif; }
+        .hide { display: none !important; }
+        .message-appear {
+            animation: slideUp 0.25s ease-out forwards;
         }
-      } catch (error) {
-        console.error("인증 에러:", error);
-      }
-    };
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        #message-list::-webkit-scrollbar { width: 5px; }
+        #message-list::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+    </style>
+</head>
+<body class="bg-slate-50 h-screen flex flex-col overflow-hidden">
 
-    initAuth();
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-      setLoading(false);
-    });
-
-    return () => unsubscribe();
-  }, []);
-
-  // 2. 메시지 실시간 리스너
-  useEffect(() => {
-    if (!user || view !== 'chat') return;
-
-    const messagesRef = collection(db, 'artifacts', appId, 'public', 'data', 'messages');
-    
-    const unsubscribe = onSnapshot(
-      messagesRef, 
-      (snapshot) => {
-        const msgList = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }));
-        
-        // 클라이언트 측 시간순 정렬 (RULE 2: 복합 쿼리 지양)
-        const sortedMessages = msgList.sort((a, b) => {
-          const timeA = a.createdAt?.toMillis() || 0;
-          const timeB = b.createdAt?.toMillis() || 0;
-          return timeA - timeB;
-        });
-        
-        setMessages(sortedMessages);
-      },
-      (error) => {
-        console.error("Firestore 리스닝 에러:", error);
-      }
-    );
-
-    return () => unsubscribe();
-  }, [user, view]);
-
-  // 메시지가 올 때마다 하단으로 자동 스크롤
-  useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
-  }, [messages]);
-
-  const handleLogin = (e) => {
-    e.preventDefault();
-    if (nickname.trim().length >= 2) {
-      setView('chat');
-    }
-  };
-
-  const sendMessage = async (e) => {
-    e.preventDefault();
-    if (!newMessage.trim() || !user) return;
-
-    try {
-      const messagesRef = collection(db, 'artifacts', appId, 'public', 'data', 'messages');
-      await addDoc(messagesRef, {
-        text: newMessage,
-        uid: user.uid,
-        displayName: nickname,
-        createdAt: serverTimestamp()
-      });
-      setNewMessage('');
-    } catch (error) {
-      console.error("메시지 전송 에러:", error);
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-gray-50">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-      </div>
-    );
-  }
-
-  // 로그인 화면
-  if (view === 'login') {
-    return (
-      <div className="flex flex-col items-center justify-center h-screen bg-blue-50 p-6">
-        <div className="bg-white p-10 rounded-3xl shadow-2xl w-full max-w-md text-center border border-blue-100">
-          <div className="bg-blue-600 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6 text-white shadow-lg">
-            <MessageCircle size={40} />
-          </div>
-          <h2 className="text-2xl font-black text-gray-800 mb-2 tracking-tight">CHAT APP</h2>
-          <p className="text-gray-500 mb-8">대화에 사용할 멋진 닉네임을 알려주세요!</p>
-          
-          <form onSubmit={handleLogin} className="space-y-4">
-            <input
-              type="text"
-              value={nickname}
-              onChange={(e) => setNickname(e.target.value)}
-              placeholder="닉네임 (2자 이상)"
-              className="w-full px-6 py-4 bg-gray-50 border-2 border-transparent focus:border-blue-500 rounded-2xl focus:outline-none transition-all text-center text-lg font-medium"
-              required
-            />
-            <button
-              type="submit"
-              className="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-blue-700 transition-all active:scale-95 shadow-lg shadow-blue-200"
-            >
-              <LogIn size={20} />
-              시작하기
-            </button>
-          </form>
-          <p className="mt-8 text-xs text-gray-400">
-            다른 탭에서 접속하면 상대방과 대화할 수 있습니다.
-          </p>
+    <!-- 닉네임 입력 화면 -->
+    <div id="login-view" class="flex flex-col items-center justify-center h-full p-6 z-50 bg-slate-50">
+        <div class="bg-white p-10 rounded-[2.5rem] shadow-2xl w-full max-w-md text-center border border-slate-100">
+            <div class="bg-blue-600 w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-6 text-white shadow-xl shadow-blue-200">
+                <i data-lucide="user-plus" class="w-10 h-10"></i>
+            </div>
+            <h2 class="text-3xl font-black text-slate-800 mb-2 tracking-tight">누구신가요?</h2>
+            <p class="text-slate-500 mb-8 font-medium">대화에 사용할 이름을 입력해주세요.</p>
+            
+            <form id="login-form" class="space-y-4">
+                <input
+                    type="text"
+                    id="nickname-input"
+                    placeholder="이름을 입력하세요"
+                    class="w-full px-6 py-4 bg-slate-50 border-2 border-transparent focus:border-blue-500 rounded-2xl focus:outline-none transition-all text-center text-lg font-bold text-slate-700"
+                    required
+                    minlength="1"
+                    maxlength="10"
+                >
+                <button
+                    type="submit"
+                    id="login-btn"
+                    disabled
+                    class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-blue-700 transition-all active:scale-95 shadow-lg shadow-blue-200 text-lg disabled:opacity-50"
+                >
+                    <span id="login-btn-text">서버 연결 중...</span>
+                </button>
+            </form>
+            <div class="mt-8 p-4 bg-blue-50 rounded-2xl text-xs text-blue-600 font-medium leading-relaxed">
+                💡 <b>중요 테스트 팁:</b><br>
+                상대방과 대화하는 모습을 보려면,<br>
+                <b>새 시크릿 창(Ctrl+Shift+N)</b>을 열어 접속하세요!
+            </div>
         </div>
-      </div>
-    );
-  }
-
-  // 채팅 화면
-  return (
-    <div className="flex flex-col h-screen bg-slate-100 font-sans">
-      {/* Header */}
-      <header className="bg-white/80 backdrop-blur-md border-b px-6 py-4 flex items-center justify-between shadow-sm sticky top-0 z-10">
-        <div className="flex items-center gap-2">
-          <div className="bg-blue-600 p-2 rounded-lg text-white">
-            <MessageCircle size={20} />
-          </div>
-          <h1 className="font-black text-gray-800 text-lg">실시간 채팅방</h1>
-        </div>
-        <div className="flex items-center gap-3 bg-blue-50 px-4 py-2 rounded-full border border-blue-100">
-          <p className="text-sm font-bold text-blue-700">{nickname}</p>
-          <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-        </div>
-      </header>
-
-      {/* Message List */}
-      <main 
-        ref={scrollRef}
-        className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6"
-      >
-        {messages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full text-gray-400 italic">
-            <p>아직 메시지가 없어요. 먼저 인사를 건네보세요!</p>
-          </div>
-        ) : (
-          messages.map((msg) => {
-            const isMe = msg.uid === user?.uid;
-            return (
-              <div 
-                key={msg.id} 
-                className={`flex w-full ${isMe ? 'justify-end' : 'justify-start'} animate-in fade-in slide-in-from-bottom-2 duration-300`}
-              >
-                <div className={`flex flex-col max-w-[80%] sm:max-w-[70%] ${isMe ? 'items-end' : 'items-start'}`}>
-                  {/* 상대방일 때만 닉네임 표시 */}
-                  {!isMe && (
-                    <span className="text-xs font-bold text-gray-500 mb-1 ml-2">
-                      {msg.displayName}
-                    </span>
-                  )}
-                  
-                  <div 
-                    className={`px-4 py-2.5 rounded-2xl shadow-sm text-sm sm:text-base leading-relaxed break-words ${
-                      isMe 
-                      ? 'bg-blue-600 text-white rounded-tr-none' 
-                      : 'bg-white text-gray-800 rounded-tl-none border border-gray-100'
-                    }`}
-                  >
-                    {msg.text}
-                  </div>
-                  
-                  {/* 시간 표시 */}
-                  <span className={`text-[10px] text-gray-400 mt-1 px-1 ${isMe ? 'text-right' : 'text-left'}`}>
-                    {msg.createdAt ? new Date(msg.createdAt.toMillis()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '전송 중...'}
-                  </span>
-                </div>
-              </div>
-            );
-          })
-        )}
-      </main>
-
-      {/* Input Area */}
-      <footer className="p-4 bg-white border-t">
-        <form onSubmit={sendMessage} className="flex gap-2 max-w-5xl mx-auto">
-          <input
-            type="text"
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            placeholder="메시지를 입력하세요..."
-            className="flex-1 px-5 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all shadow-inner"
-          />
-          <button 
-            type="submit"
-            disabled={!newMessage.trim()}
-            className="bg-blue-600 text-white p-4 rounded-2xl hover:bg-blue-700 transition-all active:scale-90 disabled:opacity-50 disabled:active:scale-100 shadow-lg shadow-blue-100"
-          >
-            <Send size={20} />
-          </button>
-        </form>
-      </footer>
     </div>
-  );
-}
+
+    <!-- 채팅 화면 -->
+    <div id="chat-view" class="flex flex-col h-full hide">
+        <header class="bg-white/90 backdrop-blur-xl border-b px-6 py-4 flex items-center justify-between shadow-sm sticky top-0 z-10">
+            <div class="flex items-center gap-3">
+                <div class="bg-blue-600 p-2.5 rounded-xl text-white">
+                    <i data-lucide="messages-square" class="w-5 h-5"></i>
+                </div>
+                <h1 class="font-black text-slate-800 text-lg leading-none">실시간 채팅</h1>
+            </div>
+            <div class="flex items-center gap-3 bg-slate-100 px-4 py-2 rounded-2xl">
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">My Name</span>
+                <span id="display-nickname" class="text-sm font-extrabold text-blue-600"></span>
+            </div>
+        </header>
+
+        <!-- 메시지 리스트 영역 -->
+        <main id="message-list" class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 bg-[#F8FAFC]">
+            <!-- 메시지 아이템들 -->
+        </main>
+
+        <!-- 입력 영역 -->
+        <footer class="p-4 bg-white border-t">
+            <form id="chat-form" class="flex gap-3 max-w-5xl mx-auto items-center">
+                <input
+                    type="text"
+                    id="message-input"
+                    placeholder="메시지를 입력하세요..."
+                    class="flex-1 px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all font-medium text-slate-700"
+                    autocomplete="off"
+                >
+                <button 
+                    type="submit"
+                    class="bg-blue-600 text-white p-4 rounded-2xl hover:bg-blue-700 transition-all active:scale-90 shadow-lg shadow-blue-100"
+                >
+                    <i data-lucide="send" class="w-6 h-6"></i>
+                </button>
+            </form>
+        </footer>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const firebaseConfig = JSON.parse(__firebase_config);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'html-chat-final';
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let userNickname = "";
+        let isAuthReady = false;
+
+        const loginView = document.getElementById('login-view');
+        const chatView = document.getElementById('chat-view');
+        const messageList = document.getElementById('message-list');
+        const displayNickname = document.getElementById('display-nickname');
+        const loginBtn = document.getElementById('login-btn');
+        const loginBtnText = document.getElementById('login-btn-text');
+
+        lucide.createIcons();
+
+        // 1. RULE 3: Auth Before Queries
+        async function authenticate() {
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch (err) { console.error(err); }
+        }
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                isAuthReady = true;
+                loginBtn.disabled = false;
+                loginBtnText.textContent = "입장하기";
+            }
+        });
+
+        authenticate();
+
+        // 2. 로그인 이벤트
+        document.getElementById('login-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const val = document.getElementById('nickname-input').value.trim();
+            if (!isAuthReady || !val) return;
+
+            userNickname = val;
+            displayNickname.textContent = userNickname;
+            loginView.classList.add('hide');
+            chatView.classList.remove('hide');
+            
+            startChat();
+        });
+
+        // 3. 실시간 리스너 (RULE 1 & 2)
+        function startChat() {
+            if (!auth.currentUser) return;
+            const messagesRef = collection(db, 'artifacts', appId, 'public', 'data', 'messages');
+
+            onSnapshot(messagesRef, (snapshot) => {
+                const docs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                // RULE 2: 클라이언트 측 정렬
+                const sorted = docs.sort((a, b) => (a.createdAt?.toMillis() || 0) - (b.createdAt?.toMillis() || 0));
+                render(sorted);
+            });
+        }
+
+        function render(messages) {
+            messageList.innerHTML = '';
+            messages.forEach(msg => {
+                // 이 부분이 핵심입니다! 현재 접속한 유저의 UID와 메시지의 UID를 비교합니다.
+                const isMe = msg.uid === auth.currentUser?.uid;
+                const time = msg.createdAt ? new Date(msg.createdAt.toMillis()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+
+                const group = document.createElement('div');
+                group.className = `flex w-full ${isMe ? 'justify-end' : 'justify-start'} message-appear mb-4`;
+                
+                // 내가 보낸 건 닉네임 없이 오른쪽 파란색, 남이 보낸 건 닉네임과 함께 왼쪽 흰색
+                group.innerHTML = `
+                    <div class="flex flex-col max-w-[80%] ${isMe ? 'items-end' : 'items-start'}">
+                        ${!isMe ? `<span class="text-[11px] font-bold text-slate-400 mb-1 ml-2">${msg.displayName}</span>` : ''}
+                        <div class="flex items-end gap-2 ${isMe ? 'flex-row-reverse' : 'flex-row'}">
+                            <div class="px-4 py-2.5 rounded-2xl shadow-sm text-sm ${
+                                isMe 
+                                ? 'bg-blue-600 text-white rounded-tr-none' 
+                                : 'bg-white text-slate-800 rounded-tl-none border border-slate-200'
+                            }">
+                                ${escapeHtml(msg.text)}
+                            </div>
+                            <span class="text-[9px] text-slate-300 font-medium mb-1 whitespace-nowrap">${time}</span>
+                        </div>
+                    </div>
+                `;
+                messageList.appendChild(group);
+            });
+            messageList.scrollTop = messageList.scrollHeight;
+        }
+
+        document.getElementById('chat-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const input = document.getElementById('message-input');
+            const text = input.value.trim();
+            if (!text || !auth.currentUser) return;
+
+            input.value = '';
+            try {
+                const messagesRef = collection(db, 'artifacts', appId, 'public', 'data', 'messages');
+                await addDoc(messagesRef, {
+                    text: text,
+                    uid: auth.currentUser.uid,
+                    displayName: userNickname,
+                    createdAt: serverTimestamp()
+                });
+            } catch (err) { console.error(err); }
+        });
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>
