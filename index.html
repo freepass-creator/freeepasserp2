@@ -3,113 +3,147 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kakao Multi Chat</title>
+    <title>ERP Team Messenger</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .chat-bg { background-color: #bacbe0; }
         .bubble-me {
             background-color: #fee500;
             border-radius: 12px 0 12px 12px;
-            position: relative;
         }
         .bubble-other {
             background-color: #ffffff;
             border-radius: 0 12px 12px 12px;
-            position: relative;
         }
         .chat-bubble {
-            padding: 8px 12px;
+            padding: 10px 14px;
             max-width: 100%;
             word-break: break-all;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
         }
         .screen { display: none; }
         .active { display: flex; }
+        #chat-messages::-webkit-scrollbar { width: 4px; }
+        #chat-messages::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 10px; }
         
-        #drawer-chat-messages::-webkit-scrollbar { width: 4px; }
-        #drawer-chat-messages::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 10px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .spinner {
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #fee500;
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+        }
     </style>
 </head>
-<body class="bg-slate-200 h-screen flex items-center justify-center p-4">
+<body class="bg-slate-100 h-screen flex items-center justify-center p-4 font-sans text-slate-800">
 
-    <!-- 1. 닉네임 입력 화면 -->
-    <div id="view-login" class="screen active w-full max-w-md h-[500px] bg-white rounded-2xl shadow-2xl flex-col items-center justify-center p-8">
-        <div class="mb-8 text-center">
-            <div class="w-20 h-20 bg-[#fee500] rounded-2xl mx-auto mb-4 flex items-center justify-center shadow-inner">
-                <svg viewBox="0 0 24 24" class="w-12 h-12 fill-slate-800"><path d="M12 3c-4.97 0-9 3.134-9 7 0 2.455 1.63 4.608 4.1 5.828l-1.1 4.072 4.14-2.296c.61.13 1.25.196 1.86.196 4.97 0 9-3.134 9-7s-4.03-7-9-7z"/></svg>
+    <!-- 1. 입장 화면 (Entry Screen) -->
+    <div id="view-login" class="screen active w-full max-w-md h-[600px] bg-white rounded-3xl shadow-2xl flex-col items-center justify-center p-10 border border-slate-200">
+        <div class="mb-12 text-center">
+            <div class="w-20 h-20 bg-[#fee500] rounded-[2rem] mx-auto mb-6 flex items-center justify-center shadow-lg">
+                <svg viewBox="0 0 24 24" class="w-10 h-10 fill-slate-800"><path d="M12 3c-4.97 0-9 3.134-9 7 0 2.455 1.63 4.608 4.1 5.828l-1.1 4.072 4.14-2.296c.61.13 1.25.196 1.86.196 4.97 0 9-3.134 9-7s-4.03-7-9-7z"/></svg>
             </div>
-            <h2 class="text-2xl font-bold text-slate-800">카카오톡 시작하기</h2>
-            <p class="text-sm text-slate-500 mt-2">사용하실 닉네임을 입력해 주세요</p>
+            <h2 class="text-2xl font-black tracking-tight text-slate-900 italic uppercase">ERP Connect</h2>
+            <p class="text-xs text-slate-400 mt-2 font-medium">부서별 실시간 소통 시스템</p>
         </div>
         <div class="w-full space-y-4">
-            <input id="login-nickname" type="text" class="w-full border-b-2 border-slate-200 p-3 focus:border-[#fee500] outline-none text-center text-lg transition-all" placeholder="닉네임 입력">
-            <button onclick="handleLogin()" class="w-full bg-[#fee500] hover:bg-[#fada00] text-slate-800 font-bold py-3 rounded-xl shadow-sm transition-all">입장하기</button>
+            <div class="space-y-1">
+                <label class="text-[10px] font-bold text-slate-400 ml-1 uppercase">Nickname</label>
+                <input id="login-nickname" type="text" class="w-full bg-slate-50 border-none rounded-2xl p-4 outline-none focus:ring-2 focus:ring-[#fee500] transition-all text-center text-lg font-bold" placeholder="이름을 입력하세요">
+            </div>
+            <button id="btn-login" onclick="handleLogin()" class="w-full bg-[#fee500] hover:bg-[#fada00] text-slate-900 font-black py-4 rounded-2xl shadow-xl transform active:scale-95 transition-all uppercase">
+                접속하기
+            </button>
         </div>
+        <div id="error-display" class="hidden mt-6 p-4 bg-red-50 text-red-600 text-[10px] rounded-2xl break-all text-left border border-red-100 font-mono"></div>
     </div>
 
-    <!-- 2. 로비 (방 목록) 화면 -->
-    <div id="view-lobby" class="screen w-full max-w-md h-[600px] bg-white rounded-2xl shadow-2xl flex-col overflow-hidden">
+    <!-- 2. 로비 화면 (Lobby Screen) -->
+    <div id="view-lobby" class="screen w-full max-w-md h-[650px] bg-white rounded-3xl shadow-2xl flex-col overflow-hidden border border-slate-200">
         <div class="p-6 border-b flex justify-between items-center bg-white sticky top-0 z-10">
-            <h1 class="font-black text-2xl text-slate-800">채팅</h1>
-            <span id="my-profile" class="text-xs bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full font-bold"></span>
-        </div>
-        <div class="flex-1 overflow-y-auto p-2 space-y-1">
-            <p class="px-4 py-2 text-xs font-bold text-slate-400 uppercase">오픈 채팅방</p>
-            <div onclick="enterChat('자유로운 대화방', 'room_01')" class="flex items-center gap-4 p-4 hover:bg-slate-50 cursor-pointer transition-colors rounded-xl">
-                <div class="w-12 h-12 bg-blue-100 rounded-2xl flex items-center justify-center text-xl">💬</div>
-                <div class="flex-1">
-                    <h3 class="font-bold text-slate-800">자유로운 대화방</h3>
-                    <p class="text-xs text-slate-400">누구나 들어와서 떠드세요!</p>
-                </div>
+            <div>
+                <h1 class="font-black text-2xl text-slate-900">팀 리스트</h1>
+                <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Select your team room</p>
             </div>
-            <div onclick="enterChat('코딩 공부방', 'room_02')" class="flex items-center gap-4 p-4 hover:bg-slate-50 cursor-pointer transition-colors rounded-xl">
-                <div class="w-12 h-12 bg-green-100 rounded-2xl flex items-center justify-center text-xl">👨‍💻</div>
+            <span id="lobby-profile" class="text-[9px] font-black text-slate-500 bg-slate-100 px-3 py-1.5 rounded-full"></span>
+        </div>
+        <div class="flex-1 overflow-y-auto p-4 space-y-3">
+            <!-- 팀 방 목록 -->
+            <div onclick="enterRoom('sales', '영업부 대화방')" class="flex items-center gap-4 p-5 hover:bg-slate-50 cursor-pointer transition-all rounded-2xl border border-transparent hover:border-slate-100 group shadow-sm">
+                <div class="w-14 h-14 bg-blue-100 rounded-2xl flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">💰</div>
                 <div class="flex-1">
-                    <h3 class="font-bold text-slate-800">코딩 공부방</h3>
-                    <p class="text-xs text-slate-400">질문 환영합니다.</p>
+                    <h3 class="font-bold text-slate-800 text-lg">영업부</h3>
+                    <p class="text-xs text-slate-400 font-medium">매출 현황 및 거래처 정보 공유</p>
                 </div>
+                <div class="text-slate-300">→</div>
+            </div>
+
+            <div onclick="enterRoom('hr', '인사/관리부 대화방')" class="flex items-center gap-4 p-5 hover:bg-slate-50 cursor-pointer transition-all rounded-2xl border border-transparent hover:border-slate-100 group shadow-sm">
+                <div class="w-14 h-14 bg-purple-100 rounded-2xl flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">🏢</div>
+                <div class="flex-1">
+                    <h3 class="font-bold text-slate-800 text-lg">인사/관리부</h3>
+                    <p class="text-xs text-slate-400 font-medium">사내 공지 및 근태 관리 소통</p>
+                </div>
+                <div class="text-slate-300">→</div>
+            </div>
+
+            <div onclick="enterRoom('logistics', '물류/창고 대화방')" class="flex items-center gap-4 p-5 hover:bg-slate-50 cursor-pointer transition-all rounded-2xl border border-transparent hover:border-slate-100 group shadow-sm">
+                <div class="w-14 h-14 bg-green-100 rounded-2xl flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">📦</div>
+                <div class="flex-1">
+                    <h3 class="font-bold text-slate-800 text-lg">물류/창고팀</h3>
+                    <p class="text-xs text-slate-400 font-medium">입출고 현황 및 재고 실시간 소통</p>
+                </div>
+                <div class="text-slate-300">→</div>
+            </div>
+
+            <div onclick="enterRoom('tech', '기술/개발지원 대화방')" class="flex items-center gap-4 p-5 hover:bg-slate-50 cursor-pointer transition-all rounded-2xl border border-transparent hover:border-slate-100 group shadow-sm">
+                <div class="w-14 h-14 bg-amber-100 rounded-2xl flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">🛠️</div>
+                <div class="flex-1">
+                    <h3 class="font-bold text-slate-800 text-lg">기술지원팀</h3>
+                    <p class="text-xs text-slate-400 font-medium">시스템 유지보수 및 기술 문의</p>
+                </div>
+                <div class="text-slate-300">→</div>
             </div>
         </div>
     </div>
 
-    <!-- 3. 채팅방 화면 -->
-    <div id="view-chat" class="screen w-full max-w-md h-[600px] bg-white rounded-2xl shadow-2xl flex-col overflow-hidden">
-        <div class="p-4 bg-white border-b flex items-center gap-3">
-            <button onclick="showLobby()" class="p-2 hover:bg-slate-100 rounded-full transition-colors">
+    <!-- 3. 채팅 화면 (Chat Screen) -->
+    <div id="view-chat" class="screen w-full max-w-md h-[650px] bg-white rounded-3xl shadow-2xl flex-col overflow-hidden border border-slate-200">
+        <div class="p-5 bg-white border-b flex items-center gap-4">
+            <button onclick="switchView('view-lobby')" class="p-2 hover:bg-slate-100 rounded-xl transition-colors">
                 <svg viewBox="0 0 24 24" class="w-5 h-5 fill-slate-600"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
             </button>
             <div class="flex-1">
-                <h1 id="chat-title" class="font-bold text-md text-slate-800">방 이름</h1>
-                <p id="chat-status" class="text-[10px] text-green-500 font-medium italic">실시간 연결 중</p>
+                <h1 id="chat-room-name" class="font-black text-slate-900 text-md">Team Room</h1>
+                <div class="flex items-center gap-1.5 mt-0.5">
+                    <span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
+                    <span class="text-[9px] text-green-600 font-bold uppercase tracking-wider italic">Secure ERP Tunnel</span>
+                </div>
             </div>
+            <span id="chat-profile" class="text-[9px] font-black text-slate-400 bg-slate-50 px-2 py-1 rounded-lg"></span>
         </div>
 
-        <div id="drawer-chat-messages" class="flex-1 overflow-y-auto p-4 chat-bg flex flex-col gap-2">
-            <!-- 메시지 렌더링 -->
+        <div id="chat-messages" class="flex-1 overflow-y-auto p-4 chat-bg flex flex-col gap-3">
+            <div class="text-center text-[10px] text-slate-500 my-10 font-bold uppercase tracking-widest opacity-50 italic animate-pulse">Synchronizing Data...</div>
         </div>
 
-        <div class="p-3 bg-white border-t flex gap-2 items-end">
-            <textarea 
-                id="drawer-chat-input" 
-                rows="1" 
-                class="flex-1 bg-slate-100 rounded-xl p-3 text-sm focus:outline-none resize-none" 
-                placeholder="메시지 입력..."
-                onkeypress="handleKeyPress(event)"
-            ></textarea>
-            <button 
-                onclick="sendMsgFromDrawer()" 
-                class="bg-[#fee500] hover:bg-[#fada00] text-slate-800 w-12 h-12 flex items-center justify-center rounded-xl transition-all shadow-sm"
-            >
-                <svg viewBox="0 0 24 24" class="w-6 h-6 fill-current"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+        <div class="p-4 bg-white border-t flex gap-2 items-end">
+            <textarea id="chat-input" rows="1" class="flex-1 bg-slate-50 rounded-2xl p-3.5 text-sm outline-none resize-none focus:bg-white focus:ring-1 focus:ring-slate-200" placeholder="메시지 입력..." onkeypress="handleKeyPress(event)"></textarea>
+            <button onclick="sendMessage()" class="bg-[#fee500] hover:bg-[#fada00] text-slate-800 w-12 h-12 flex items-center justify-center rounded-2xl shadow-md transition-all active:scale-90">
+                <svg viewBox="0 0 24 24" class="w-5 h-5 fill-current"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
             </button>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, query, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // 사용자님이 제공해주신 파이어베이스 설정값 적용
+        // 사용자 파이어베이스 설정
         const firebaseConfig = {
             apiKey: "AIzaSyBlVYdSkA7RDgzfOmIWq8BUSMtDQ_H1E5Q",
             authDomain: "freepasserp.firebaseapp.com",
@@ -120,129 +154,136 @@
             measurementId: "G-HVZ10P3ED9"
         };
         
-        // 데이터 저장 경로 구분용 ID
-        const appId = "freepass-kakao-chat";
-        
+        const appId = "freepass-erp-messenger";
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-
-        // 한 PC에서 여러 탭 테스트 시 구분을 위한 세션 ID
+        
         const sessionTabId = Math.random().toString(36).substring(7);
-
-        window.me = { nameTitle: "" };
-        window.selectedId = null;
+        window.me = { name: "" };
+        window.currentRoomId = "";
         let chatUnsubscribe = null;
 
+        // 화면 전환 로직
         window.switchView = (viewId) => {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById(viewId).classList.add('active');
-        };
-
-        window.handleLogin = async () => {
-            const nick = document.getElementById('login-nickname').value.trim();
-            if (!nick) return;
-            window.me.nameTitle = nick;
-            
-            try {
-                // 파이어베이스 익명 로그인
-                await signInAnonymously(auth);
-                document.getElementById('my-profile').innerText = `나: ${nick}`;
-                switchView('view-lobby');
-            } catch (err) { 
-                console.error("로그인 실패:", err);
-                alert("파이어베이스 연결 실패! 익명 로그인이 활성화되어 있는지 확인해주세요.");
+            // 로비로 돌아갈 때 채팅 구독 취소
+            if(viewId === 'view-lobby' && chatUnsubscribe) {
+                chatUnsubscribe();
+                chatUnsubscribe = null;
             }
         };
 
-        window.showLobby = () => {
-            if (chatUnsubscribe) chatUnsubscribe();
-            switchView('view-lobby');
+        // 1. 입장 (닉네임 설정)
+        window.handleLogin = async () => {
+            const nick = document.getElementById('login-nickname').value.trim();
+            const btn = document.getElementById('btn-login');
+            const errBox = document.getElementById('error-display');
+
+            if (!nick) return alert("사용할 이름을 입력해 주세요.");
+
+            btn.disabled = true;
+            btn.innerHTML = `<span class="spinner"></span> 인증 중...`;
+            errBox.classList.add('hidden');
+
+            try {
+                await signInAnonymously(auth);
+                window.me.name = nick;
+                document.getElementById('lobby-profile').innerText = `${nick} 님`;
+                document.getElementById('chat-profile').innerText = nick;
+                
+                switchView('view-lobby');
+            } catch (err) {
+                btn.disabled = false;
+                btn.innerText = "접속하기";
+                errBox.classList.remove('hidden');
+                errBox.innerText = `[로그인 에러] ${err.code}: ${err.message}`;
+                console.error(err);
+            }
         };
 
-        window.enterChat = (title, roomId) => {
-            window.selectedId = roomId;
-            document.getElementById('chat-title').innerText = title;
+        // 2. 방 입장 및 데이터 로드
+        window.enterRoom = (roomId, roomName) => {
+            window.currentRoomId = roomId;
+            document.getElementById('chat-room-name').innerText = roomName;
+            
             switchView('view-chat');
-            loadChats(roomId);
+            loadMessages(roomId);
         };
 
-        function loadChats(roomId) {
-            const chatContainer = document.getElementById('drawer-chat-messages');
-            chatContainer.innerHTML = '';
-
-            // 파이어베이스 데이터 경로 설정
-            const q = query(
-                collection(db, "chatApps", appId, "rooms", roomId, "messages")
-            );
-
+        function loadMessages(roomId) {
+            const container = document.getElementById('chat-messages');
+            container.innerHTML = '<div class="text-center text-[10px] text-slate-500 my-10 font-bold uppercase tracking-widest opacity-50 italic">Synchronizing Room Data...</div>';
+            
+            // 각 팀별 고유 컬렉션 경로 (가이드라인 준수)
+            const collectionName = "messages_" + roomId;
+            const q = query(collection(db, "artifacts", appId, "public", "data", collectionName));
+            
             chatUnsubscribe = onSnapshot(q, (snapshot) => {
-                chatContainer.innerHTML = '';
-                const messages = [];
-                snapshot.forEach(doc => messages.push(doc.data()));
+                container.innerHTML = '';
+                const msgs = [];
+                snapshot.forEach(doc => msgs.push(doc.data()));
                 
                 // 시간순 정렬
-                messages.sort((a, b) => (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0));
+                msgs.sort((a, b) => (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0));
+                
+                if (msgs.length === 0) {
+                    container.innerHTML = `<div class="text-center text-[10px] text-slate-400 my-10 font-bold uppercase tracking-wider">[${roomId.toUpperCase()}] 방의 대화 내역이 없습니다.</div>`;
+                }
 
-                messages.forEach(msg => renderSingleMessage(msg));
-                chatContainer.scrollTop = chatContainer.scrollHeight;
+                msgs.forEach(msg => {
+                    const isMe = msg.sessionId === sessionTabId;
+                    const div = document.createElement('div');
+                    div.className = `flex ${isMe ? 'justify-end' : 'justify-start'} w-full mb-1`;
+                    
+                    const time = msg.createdAt ? new Date(msg.createdAt.seconds * 1000).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : "";
+
+                    div.innerHTML = `
+                        <div class="flex flex-col ${isMe ? 'items-end' : 'items-start'} max-w-[85%]">
+                            ${!isMe ? `<span class="text-[10px] text-slate-800 font-black ml-1 mb-1 opacity-70">${msg.sender}</span>` : ''}
+                            <div class="flex items-end gap-1.5 ${isMe ? 'flex-row-reverse' : 'flex-row'}">
+                                <div class="chat-bubble ${isMe ? 'bubble-me' : 'bubble-other'} text-[13px] font-medium border ${isMe ? 'border-yellow-400' : 'border-white text-slate-700'}">
+                                    ${msg.text}
+                                </div>
+                                <span class="text-[8px] text-slate-400 font-bold mb-0.5 whitespace-nowrap">${time}</span>
+                            </div>
+                        </div>`;
+                    container.appendChild(div);
+                });
+                container.scrollTop = container.scrollHeight;
+            }, (err) => {
+                console.error("Snapshot Error:", err);
+                // alert 대신 UI 피드백 권장이나 Q&A용으로 간단히 표시
             });
         }
 
-        window.sendMsgFromDrawer = async () => {
-            const input = document.getElementById('drawer-chat-input');
-            const msgText = input?.value.trim();
-            const user = auth.currentUser;
-
-            if (!msgText || !window.selectedId || !user) return;
+        // 3. 메시지 전송
+        window.sendMessage = async () => {
+            const input = document.getElementById('chat-input');
+            const text = input.value.trim();
+            if (!text || !auth.currentUser || !window.currentRoomId) return;
 
             try {
-                await addDoc(collection(db, "chatApps", appId, "rooms", window.selectedId, "messages"), {
-                    sender: window.me.nameTitle,
-                    text: msgText,
+                const collectionName = "messages_" + window.currentRoomId;
+                await addDoc(collection(db, "artifacts", appId, "public", "data", collectionName), {
+                    sender: window.me.name,
+                    text: text,
                     createdAt: serverTimestamp(),
-                    uid: user.uid,
+                    uid: auth.currentUser.uid,
                     sessionId: sessionTabId
                 });
                 input.value = '';
                 input.focus();
-            } catch (e) { console.error("전송 에러:", e); }
-        };
-
-        function renderSingleMessage(msg) {
-            const chatContainer = document.getElementById('drawer-chat-messages');
-            // 탭 ID를 통해 같은 브라우저에서도 '나'와 '남' 구분 가능하게 설정
-            const isMe = msg.sessionId === sessionTabId;
-            
-            const div = document.createElement('div');
-            div.className = `flex ${isMe ? 'justify-end' : 'justify-start'} w-full mb-3`;
-            
-            let timeStr = "";
-            if (msg.createdAt) {
-                const date = new Date(msg.createdAt.seconds * 1000);
-                timeStr = date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            } catch (e) {
+                console.error("전송 에러:", e);
             }
-
-            div.innerHTML = `
-                <div class="flex flex-col ${isMe ? 'items-end' : 'items-start'} max-w-[80%]">
-                    <div class="flex items-center gap-1 mb-1">
-                        ${!isMe ? `<span class="text-[10px] text-slate-700 font-bold ml-1">${msg.sender}</span>` : `<span class="text-[9px] text-yellow-600 font-bold mr-1 italic">나</span>`}
-                    </div>
-                    <div class="flex items-end gap-1 ${isMe ? 'flex-row-reverse' : 'flex-row'}">
-                        <div class="chat-bubble ${isMe ? 'bubble-me' : 'bubble-other'} text-[12px] shadow-sm font-medium border ${isMe ? 'border-yellow-400' : 'border-white'}">
-                            ${msg.text}
-                        </div>
-                        <span class="text-[8px] text-slate-500 mb-0.5 whitespace-nowrap">${timeStr}</span>
-                    </div>
-                </div>
-            `;
-            chatContainer.appendChild(div);
-        }
+        };
 
         window.handleKeyPress = (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
-                window.sendMsgFromDrawer();
+                window.sendMessage();
             }
         };
     </script>
