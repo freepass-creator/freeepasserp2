@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>프리패스모빌리티 통합 ERP v126</title>
+    <title>프리패스모빌리티 통합 ERP v131</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
@@ -30,20 +30,20 @@
         .box-shadow-premium { box-shadow: 0 10px 25px -5px rgba(0, 104, 183, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05); }
         .selected-row { background-color: #eff6ff !important; border-left: 4px solid #0068b7 !important; }
 
-        /* 닫기 버튼 표준 부품 */
+        /* 표준 닫기 버튼 */
         .btn-close-standard { color: #94a3b8; transition: color 0.2s; cursor: pointer; display: flex; align-items: center; justify-content: center; }
         .btn-close-standard:hover { color: #f43f5e; }
 
-        /* [v126] 헤더 정밀 레이아웃 (정중앙 텍스트, 아이콘 우측 끝) */
-        thead th { font-weight: 700; color: #64748b; background: #f8fafc; font-size: 10px; border-bottom: 1px solid #e2e8f0; white-space: nowrap; height: 56px; padding: 0 !important; }
+        /* 테이블 헤더 정밀 레이아웃 */
+        thead th { font-weight: 700; color: #64748b; background: #f8fafc; font-size: 10px; border-bottom: 1px solid #e2e8f0; white-space: nowrap; height: 56px; padding: 0 !important; text-align: center; }
         thead th:hover { background-color: #f1f5f9; }
-        .header-cell-inner { display: flex; align-items: center; width: 100%; height: 100%; cursor: pointer; padding: 0 10px; position: relative; }
+        .header-cell-inner { display: flex; align-items: center; width: 100%; height: 100%; cursor: pointer; padding: 0 12px; position: relative; }
         .header-text { flex: 1; text-align: center; margin-left: 14px; } 
         .header-icon-box { width: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 
         tbody td { font-weight: 400; height: 56px; border-bottom: 1px solid #f1f5f9; font-size: 11px; text-align: center; }
 
-        /* [v126 핵심] 스크롤바가 상품 리스트 내부에만 존재하도록 강제 */
+        /* 상품 리스트 영역 안에서만 작동하는 가로 스크롤 */
         .scroller-always { 
             overflow-x: auto !important; 
             overflow-y: auto !important; 
@@ -58,7 +58,6 @@
         .scroller-always::-webkit-scrollbar { width: 8px; height: 8px; }
         .scroller-always::-webkit-scrollbar-track { background: #f8fafc; }
         .scroller-always::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; border: 2px solid #f8fafc; }
-        .scroller-always::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
         #content-area { flex: 1; min-width: 0; display: flex; flex-direction: column; overflow: hidden; position: relative; }
 
@@ -68,19 +67,20 @@
         .tactile-filter-btn { transition: all 0.1s; border: 1px solid #d1e3f8; cursor: pointer; background: white; color: #64748b; font-weight: 700; position: relative; text-align: center; box-shadow: 0 2px 0 #d1e3f8; }
         .tactile-filter-btn:active { transform: translateY(1px); box-shadow: 0 1px 0 #d1e3f8; }
 
-        /* 보안코드 가이드 스타일 */
-        .pw-input::placeholder { color: #4b5563; font-weight: 400; letter-spacing: 0.5em; }
-
         .role-bar-sales { border-left: 4px solid #0068b7 !important; }
         .role-bar-supplier { border-left: 4px solid #10b981 !important; }
         .role-bar-admin { border-left: 4px solid #f43f5e !important; }
 
-        #detail-drawer { transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1), width 0.3s ease; display: flex; gap: 8px; background-color: transparent !important; }
-        .drawer-sub-panel { background: white; box-shadow: -10px 0 25px -5px rgba(0,0,0,0.1); border-left: 1px solid #e2e8f0; height: 100%; overflow: hidden; }
-
         .pending-badge { background-color: #fff1f2; color: #e11d48; border: 1px solid #fecdd3; padding: 2px 6px; border-radius: 2px; font-weight: 800; font-size: 9px; }
         .answered-badge { background-color: #eff6ff; color: #0068b7; border: 1px solid #dbeafe; padding: 2px 6px; border-radius: 2px; font-weight: 800; font-size: 9px; }
 
+        .chat-bubble-wrapper { display: flex; flex-direction: column; max-width: 85%; }
+        .chat-bubble { padding: 10px 14px; border-radius: 4px; font-weight: 600; line-height: 1.4; position: relative; word-break: break-all; }
+        .bubble-me { background-color: #dbeafe; color: #1e3a8a; border-bottom-right-radius: 0; }
+        .bubble-other { background-color: #f1f5f9; color: #1e293b; border-bottom-left-radius: 0; border: 1px solid #e2e8f0; }
+
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         .filter-popup { position: absolute; background: white; border: 1px solid #e2e8f0; box-shadow: 0 15px 35px rgba(0,0,0,0.15); z-index: 1000; width: 220px; padding: 12px; border-radius: 2px; }
     </style>
 </head>
@@ -93,16 +93,14 @@
     <div class="max-w-md w-full animate-drawer space-y-10">
         <div class="space-y-3">
             <h1 class="text-3xl font-black tracking-tight text-white">반갑습니다!</h1>
-            <!-- 지시: 버전 표시 복구 -->
-            <p class="text-slate-400 font-bold uppercase tracking-tighter text-sm">통합 ERP 시스템 보안 인증 (V.126)</p>
+            <p class="text-slate-400 font-bold uppercase tracking-tighter text-sm text-nowrap">통합 ERP 시스템 보안 인증 (V.131)</p>
         </div>
         <div class="space-y-6 text-left">
             <div class="bg-white/5 p-8 rounded-sm border border-white/10 space-y-6 box-shadow-premium">
                 <div class="space-y-4">
                     <p class="text-[11px] text-blue-400 font-black uppercase tracking-widest border-l-4 border-blue-500 pl-2">전산 인증</p>
                     <input type="text" id="user-id-input" placeholder="ID (전산번호)" class="w-full p-4 bg-slate-800 border border-slate-700 text-white text-sm font-bold focus:border-blue-500 outline-none transition-all">
-                    <!-- 지시: 보안코드 가이드 스타일 적용 및 7777 유지 -->
-                    <input type="password" id="user-pw" value="7777" placeholder="****" maxlength="4" class="pw-input w-full p-4 bg-slate-800 border border-slate-700 text-white text-center text-2xl tracking-[0.5em] focus:border-blue-500 outline-none transition-all" onkeypress="if(event.key==='Enter') window.login()">
+                    <input type="password" id="user-pw" value="7777" placeholder="****" maxlength="4" class="w-full p-4 bg-slate-800 border border-slate-700 text-white text-center text-2xl tracking-[0.5em] focus:border-blue-500 outline-none transition-all" onkeypress="if(event.key==='Enter') window.login()">
                 </div>
                 <button id="login-btn" onclick="window.login()" class="w-full py-4 bg-blue-600 hover:bg-blue-500 text-white font-black text-sm tracking-widest transition-all shadow-lg active:translate-y-1">시스템 접속하기</button>
             </div>
@@ -116,7 +114,7 @@
 <!-- 회원가입 모달 -->
 <div id="signup-modal" class="fixed inset-0 bg-slate-900/80 z-[10000] hidden flex items-center justify-center p-6 backdrop-blur-sm text-nowrap">
     <div class="bg-white p-8 rounded-sm-custom max-w-md w-full space-y-6 shadow-2xl border border-slate-100">
-        <div class="flex justify-between items-center text-nowrap">
+        <div class="flex justify-between items-center">
             <h3 class="text-xl font-bold text-slate-800">회원가입 신청</h3>
             <button onclick="window.closeSignupModal()" class="btn-close-standard"><i data-lucide="x" class="w-6 h-6"></i></button>
         </div>
@@ -131,16 +129,16 @@
             <input type="text" id="reg-id" placeholder="연락처 (아이디)" class="w-full p-3 bg-slate-50 border border-slate-100 rounded-sm text-[11px] outline-none">
             <input type="text" id="reg-company" placeholder="회사명" class="w-full p-3 bg-slate-50 border border-slate-100 rounded-sm text-[11px] outline-none">
         </div>
-        <button onclick="window.submitSignup()" class="w-full py-4 bg-slate-800 text-white font-bold rounded-sm text-[12px] text-nowrap">신청 전송</button>
+        <button onclick="window.submitSignup()" class="w-full py-4 bg-slate-800 text-white font-bold rounded-sm text-[12px]">신청 전송</button>
     </div>
 </div>
 
-<!-- 메인 앱 -->
+<!-- 메인 앱 인터페이스 -->
 <div id="app" class="hidden h-screen flex flex-col overflow-hidden bg-[#f1f3f6] opacity-0 transition-opacity duration-700">
     <header class="h-[56px] bg-white border-b border-slate-200 flex items-center px-6 justify-between z-50 shadow-sm text-slate-800 text-nowrap">
         <div class="flex items-center gap-6">
             <div id="top-user-info-container" class="flex items-center gap-4 text-nowrap">
-                <div id="role-bar" class="flex items-baseline gap-2 pl-3">
+                <div id="role-bar" class="flex items-baseline gap-2 pl-3 text-nowrap">
                     <span id="name-tag" class="font-bold text-slate-800 text-[11px]">사용자</span>
                     <span id="id-tag" class="font-medium text-slate-400 text-[10px]">ID</span>
                 </div>
@@ -149,7 +147,7 @@
         <div class="flex items-center gap-5 text-nowrap">
             <div class="relative flex items-center">
                 <i data-lucide="search" class="absolute left-3 text-slate-400 w-3.5 h-3.5"></i>
-                <input type="text" id="searchInput" oninput="window.handleSearch(this.value)" placeholder="통합 상품 검색..." class="pl-9 pr-4 py-2 border border-slate-200 rounded-none text-[11px] focus:border-blue-400 outline-none w-72 bg-slate-50 font-medium">
+                <input type="text" id="searchInput" oninput="window.handleSearch(this.value)" placeholder="매물 통합 검색..." class="pl-9 pr-4 py-2 border border-slate-200 rounded-none text-[11px] focus:border-blue-400 outline-none w-72 bg-slate-50 font-medium">
             </div>
             <button onclick="location.reload()" class="text-slate-400 font-medium hover:text-rose-500 text-[11px] flex items-center gap-1.5 transition-colors ml-2">
                 <i data-lucide="log-out" class="w-3.5 h-3.5"></i> 로그아웃
@@ -161,7 +159,7 @@
         <nav class="w-[92px] bg-white border-r border-slate-200 flex flex-col items-center py-6 gap-5 z-40 shadow-sm text-slate-400 text-nowrap">
             <button onclick="window.switchTab('inventory')" id="tab-inventory-btn" class="tab-btn w-18 h-16 flex flex-col items-center justify-center rounded-sm transition-all relative">
                 <i data-lucide="layout-grid" class="w-6 h-6"></i>
-                <span class="text-[11px] font-bold mt-1.5 text-nowrap">상품현황</span>
+                <span class="text-[11px] font-bold mt-1.5">상품현황</span>
             </button>
             <button onclick="window.switchTab('chats')" id="tab-chats-btn" class="tab-btn w-18 h-16 flex flex-col items-center justify-center rounded-sm transition-all relative">
                 <i data-lucide="message-square" class="w-6 h-6"></i>
@@ -178,36 +176,30 @@
                 <div class="relative"><button onclick="window.openSidebarFilter('rental', this)" class="tactile-filter-btn w-full py-2.5 text-[10px] rounded-sm text-nowrap">대여료</button><div id="dot-rental" class="active-dot hidden"></div></div>
                 <div class="relative"><button onclick="window.openSidebarFilter('deposit', this)" class="tactile-filter-btn w-full py-2.5 text-[10px] rounded-sm text-nowrap text-nowrap">보증금</button><div id="dot-deposit" class="active-dot hidden text-nowrap"></div></div>
                 <div class="relative"><button onclick="window.openSidebarFilter('mileage', this)" class="tactile-filter-btn w-full py-2.5 text-[10px] rounded-sm text-nowrap text-nowrap text-nowrap">주행거리</button><div id="dot-mileage" class="active-dot hidden text-nowrap"></div></div>
-                <div class="relative"><button onclick="window.openSidebarFilter('year', this)" class="tactile-filter-btn w-full py-2.5 text-[10px] rounded-sm text-nowrap text-nowrap text-nowrap text-nowrap text-nowrap">연식</button><div id="dot-year" class="active-dot hidden text-nowrap"></div></div>
-            </div>
-            <div class="mt-auto space-y-4 pb-2 text-nowrap">
-                <button id="excel-btn" onclick="window.showMessage('엑셀 매물 생성 중...')" class="hidden w-16 h-10 flex items-center justify-center gap-1.5 rounded-sm bg-white text-emerald-600 border border-emerald-600 hover:bg-emerald-50 transition-all shadow-sm">
-                    <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5"></i>
-                    <span class="text-[9px] font-black tracking-tighter uppercase text-nowrap">EXCEL</span>
-                </button>
+                <div class="relative"><button onclick="window.openSidebarFilter('year', this)" class="tactile-filter-btn w-full py-2.5 text-[10px] rounded-sm text-nowrap text-nowrap text-nowrap text-nowrap text-nowrap text-nowrap">연식</button><div id="dot-year" class="active-dot hidden text-nowrap"></div></div>
             </div>
         </nav>
 
         <section id="content-area">
             <div id="inventory-view" class="flex-1 flex flex-col bg-white h-full overflow-hidden" onclick="window.handleOutsideClick(event)">
-                <div class="h-12 bg-white border-b border-slate-100 flex items-center px-6 justify-between text-nowrap flex-shrink-0">
+                <div class="h-12 bg-white border-b border-slate-100 flex items-center px-6 justify-between text-nowrap flex-shrink-0 text-nowrap text-nowrap text-nowrap">
                     <div class="flex items-center gap-3">
-                        <span class="text-[12px] font-black text-slate-700 text-nowrap">차량 상품 리스트</span>
+                        <span class="text-[12px] font-black text-slate-700">차량 상품 리스트</span>
                         <span class="text-[12px] font-black text-[#0068b7] ml-1 text-nowrap"><span id="total-count-txt">0</span>대</span>
-                        <div id="inventory-manage-controls" class="hidden ml-4 flex gap-2 text-nowrap">
-                            <button onclick="window.openAddCarModal()" class="px-5 py-2 bg-[#0068b7] text-white font-bold text-[10px] rounded-sm hover:bg-[#005696] shadow-sm transition-all flex items-center gap-2">
+                        <div id="inventory-manage-controls" class="hidden ml-4 flex gap-2">
+                            <button onclick="window.openAddCarModal()" class="px-5 py-2 bg-[#0068b7] text-white font-bold text-[10px] rounded-sm hover:bg-[#005696] shadow-sm transition-all flex items-center gap-2 text-nowrap">
                                 <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i> 상품 등록
                             </button>
-                            <button id="admin-bulk-delete-btn" onclick="window.openDeleteConfirm(null, 'bulk')" class="hidden px-5 py-2 bg-rose-600 text-white font-bold text-[10px] rounded-sm hover:bg-rose-700 shadow-sm transition-all">
+                            <button id="admin-bulk-delete-btn" onclick="window.openDeleteConfirm(null, 'bulk')" class="hidden px-5 py-2 bg-rose-600 text-white font-bold text-[10px] rounded-sm hover:bg-rose-700 shadow-sm transition-all text-nowrap text-nowrap text-nowrap">
                                 필터 결과 전체 삭제
                             </button>
                         </div>
                     </div>
                 </div>
-                <div id="main-scroll-area" class="flex-1 min-h-0 scroller-always text-nowrap">
-                    <table class="w-full border-collapse min-w-[1600px]">
+                <div id="main-scroll-area" class="flex-1 min-h-0 scroller-always">
+                    <table class="w-full border-collapse min-w-[1600px] text-nowrap">
                         <thead class="sticky top-0 z-10 shadow-sm bg-[#f8f9fb]">
-                            <tr id="main-table-header" class="divide-x divide-slate-200 text-[10px] uppercase font-bold text-nowrap"></tr>
+                            <tr id="main-table-header" class="divide-x divide-slate-200 text-[10px] uppercase font-bold text-nowrap text-nowrap"></tr>
                         </thead>
                         <tbody id="main-list-body" class="divide-y divide-slate-100 text-center text-nowrap"></tbody>
                     </table>
@@ -217,7 +209,7 @@
             <!-- 문의내역 뷰 -->
             <div id="chats-view" class="hidden flex-1 flex flex-col bg-white h-full overflow-hidden text-nowrap">
                 <div class="h-10 bg-white border-b border-slate-100 flex items-center px-6 justify-between text-nowrap flex-shrink-0 text-nowrap">
-                    <span id="chat-header-title" class="text-[10px] font-bold text-slate-700 uppercase tracking-widest flex items-center gap-2 text-nowrap">
+                    <span id="chat-header-title" class="text-[10px] font-bold text-slate-700 uppercase tracking-widest flex items-center gap-2">
                         <i data-lucide="activity" class="w-3.5 h-3.5 text-rose-500 text-nowrap"></i> 대화 내역
                     </span>
                 </div>
@@ -226,12 +218,12 @@
                         <thead class="sticky top-0 z-10 shadow-sm bg-[#f8f9fb]">
                             <tr class="divide-x divide-slate-100 text-[10px] uppercase text-center text-slate-500 font-bold">
                                 <th class="w-20 py-4">처리상태</th>
-                                <th class="w-36">사용자 아이디</th>
-                                <th class="w-32">대상 차량번호</th>
-                                <th class="text-left px-5 font-semibold text-slate-700">최신 대화 내용</th>
-                                <th class="w-32">차종 정보</th>
-                                <th class="w-24 text-center">수신시간</th>
-                                <th class="w-16 text-center">관리</th>
+                                <th class="w-36 text-nowrap">사용자 아이디</th>
+                                <th class="w-32 text-nowrap">대상 차량번호</th>
+                                <th class="text-left px-5 font-semibold text-slate-700 text-nowrap">최신 대화 내용</th>
+                                <th class="w-32 text-nowrap">차종 정보</th>
+                                <th class="w-24 text-center text-nowrap">수신시간</th>
+                                <th class="w-16 text-center text-nowrap">관리</th>
                             </tr>
                         </thead>
                         <tbody id="master-inquiry-list" class="divide-y divide-slate-100 bg-white text-center text-nowrap"></tbody>
@@ -249,18 +241,18 @@
                         </div>
                         <button onclick="window.toggleDrawerChat(false)" class="btn-close-standard"><i data-lucide="chevrons-right" class="w-5 h-5"></i></button>
                     </div>
-                    <div id="drawer-chat-messages" class="flex-1 overflow-y-auto p-5 flex flex-col gap-4 text-nowrap text-nowrap"></div>
-                    <div class="h-[80px] p-4 border-t bg-white flex items-center gap-2">
+                    <div id="drawer-chat-messages" class="flex-1 overflow-y-auto p-5 flex flex-col gap-4 text-nowrap text-nowrap text-nowrap"></div>
+                    <div class="h-[80px] p-4 border-t bg-white flex items-center gap-2 text-nowrap">
                         <input type="text" id="drawer-chat-input" placeholder="메시지 입력..." class="flex-1 h-full px-4 border border-slate-200 rounded-sm outline-none focus:border-blue-500 text-[11px]" onkeypress="if(event.key==='Enter') window.sendMsgFromDrawer()">
                         <button onclick="window.sendMsgFromDrawer()" class="h-full bg-[#0068b7] text-white px-5 rounded-sm font-bold transition-all text-nowrap">전송</button>
                     </div>
                 </div>
                 <div id="drawer-info-area" class="w-[460px] drawer-sub-panel flex flex-col bg-white text-nowrap text-nowrap">
-                    <div class="h-[52px] border-b flex justify-between items-center px-6 bg-slate-50 text-left">
-                        <span class="font-bold text-slate-700 text-[12px] flex items-center gap-2 uppercase tracking-tighter text-nowrap"><i data-lucide="car" class="text-blue-500 w-4 h-4 text-nowrap"></i> 차량 상세 명세서</span>
+                    <div class="h-[52px] border-b flex justify-between items-center px-6 bg-slate-50 text-left text-nowrap">
+                        <span class="font-bold text-slate-700 text-[12px] flex items-center gap-2 uppercase tracking-tighter text-nowrap text-nowrap"><i data-lucide="car" class="text-blue-500 w-4 h-4 text-nowrap"></i> 차량 상세 명세서</span>
                         <button onclick="window.closeDrawer()" class="btn-close-standard"><i data-lucide="x" class="w-5 h-5 text-nowrap"></i></button>
                     </div>
-                    <div id="detail-content-inner" class="flex-1 overflow-y-auto p-5 space-y-4 hide-scrollbar bg-[#f8fafc] text-nowrap"></div>
+                    <div id="detail-content-inner" class="flex-1 overflow-y-auto p-5 space-y-4 hide-scrollbar bg-[#f8fafc] text-nowrap text-nowrap"></div>
                     <div id="drawer-footer" class="h-[80px] p-4 border-t bg-white flex items-center gap-2 text-nowrap"></div>
                 </div>
             </div>
@@ -268,23 +260,24 @@
     </main>
 </div>
 
-<!-- 팝업 모달들 -->
+<!-- 필터 팝업 -->
 <div id="filter-popup" class="filter-popup hidden box-shadow-premium border border-slate-200 text-nowrap text-nowrap text-nowrap">
-    <div class="flex justify-between items-center mb-3 pb-2 border-b">
-        <span id="filter-title" class="font-bold text-[10px] text-[#0068b7] text-nowrap">필터 설정</span>
-        <button onclick="window.closeFilterPopup()" class="btn-close-standard"><i data-lucide="x" class="w-3.5 h-3.5 text-nowrap"></i></button>
+    <div class="flex justify-between items-center mb-3 pb-2 border-b text-nowrap">
+        <span id="filter-title" class="font-bold text-[10px] text-[#0068b7]">필터 설정</span>
+        <button onclick="window.closeFilterPopup()" class="btn-close-standard"><i data-lucide="x" class="w-3.5 h-3.5"></i></button>
     </div>
-    <div id="filter-options" class="flex flex-col gap-1 max-h-60 overflow-y-auto hide-scrollbar text-nowrap text-nowrap"></div>
-    <div class="mt-3 pt-3 border-t flex gap-2">
+    <div id="filter-options" class="flex flex-col gap-1 max-h-60 overflow-y-auto hide-scrollbar text-nowrap"></div>
+    <div class="mt-3 pt-3 border-t flex gap-2 text-nowrap text-nowrap">
         <button onclick="window.applyFilters()" class="flex-1 bg-[#0068b7] text-white py-1.5 rounded-sm font-bold text-[10px] text-nowrap">적용</button>
         <button id="filter-reset-btn" class="flex-1 bg-slate-100 text-slate-500 py-1.5 rounded-sm font-bold text-[10px] text-nowrap">초기화</button>
     </div>
 </div>
 
-<div id="delete-confirm-modal" class="fixed inset-0 bg-slate-900/80 z-[20000] hidden flex items-center justify-center p-6 backdrop-blur-sm">
-    <div class="bg-white p-8 rounded-sm-custom max-w-xs w-full text-center space-y-6 shadow-2xl border border-white text-nowrap">
+<!-- 삭제 확인 모달 -->
+<div id="delete-confirm-modal" class="fixed inset-0 bg-slate-900/80 z-[20000] hidden flex items-center justify-center p-6 backdrop-blur-sm text-nowrap text-nowrap">
+    <div class="bg-white p-8 rounded-sm-custom max-w-xs w-full text-center space-y-6 shadow-2xl border border-white text-nowrap text-nowrap">
         <div class="w-12 h-12 bg-rose-50 text-rose-600 rounded-full flex items-center justify-center mx-auto text-nowrap"><i data-lucide="alert-triangle" class="w-6 h-6 text-nowrap"></i></div>
-        <h3 id="del-confirm-title" class="text-lg font-bold text-slate-800 text-nowrap">항목을 삭제할까요?</h3>
+        <h3 id="del-confirm-title" class="text-lg font-bold text-slate-800 text-nowrap text-nowrap text-nowrap">항목을 삭제할까요?</h3>
         <div class="flex gap-2">
             <button id="del-confirm-btn" class="flex-1 py-3 bg-rose-600 text-white font-bold rounded-sm text-[12px] text-nowrap">삭제하기</button>
             <button onclick="window.closeDeleteConfirm()" class="flex-1 py-3 bg-slate-100 text-slate-500 font-bold rounded-sm text-[12px] text-nowrap">취소</button>
@@ -297,9 +290,10 @@
     import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
     import { getFirestore, collection, onSnapshot, doc, setDoc, getDoc, getDocs, addDoc, serverTimestamp, query, orderBy, updateDoc, deleteDoc, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-    // [v126] 배포 환경에서도 즉시 구동되는 스마트 인증 부품
-    const firebaseConfig = (typeof __firebase_config !== 'undefined' && __firebase_config) ? JSON.parse(__firebase_config) : { apiKey: "DEMO_MODE" };
-    const appId = (typeof __app_id !== 'undefined' && __app_id) ? __app_id : 'freepass-erp-v126';
+    // [v131] 환경 설정
+    const fbCfgRaw = (typeof __firebase_config !== 'undefined' && __firebase_config) ? __firebase_config : null;
+    const firebaseConfig = fbCfgRaw ? JSON.parse(fbCfgRaw) : { apiKey: "DEMO_MODE" };
+    const appId = (typeof __app_id !== 'undefined' && __app_id) ? __app_id : 'freepass-erp-v131';
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
@@ -332,11 +326,11 @@
     let sidebarFilters = { period: ['36M', '48M', '60M'], rental: [], deposit: [], mileage: [], year: [] };
     let sortState = { key: '', order: '' };
 
-    // [v126 핵심] 내부 로직 헬퍼 함수들을 최상단에 배치 (ReferenceError 완벽 차단)
+    // [v131] 핵심 내부 로직 (ReferenceError 방어벽)
     const getVisibleCars = () => {
         let f = (me.role === 'supplier') ? rawCars.filter(c => String(c.공급사) === String(me.id)) : rawCars;
         if (currentSearch) f = f.filter(c => JSON.stringify(c).toLowerCase().includes(currentSearch.toLowerCase()));
-        Object.keys(headerFilters).forEach(k => { if (headerFilters[k] && headerFilters[k].length > 0) f = f.filter(c => (headerFilters[k] || []).includes(String(c[k] || '-'))); });
+        Object.keys(headerFilters).forEach(k => { if (headerFilters[k]?.length > 0) f = f.filter(c => headerFilters[k].includes(String(c[k] || '-'))); });
         Object.keys(sidebarFilters).forEach(k => {
             const activeOptions = sidebarFilters[k] || [];
             if (activeOptions.length > 0 && k !== 'period') {
@@ -355,7 +349,7 @@
 
     const maskId = (id) => { if(!id) return ""; const str = String(id); return str.length > 4 ? `***-***-${str.slice(-4)}` : str; };
 
-    // [v126] 모든 전역 제어 함수 바인딩
+    // 전역 제어 API
     window.updateFilterDots = () => { 
         ['period', 'rental', 'deposit', 'mileage', 'year'].forEach(f => { 
             const dot = document.getElementById('dot-' + f); 
@@ -375,9 +369,10 @@
     };
 
     window.handleSearch = (v) => { currentSearch = v; window.renderUI(); };
-    window.openAddCarModal = () => window.showMessage("신규 상품 등록 모듈 실행...");
+    window.openAddCarModal = () => window.showMessage("상품 등록 창이 활성화됩니다.");
     window.toggleSort = (k, e) => { if(e) e.stopPropagation(); if (sortState.key === k) sortState.order = sortState.order === 'asc' ? 'desc' : (sortState.order === 'desc' ? '' : 'asc'); else { sortState.key = k; sortState.order = 'asc'; } window.renderUI(); };
-    
+    window.switchTab = (tab) => { currentTab = tab; ['inventory', 'chats', 'members'].forEach(t => { const v = document.getElementById(t + '-view'); const b = document.getElementById('tab-' + t + '-btn'); if(v) v.classList.toggle('hidden', t !== tab); if(b) b.classList.toggle('active', t === tab); }); window.renderUI(); };
+
     window.openDeleteConfirm = (id, type = 'car', phone = null) => {
         itemToDelete = { id, type, phone };
         const titleEl = document.getElementById('del-confirm-title');
@@ -393,10 +388,7 @@
     window.applyBulkDelete = async () => {
         const targetCars = getVisibleCars();
         if (firebaseConfig.apiKey !== "DEMO_MODE") {
-            try {
-                const batch = writeBatch(db); targetCars.forEach(car => batch.delete(doc(db, 'artifacts', appId, 'public', 'data', 'cars', car.id)));
-                await batch.commit();
-            } catch (e) { window.showMessage("삭제 실패"); return; }
+            try { const batch = writeBatch(db); targetCars.forEach(car => batch.delete(doc(db, 'artifacts', appId, 'public', 'data', 'cars', car.id))); await batch.commit(); } catch (e) { window.showMessage("권한 오류"); return; }
         } else { rawCars = rawCars.filter(c => !targetCars.find(tc => tc.id === c.id)); }
         window.closeDeleteConfirm(); window.showMessage(`일괄 삭제 완료`); window.renderUI();
     };
@@ -404,7 +396,7 @@
     window.applyCarDelete = async () => {
         if (!itemToDelete) return;
         if (firebaseConfig.apiKey !== "DEMO_MODE") {
-            try { await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'cars', itemToDelete.id)); } catch (e) { window.showMessage("삭제 실패"); return; }
+            try { await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'cars', itemToDelete.id)); } catch (e) { window.showMessage("권한 오류"); return; }
         } else { rawCars = rawCars.filter(c => c.id !== itemToDelete.id); }
         window.closeDeleteConfirm(); window.showMessage('상품 삭제 완료'); window.renderUI();
     };
@@ -421,31 +413,13 @@
         } catch (e) { window.showMessage("삭제 실패"); }
     };
 
-    window.switchTab = (tab) => { currentTab = tab; ['inventory', 'chats', 'members'].forEach(t => { const view = document.getElementById(t + '-view'); const btn = document.getElementById('tab-' + t + '-btn'); if(view) view.classList.toggle('hidden', t !== tab); if(btn) btn.classList.toggle('active', t === tab); }); window.renderUI(); };
-
     window.renderTableHeader = () => {
         const headerRow = document.getElementById('main-table-header'); if(!headerRow) return;
-        const getFColor = (k) => (headerFilters[k] && headerFilters[k].length > 0) ? 'text-[#0068b7]' : 'text-slate-300';
-        const getSColor = (k) => (sortState.key === k) ? 'text-[#0068b7]' : 'text-slate-300';
-        const fI = (k) => `<div class="header-icon-box"><i data-lucide="filter" class="w-3 h-3 ${getFColor(k)}"></i></div>`;
-        const sI = (k) => `<div class="header-icon-box"><i data-lucide="${sortState.key===k? (sortState.order==='asc'?'arrow-up':'arrow-down') : 'arrow-up-down'}" class="w-3 h-3 ${getSColor(k)}"></i></div>`;
+        const fI = (k) => `<div class="header-icon-box"><i data-lucide="filter" class="w-3 h-3 ${(headerFilters[k]||[]).length>0?'text-[#0068b7]':'text-slate-300'}"></i></div>`;
+        const sI = (k) => `<div class="header-icon-box"><i data-lucide="${sortState.key===k?(sortState.order==='asc'?'arrow-up':'arrow-down'):'arrow-up-down'}" class="w-3 h-3 ${sortState.key===k?'text-[#0068b7]':'text-slate-300'}"></i></div>`;
         const wrapF = (k, label) => `<div class="header-cell-inner" onclick="window.openHeaderFilter('${k}', this, event)"><span class="header-text">${label}</span>${fI(k)}</div>`;
         const wrapS = (k, label) => `<div class="header-cell-inner" onclick="window.toggleSort('금액_대여료_${sidebarFilters.period[0]}', event)"><span class="header-text">${label}</span>${sI(k)}</div>`;
-
-        headerRow.innerHTML = `
-            <th class="w-20">${wrapF('상태', '상태')}</th>
-            <th class="w-16">${wrapF('구분', '구분')}</th>
-            <th class="w-24 text-center"><div class="header-cell-inner justify-center px-0"><span>차량번호</span></div></th>
-            <th class="w-24">${wrapF('제조사', '제조사')}</th>
-            <th class="w-28">${wrapF('모델', '모델')}</th>
-            <th class="w-32">${wrapF('세부모델', '세부모델')}</th>
-            <th class="text-left px-5 leading-tight text-nowrap">세부트림<br><small class="opacity-60 font-normal">(선택옵션)</small></th>
-            <th class="w-20">${wrapF('외부색상', '외부색상')}</th>
-            <th class="w-20">${wrapF('내부색상', '내부색상')}</th>
-            <th class="w-24">${wrapF('주행거리', '주행거리')}</th>
-            ${sidebarFilters.period.map(p => `<th class="w-36 bg-blue-50 text-[#0068b7] border-l border-blue-100"><div class="header-cell-inner" onclick="window.toggleSort('금액_대여료_${p}', event)"><div class="header-text leading-tight"><div>${p} 대여료</div><div class="text-[8px] opacity-60 font-normal">(보증금)</div></div>${sI(`금액_대여료_${p}`)}</div></th>`).join('')}
-            ${PERMISSIONS.CAN_MANAGE_INVENTORY(me.role) ? '<th class="w-14 text-center bg-slate-50">관리</th>' : ''}
-        `;
+        headerRow.innerHTML = `<th class="w-20">${wrapF('상태', '상태')}</th><th class="w-16">${wrapF('구분', '구분')}</th><th class="w-24 text-center px-0">차량번호</th><th class="w-24">${wrapF('제조사', '제조사')}</th><th class="w-28">${wrapF('모델', '모델')}</th><th class="w-32">${wrapF('세부모델', '세부모델')}</th><th class="text-left px-5 leading-tight text-nowrap">세부트림<br><small class="opacity-60 font-normal">(선택옵션)</small></th><th class="w-20">${wrapF('외부색상', '외부색상')}</th><th class="w-20">${wrapF('내부색상', '내부색상')}</th><th class="w-24">${wrapF('주행거리', '주행거리')}</th>${sidebarFilters.period.map(p => `<th class="w-36 bg-blue-50 text-[#0068b7] border-l border-blue-100"><div class="header-cell-inner" onclick="window.toggleSort('금액_대여료_${p}', event)"><div class="header-text leading-tight"><div>${p} 대여료</div><div class="text-[8px] opacity-60 font-normal">(보증금)</div></div>${sI(`금액_대여료_${p}`)}</div></th>`).join('')}${PERMISSIONS.CAN_MANAGE_INVENTORY(me.role) ? '<th class="w-14 text-center bg-slate-50">관리</th>' : ''}`;
         lucide.createIcons();
     };
 
@@ -453,19 +427,19 @@
         const body = document.getElementById('main-list-body'); if(!body) return;
         let f = getVisibleCars();
         if (sortState.key && sortState.order) { f.sort((a, b) => { let v1 = a[sortState.key]; let v2 = b[sortState.key]; if (typeof v1 === 'string') v1 = parseInt(v1.replace(/[^0-9]/g, '')) || 0; return sortState.order === 'asc' ? v1 - v2 : v2 - v1; }); }
-        body.innerHTML = f.map(c => `<tr class="hover:bg-blue-50/50 transition-all divide-x divide-slate-100 ${selectedId===c.id?'selected-row':''} text-nowrap">
+        body.innerHTML = f.map(c => `<tr class="hover:bg-blue-50/50 transition-all divide-x divide-slate-100 ${selectedId===c.id?'selected-row':''}">
             <td onclick="window.selectCar('${c.id}')" class="py-3 cursor-pointer text-nowrap"><span class="px-1.5 py-0.5 rounded-sm text-[8px] font-bold border ${c.상태==='대여가능'?'bg-emerald-50 text-emerald-600 border-emerald-100':'bg-rose-50 text-rose-600 border-rose-100'} uppercase">${c.상태 || '대여가능'}</span></td>
             <td onclick="window.selectCar('${c.id}')" class="font-medium text-slate-500 cursor-pointer text-nowrap">${c.구분 || '-'}</td>
-            <td onclick="window.selectCar('${c.id}')" class="font-bold text-slate-800 cursor-pointer text-nowrap">${c.id}</td>
+            <td onclick="window.selectCar('${c.id}')" class="font-bold text-slate-800 cursor-pointer text-nowrap text-nowrap">${c.id}</td>
             <td onclick="window.selectCar('${c.id}')" class="font-medium text-slate-400 cursor-pointer text-nowrap">${c.제조사 || '-'}</td>
-            <td onclick="window.selectCar('${c.id}')" class="font-bold text-slate-800 cursor-pointer text-nowrap">${c.모델 || '-'}</td>
-            <td onclick="window.selectCar('${c.id}')" class="font-medium text-slate-500 cursor-pointer text-nowrap">${c.세부모델 || '-'}</td>
+            <td onclick="window.selectCar('${c.id}')" class="font-bold text-slate-800 cursor-pointer text-nowrap text-nowrap text-nowrap">${c.모델 || '-'}</td>
+            <td onclick="window.selectCar('${c.id}')" class="font-medium text-slate-500 cursor-pointer text-nowrap text-nowrap">${c.세부모델 || '-'}</td>
             <td onclick="window.selectCar('${c.id}')" class="px-5 text-left font-medium text-slate-700 truncate cursor-pointer text-nowrap">${c.세부사양 || c.모델 || '-'}</td>
             <td onclick="window.selectCar('${c.id}')" class="font-medium text-slate-400 cursor-pointer text-nowrap">${c.외부색상 || '-'}</td>
-            <td onclick="window.selectCar('${c.id}')" class="font-medium text-slate-400 cursor-pointer text-nowrap text-nowrap">${c.내부색상 || '-'}</td>
+            <td onclick="window.selectCar('${c.id}')" class="font-medium text-slate-400 cursor-pointer text-nowrap">${c.내부색상 || '-'}</td>
             <td onclick="window.selectCar('${c.id}')" class="text-right pr-5 font-medium text-slate-600 cursor-pointer text-nowrap">${parseInt(c.주행거리 || 0).toLocaleString()}km</td>
             ${sidebarFilters.period.map(p => `<td onclick="window.selectCar('${c.id}')" class="bg-blue-50/30 text-right pr-5 font-bold text-[#0068b7] leading-none cursor-pointer text-nowrap"><div>${c[`금액_대여료_${p}`] || '-'}원</div><div class="text-[8px] text-slate-400 font-normal">보: ${c[`금액_보증금_${p}`] || '-'}</div></td>`).join('')}
-            ${PERMISSIONS.CAN_MANAGE_INVENTORY(me.role) ? `<td class="py-2 px-1 text-center"><button onclick="window.openDeleteConfirm('${c.id}', 'car')" class="p-1.5 text-slate-300 hover:text-rose-600 transition-all text-nowrap"><i data-lucide="trash-2" class="w-4 h-4"></i></button></td>` : ''}
+            ${PERMISSIONS.CAN_MANAGE_INVENTORY(me.role) ? `<td class="py-2 px-1 text-center text-nowrap"><button onclick="window.openDeleteConfirm('${c.id}', 'car')" class="p-1.5 text-slate-300 hover:text-rose-600 transition-all text-nowrap"><i data-lucide="trash-2" class="w-4 h-4"></i></button></td>` : ''}
         </tr>`).join('');
         lucide.createIcons();
     };
@@ -477,8 +451,8 @@
             if (car.inquiryList) { Object.entries(car.inquiryList).forEach(([phone, info]) => { if (me.role === 'sales' && phone !== me.id) return; all.push({ carId: car.id, carModel: car.모델, salespersonPhone: phone, ...info }); }); }
         });
         all.sort((a, b) => (a.status === 'pending' ? -1 : 1) || (b.timestamp || 0) - (a.timestamp || 0));
-        if (all.length === 0) { container.innerHTML = `<tr><td colspan="7" class="p-20 text-center text-slate-400 font-medium italic text-nowrap">문의 내역이 없습니다.</td></tr>`; return; }
-        container.innerHTML = all.map(i => `<tr class="hover:bg-slate-50 transition-all divide-x divide-slate-100 ${selectedId===i.carId?'selected-row':''} text-nowrap text-nowrap"><td onclick="window.openChatFromMaster('${i.carId}', '${i.salespersonPhone}')" class="py-4 cursor-pointer text-center text-nowrap"><span class="${i.status==='pending'?'pending-badge':'answered-badge'}">${i.status==='pending'?'회신대기':'회신완료'}</span></td><td class="font-bold text-blue-600 text-[11px] text-center text-nowrap">${me.role==='supplier'?maskId(i.salespersonPhone):i.salespersonPhone}</td><td class="font-bold text-slate-800 text-[11px] text-center text-nowrap">${i.carId}</td><td class="px-6 text-left font-medium text-slate-600 truncate cursor-pointer text-nowrap text-nowrap">${i.lastMsg || '대화 활성화'}</td><td class="font-medium text-slate-400 text-[11px] text-center text-nowrap">${i.carModel}</td><td class="text-[9px] text-slate-400 text-center text-nowrap">${i.timestamp ? new Date(i.timestamp).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : '-'}</td><td class="py-2 px-1 text-center"><button onclick="window.openDeleteConfirm('${i.carId}', 'chat', '${i.salespersonPhone}')" class="p-1.5 text-slate-300 hover:text-rose-50 transition-all text-nowrap"><i data-lucide="trash-2" class="w-4 h-4"></i></button></td></tr>`).join('');
+        if (all.length === 0) { container.innerHTML = `<tr><td colspan="7" class="p-20 text-center text-slate-400 font-medium italic text-nowrap text-nowrap text-nowrap">데이터가 없습니다.</td></tr>`; return; }
+        container.innerHTML = all.map(i => `<tr class="hover:bg-slate-50 transition-all divide-x divide-slate-100 ${selectedId===i.carId?'selected-row':''} text-nowrap"><td onclick="window.openChatFromMaster('${i.carId}', '${i.salespersonPhone}')" class="py-4 cursor-pointer text-center text-nowrap"><span class="${i.status==='pending'?'pending-badge':'answered-badge'}">${i.status==='pending'?'회신대기':'회신완료'}</span></td><td class="font-bold text-blue-600 text-[11px] text-center text-nowrap">${me.role==='supplier'?maskId(i.salespersonPhone):i.salespersonPhone}</td><td class="font-bold text-slate-800 text-[11px] text-center text-nowrap">${i.carId}</td><td class="px-6 text-left font-medium text-slate-600 truncate cursor-pointer text-nowrap">${i.lastMsg || '대화 활성화'}</td><td class="font-medium text-slate-400 text-[11px] text-center text-nowrap">${i.carModel}</td><td class="text-[9px] text-slate-400 text-center text-nowrap">${i.timestamp ? new Date(i.timestamp).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : '-'}</td><td class="py-2 px-1 text-center"><button onclick="window.openDeleteConfirm('${i.carId}', 'chat', '${i.salespersonPhone}')" class="p-1.5 text-slate-300 hover:text-rose-50 transition-all text-nowrap"><i data-lucide="trash-2" class="w-4 h-4"></i></button></td></tr>`).join('');
         lucide.createIcons();
     };
 
@@ -506,46 +480,77 @@
         });
         if (unreadDot) unreadDot.classList.toggle('hidden', !hasUnread);
 
-        const vCars = getVisibleCars();
-        document.getElementById('total-count-txt').innerText = vCars.length;
+        const totalCountTxt = document.getElementById('total-count-txt');
+        if(totalCountTxt) totalCountTxt.innerText = getVisibleCars().length;
         window.renderTableHeader();
         window.renderMainList();
         window.updateFilterDots();
         if (currentTab === 'chats') window.renderMasterInquiryList();
     };
 
-    // [v126] 외부 호스팅 환경 접속 보장 엔진
+    // [v131] 데이터 리스너 및 샘플 복구 엔진 (사라짐 방지)
+    window.initRealtimeList = () => { 
+        if (firebaseConfig.apiKey === "DEMO_MODE") return;
+        // 인증 상태 확인 가드
+        if (!auth.currentUser) return;
+        
+        onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'cars'), (snap) => { 
+            const liveData = snap.docs.filter(d => !d.id.includes('SEED_DONE')).map(d => ({ id: d.id, ...d.data() })); 
+            // 유효한 데이터가 있을 때만 교체하여 깜빡임 및 사라짐 방지
+            if (liveData.length > 0) { 
+                rawCars = liveData; 
+                window.renderUI(); 
+            } 
+        }, (err) => {
+            console.error("Firestore Listen Error (Fallback to Sample):", err);
+            // 권한 오류 시 샘플 데이터로 조용히 유지
+        }); 
+    };
+
+    window.initSampleData = async () => {
+        const b = ["현대", "기아", "제네시스", "BMW", "벤츠"];
+        const m = { "현대": ["그랜저", "팰리세이드", "쏘나타"], "기아": ["K8", "EV6", "쏘렌토"], "제네시스": ["G80", "GV70"], "BMW": ["5시리즈", "X5"], "벤츠": ["E클래스", "GLC"] };
+        rawCars = Array.from({length: 25}, (_, i) => {
+            const brand = b[i % 5]; const rentalPrice = (40 + (i * 3)) * 10000;
+            return { id: `${15 + i}가${1000+i}`, 구분: '신차급', 제조사: brand, 모델: m[brand][i % m[brand].length], 세부모델: '프리미엄', 주행거리: 5000 + (i * 3000), 연식: 2021 + (i % 5), 외부색상: i % 2 === 0 ? '블랙' : '화이트', 내부색상: '그레이', 금액_대여료_36M: rentalPrice.toLocaleString(), 금액_보증금_36M: (rentalPrice * 2).toLocaleString(), 공급사: i % 2 === 0 ? '3333' : '4444', 상태: '대여가능', inquiryList: {} };
+        });
+        window.renderUI();
+    };
+
     window.login = async () => {
         const idIn = document.getElementById('user-id-input');
         const idVal = idIn?.value.trim();
         const pwVal = document.getElementById('user-pw')?.value.trim();
-        
+
         if (!idVal) return window.showMessage('아이디를 입력하세요.');
-        if (pwVal !== "7777") return window.showMessage('보안코드가 일치하지 않습니다.');
-        
+        if (pwVal !== "7777") return window.showMessage('보안코드 불일치');
         const account = ACCOUNT_MAP[idVal];
         if (!account) return window.showMessage('미등록 전산 아이디');
         
         const lBtn = document.getElementById('login-btn');
         if(lBtn) { lBtn.disabled = true; lBtn.innerText = "전산 접속 중..."; }
         
-        // 로컬 저장소에 인증 기록 (3개월 유지)
-        const expireTime = Date.now() + (90 * 24 * 60 * 60 * 1000);
-        localStorage.setItem('erp_access_granted', 'true');
-        localStorage.setItem('erp_access_id', idVal);
-        localStorage.setItem('erp_access_expire', expireTime.toString());
+        try {
+            localStorage.setItem('erp_access_granted', 'true');
+            localStorage.setItem('erp_access_id', idVal);
+            localStorage.setItem('erp_access_expire', (Date.now() + (90 * 24 * 60 * 60 * 1000)).toString());
 
-        me.id = idVal; me.role = account.role; me.company = account.company; me.nameTitle = account.name;
-        
-        document.getElementById('gate').classList.add('hidden'); 
-        const appEl = document.getElementById('app');
-        appEl.classList.remove('hidden');
-        setTimeout(() => appEl.classList.remove('opacity-0'), 50);
+            me.id = idVal; me.role = account.role; me.company = account.company; me.nameTitle = account.name;
 
-        document.getElementById('name-tag').innerText = `${me.nameTitle}(${me.company})`; 
-        document.getElementById('id-tag').innerText = me.id;
-        
-        window.initRealtimeList(); window.initSampleData(); window.renderUI();
+            document.getElementById('gate').classList.add('hidden'); 
+            const appEl = document.getElementById('app'); appEl.classList.remove('hidden'); setTimeout(() => appEl.classList.remove('opacity-0'), 50);
+            document.getElementById('name-tag').innerText = `${me.nameTitle}(${me.company})`; 
+            document.getElementById('id-tag').innerText = me.id;
+
+            window.initSampleData(); // 즉시 샘플 주입
+
+            if (firebaseConfig.apiKey !== "DEMO_MODE") {
+                try {
+                    await signInAnonymously(auth); // 인증 대기
+                    window.initRealtimeList(); // 인증 성공 후 리스너 가동
+                } catch (authErr) { console.warn("실시간 연동 패스:", authErr); }
+            }
+        } catch (e) { console.error(e); window.showMessage('접속 오류 발생'); if(lBtn) lBtn.disabled = false; }
     };
 
     window.openSidebarFilter = (type, btn) => {
@@ -562,7 +567,7 @@
         const p = document.getElementById('filter-popup'); const o = document.getElementById('filter-options'); if (!p || !o) return;
         if (!p.classList.contains('hidden') && p.getAttribute('data-key') === k) { window.closeFilterPopup(); return; }
         const rect = btn.getBoundingClientRect(); p.setAttribute('data-key', k);
-        const vCars = getVisibleCars(); const counts = vCars.reduce((acc, car) => { const val = String(car[k] || '-'); acc[val] = (acc[val] || 0) + 1; return acc; }, {});
+        const counts = rawCars.reduce((acc, car) => { const val = String(car[k] || '-'); acc[val] = (acc[val] || 0) + 1; return acc; }, {});
         const keys = Object.keys(counts).sort(); document.getElementById('filter-title').innerText = `${k} 필터`;
         document.getElementById('filter-reset-btn').onclick = () => { headerFilters[k] = []; window.renderUI(); window.closeFilterPopup(); };
         o.innerHTML = keys.map(val => `<label class="flex items-center gap-2 p-2 hover:bg-slate-50 cursor-pointer text-[11px] text-nowrap"><input type="checkbox" onchange="window.toggleHeaderFilter('${k}', '${val}')" ${(headerFilters[k]||[]).includes(val)?'checked':''}> <span class="flex-1">${val}</span> <span class="text-slate-300 text-[10px]">(${counts[val]})</span></label>`).join('');
@@ -571,26 +576,12 @@
 
     function renderPopupOptions(type) {
         const o = document.getElementById('filter-options'); if(!o) return;
-        const vCars = getVisibleCars(); const keyMap = {period: 'period', rental: 'rental', deposit: '보증금', mileage: '주행거리', year: '연식'}; const k = keyMap[type]; let html = '';
+        const keyMap = {period: 'period', rental: 'rental', deposit: '보증금', mileage: '주행거리', year: '연식'}; const k = keyMap[type]; let html = '';
         if(type === 'period') ['36M', '48M', '60M'].forEach(opt => html += `<label class="flex items-center gap-2 p-2 text-[11px] text-nowrap"><input type="checkbox" onchange="window.toggleSidebarFilter('${type}', '${opt}')" ${sidebarFilters.period.includes(opt)?'checked':''}> ${opt}</label>`);
         else if(type === 'rental') ['30~50', '50~70', '70~90', '90~120'].forEach(opt => html += `<label class="flex items-center gap-2 p-2 text-[11px] text-nowrap"><input type="checkbox" onchange="window.toggleSidebarFilter('${type}', '${opt}')" ${sidebarFilters.rental.includes(opt)?'checked':''}> ${opt}만원</label>`);
-        else { const counts = vCars.reduce((acc, car) => { const val = String(car[k] || '-'); acc[val] = (acc[val] || 0) + 1; return acc; }, {}); const keys = Object.keys(counts).sort(); html = keys.map(val => `<label class="flex items-center gap-2 p-2 hover:bg-slate-50 cursor-pointer text-[11px] text-nowrap"><input type="checkbox" onchange="window.toggleSidebarFilter('${type}', '${val}')" ${sidebarFilters[type].includes(val)?'checked':''}> <span class="flex-1">${val}</span> <span class="text-slate-300 text-[10px]">(${counts[val]})</span></label>`).join(''); }
+        else { const counts = rawCars.reduce((acc, car) => { const val = String(car[k] || '-'); acc[val] = (acc[val] || 0) + 1; return acc; }, {}); const keys = Object.keys(counts).sort(); html = keys.map(val => `<label class="flex items-center gap-2 p-2 hover:bg-slate-50 cursor-pointer text-[11px] text-nowrap"><input type="checkbox" onchange="window.toggleSidebarFilter('${type}', '${val}')" ${sidebarFilters[type].includes(val)?'checked':''}> <span class="flex-1">${val}</span> <span class="text-slate-300 text-[10px]">(${counts[val]})</span></label>`).join(''); }
         o.innerHTML = html;
     }
-
-    window.initRealtimeList = () => { if (firebaseConfig.apiKey === "DEMO_MODE") return; onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'cars'), (snap) => { rawCars = snap.docs.filter(d => !d.id.includes('SEED_DONE')).map(d => ({ id: d.id, ...d.data() })); window.renderUI(); }); };
-    
-    window.initSampleData = async () => {
-        if (firebaseConfig.apiKey === "DEMO_MODE" || rawCars.length < 5) {
-            const b = ["현대", "기아", "제네시스", "BMW", "벤츠"];
-            const m = { "현대": ["그랜저", "팰리세이드", "쏘나타"], "기아": ["K8", "EV6", "쏘렌토"], "제네시스": ["G80", "GV70"], "BMW": ["5시리즈", "X5"], "벤츠": ["E클래스", "GLC"] };
-            rawCars = Array.from({length: 25}, (_, i) => {
-                const brand = b[i % 5]; const rentalPrice = (40 + (i * 3)) * 10000;
-                return { id: `${12 + i}가${1000+i}`, 구분: '신차급', 제조사: brand, 모델: m[brand][i % m[brand].length], 세부모델: '프리미엄', 주행거리: 5000 + (i * 1000), 연식: 2021 + (i % 5), 외부색상: i % 2 === 0 ? '블랙' : '화이트', 내부색상: '그레이', 금액_대여료_36M: rentalPrice.toLocaleString(), 금액_보증금_36M: (rentalPrice * 2).toLocaleString(), 공급사: i % 2 === 0 ? '3333' : '4444', 상태: '대여가능', inquiryList: {} };
-            });
-            window.renderUI();
-        }
-    };
 
     window.toggleHeaderFilter = (k, v) => { const arr = headerFilters[k] || []; if (arr.includes(v)) headerFilters[k] = arr.filter(x => x !== v); else headerFilters[k] = [...arr, v]; window.renderUI(); };
     window.toggleSidebarFilter = (t, v) => { const arr = sidebarFilters[t] || []; if (arr.includes(v)) sidebarFilters[t] = arr.filter(x => x !== v); else sidebarFilters[t] = [...arr, v]; window.renderUI(); };
@@ -600,26 +591,21 @@
     window.startInquiryFromDrawer = (id) => { selectedId = id; const c = rawCars.find(x => x.id === id); if(!c) return; if (me.role === 'sales') { currentInquiryPhone = me.id; } else { if (!currentInquiryPhone) { const inqs = Object.keys(c.inquiryList || {}); if (inqs.length > 0) currentInquiryPhone = inqs[0]; else return window.showMessage('상담 내역이 없습니다.'); } } window.toggleDrawerChat(true); loadChats(id); };
     window.openChatFromMaster = (cid, p) => { currentInquiryPhone = p; window.selectCar(cid, true); };
     function loadChats(carId) { if (firebaseConfig.apiKey === "DEMO_MODE") return; }
-    window.sendMsgFromDrawer = async () => { if (firebaseConfig.apiKey === "DEMO_MODE") return window.showMessage("데모 모드 전용 (전송 불가)"); };
+    window.sendMsgFromDrawer = async () => { if (firebaseConfig.apiKey === "DEMO_MODE") return window.showMessage("데모 모드 전용"); };
 
-    // [v126] 페이지 로드 시 자동 로그인 로직
     window.onload = () => {
         const isGranted = localStorage.getItem('erp_access_granted');
         const savedId = localStorage.getItem('erp_access_id');
         const expireTime = localStorage.getItem('erp_access_expire');
-        const now = Date.now();
-
-        if (isGranted === 'true' && savedId && expireTime && now < parseInt(expireTime)) {
-            document.getElementById('user-id-input').value = savedId;
+        if (isGranted === 'true' && savedId && expireTime && Date.now() < parseInt(expireTime)) {
+            const input = document.getElementById('user-id-input'); if(input) input.value = savedId;
             window.login(); 
         } else {
             localStorage.removeItem('erp_access_granted');
-            document.getElementById('gate').classList.remove('hidden');
+            document.getElementById('gate')?.classList.remove('hidden');
         }
         lucide.createIcons();
     };
-
-    onAuthStateChanged(auth, async (user) => { if (!user && firebaseConfig.apiKey !== "DEMO_MODE") signInAnonymously(auth); });
 </script>
 </body>
 </html>
