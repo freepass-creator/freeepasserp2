@@ -106,17 +106,28 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, query, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        const firebaseConfig = JSON.parse(__firebase_config);
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'kakao-multi-chat';
+        // 사용자님이 제공해주신 파이어베이스 설정값 적용
+        const firebaseConfig = {
+            apiKey: "AIzaSyBlVYdSkA7RDgzfOmIWq8BUSMtDQ_H1E5Q",
+            authDomain: "freepasserp.firebaseapp.com",
+            projectId: "freepasserp",
+            storageBucket: "freepasserp.firebasestorage.app",
+            messagingSenderId: "1148826501",
+            appId: "1:1148826501:web:d8c6cede613949a2610aec",
+            measurementId: "G-HVZ10P3ED9"
+        };
+        
+        // 데이터 저장 경로 구분용 ID
+        const appId = "freepass-kakao-chat";
         
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // 로컬 테스트용 고유 세션 ID 생성 (브라우저 탭마다 다름)
+        // 한 PC에서 여러 탭 테스트 시 구분을 위한 세션 ID
         const sessionTabId = Math.random().toString(36).substring(7);
 
         window.me = { nameTitle: "" };
@@ -134,14 +145,14 @@
             window.me.nameTitle = nick;
             
             try {
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
-                }
+                // 파이어베이스 익명 로그인
+                await signInAnonymously(auth);
                 document.getElementById('my-profile').innerText = `나: ${nick}`;
                 switchView('view-lobby');
-            } catch (err) { console.error(err); }
+            } catch (err) { 
+                console.error("로그인 실패:", err);
+                alert("파이어베이스 연결 실패! 익명 로그인이 활성화되어 있는지 확인해주세요.");
+            }
         };
 
         window.showLobby = () => {
@@ -160,14 +171,17 @@
             const chatContainer = document.getElementById('drawer-chat-messages');
             chatContainer.innerHTML = '';
 
+            // 파이어베이스 데이터 경로 설정
             const q = query(
-                collection(db, "artifacts", appId, "public", "data", "chatRooms", roomId, "messages")
+                collection(db, "chatApps", appId, "rooms", roomId, "messages")
             );
 
             chatUnsubscribe = onSnapshot(q, (snapshot) => {
                 chatContainer.innerHTML = '';
                 const messages = [];
                 snapshot.forEach(doc => messages.push(doc.data()));
+                
+                // 시간순 정렬
                 messages.sort((a, b) => (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0));
 
                 messages.forEach(msg => renderSingleMessage(msg));
@@ -183,25 +197,21 @@
             if (!msgText || !window.selectedId || !user) return;
 
             try {
-                await addDoc(collection(db, "artifacts", appId, "public", "data", "chatRooms", window.selectedId, "messages"), {
+                await addDoc(collection(db, "chatApps", appId, "rooms", window.selectedId, "messages"), {
                     sender: window.me.nameTitle,
                     text: msgText,
                     createdAt: serverTimestamp(),
                     uid: user.uid,
-                    sessionId: sessionTabId // 탭 구분을 위한 세션 ID 추가
+                    sessionId: sessionTabId
                 });
                 input.value = '';
                 input.focus();
-            } catch (e) { console.error(e); }
+            } catch (e) { console.error("전송 에러:", e); }
         };
 
         function renderSingleMessage(msg) {
             const chatContainer = document.getElementById('drawer-chat-messages');
-            
-            // [수정된 로직] 
-            // 1. UID가 같고
-            // 2. 탭 세션 ID가 같거나 닉네임이 같으면 '나'로 인식
-            // 이렇게 하면 한 PC의 다른 탭에서 다른 닉네임으로 들어왔을 때 남으로 보입니다.
+            // 탭 ID를 통해 같은 브라우저에서도 '나'와 '남' 구분 가능하게 설정
             const isMe = msg.sessionId === sessionTabId;
             
             const div = document.createElement('div');
