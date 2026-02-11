@@ -5,12 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>FREEPASS ERP</title>
 
+  <!-- ✅ GitHub Pages / 하위경로에서도 안전하게 -->
+  <base href="./" />
+
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
 
-  <!-- ✅ styles 폴더는 루트 기준 -->
-  <link rel="stylesheet" href="./styles/tokens.css" />
-  <link rel="stylesheet" href="./styles/components.css" />
+  <link rel="stylesheet" href="styles/tokens.css" />
+  <link rel="stylesheet" href="styles/components.css" />
 </head>
 
 <body class="h-screen w-screen overflow-hidden">
@@ -24,10 +26,9 @@
   </div>
 
   <script type="module">
-    import { initApp } from './js/app.js';
-
-    window.addEventListener('DOMContentLoaded', () => {
-      if (window.lucide?.createIcons) window.lucide.createIcons();
+    import { initApp } from "./js/app.js";
+    window.addEventListener("DOMContentLoaded", () => {
+      window.lucide?.createIcons?.();
       initApp();
     });
   </script>
