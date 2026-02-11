@@ -13,34 +13,49 @@ export default function GatePage() {
 
   const [role, setRole] = useState("sales");
   const [id, setId] = useState("");
-  const [pw, setPw] = useState("1111"); // 기본값 1111로 변경
+  const [pw, setPw] = useState("1111");
+  const [loading, setLoading] = useState(false);
 
   async function handleLogin() {
-    if (pw !== "1111") return showMessage("보안코드 오류");
-    if (!id) return showMessage("ID 입력");
+    try {
+      if (loading) return;
+      setLoading(true);
 
-    await loginAnon();
-    setMe({ id, role });
+      if (pw !== "1111") {
+        showMessage("보안코드 오류 (1111)");
+        return;
+      }
+      if (!id.trim()) {
+        showMessage("ID 입력");
+        return;
+      }
 
-    if (role === "sales") router.push("/inventory");
-    else router.push("/registration");
+      // Firebase 익명 로그인
+      await loginAnon();
+
+      // 세션 저장
+      setMe({ id: id.trim(), role });
+
+      // 이동
+      if (role === "sales") router.push("/inventory");
+      else router.push("/registration");
+    } catch (e) {
+      console.error(e);
+      showMessage("로그인 실패 (콘솔 확인)");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
     <div className="h-screen flex items-center justify-center bg-gray-100">
       <div className="bg-white shadow-xl border border-gray-200 p-8 rounded-xl w-96 space-y-6">
-        
         <div className="text-center space-y-2">
-          <h1 className="text-2xl font-bold text-blue-600">
-            FREEPASS ERP
-          </h1>
-          <p className="text-gray-500 text-sm">
-            통합 관제 ERP 시스템
-          </p>
+          <h1 className="text-2xl font-bold text-blue-600">FREEPASS ERP</h1>
+          <p className="text-gray-500 text-sm">통합 관제 ERP 시스템</p>
         </div>
 
         <div className="space-y-4">
-
           <select
             value={role}
             onChange={(e) => setRole(e.target.value)}
@@ -68,16 +83,17 @@ export default function GatePage() {
 
           <button
             onClick={handleLogin}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold transition"
+            disabled={loading}
+            className={[
+              "w-full py-3 rounded-lg font-semibold transition",
+              loading ? "bg-blue-400 text-white cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700 text-white"
+            ].join(" ")}
           >
-            시스템 보안 접속
+            {loading ? "접속 중..." : "시스템 보안 접속"}
           </button>
-
         </div>
 
-        <div className="text-center text-xs text-gray-400">
-          ※ 현재 테스트용 보안코드: 1111
-        </div>
+        <div className="text-center text-xs text-gray-400">※ 현재 테스트용 보안코드: 1111</div>
       </div>
     </div>
   );
