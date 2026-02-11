@@ -2,71 +2,75 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FREEPASSMOBILITY 통합 ERP v018</title>
+    <title>신규 계정 등록</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <link rel="stylesheet" href="css/layout.css">
     <style>
         @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css');
         * { -webkit-font-smoothing: antialiased; font-family: 'Pretendard', sans-serif; font-weight: 500; }
         body { font-size: 11px; background-color: #0f172a; color: #ffffff; letter-spacing: -0.02em; }
-        .subtle-rounded { border-radius: 6px !important; }
-        @keyframes drawerAppear { 0% { transform: translateX(100%); } 100% { transform: translateX(0); } }
-        .animate-drawer { animation: drawerAppear 0.3s cubic-bezier(0.25, 1, 0.5, 1) forwards; }
+        .subtle-rounded { border-radius: 4px !important; }
+        .role-btn.active { background-color: rgba(59, 130, 246, 0.2); color: #3b82f6; border: 1px solid #3b82f6; }
     </style>
 </head>
 <body class="h-screen overflow-hidden select-none flex items-center justify-center">
 
 <div id="toast" class="fixed left-1/2 -translate-x-1/2 bottom-10 bg-slate-800 text-white px-6 py-3 rounded shadow-2xl invisible z-[10000]">알림 메시지</div>
 
-<div class="w-full max-w-sm space-y-8 animate-drawer p-6 text-center">
+<div class="w-full max-w-sm space-y-8 p-6 text-center animate-drawer">
     <div class="space-y-2">
-        <h1 class="text-3xl font-black tracking-tighter italic text-blue-500 font-bold">FREEPASSMOBILITY <span class="ml-2 text-[10px] bg-blue-900/50 text-blue-400 px-2 py-0.5 rounded border border-blue-500/30 not-italic tracking-normal uppercase font-black">v018</span></h1>
-        <p class="text-slate-500 font-bold text-[10px] tracking-widest uppercase opacity-50">Unified Multi-Role ERP System</p>
+        <h1 class="text-2xl font-black text-blue-500 font-bold uppercase tracking-tighter italic">Registration</h1>
+        <p class="text-slate-300 font-bold text-[10px] uppercase font-bold">파트너 계정 가입 신청</p>
     </div>
 
     <div class="bg-white/5 p-8 border border-white/10 subtle-rounded backdrop-blur-md shadow-2xl space-y-6">
+        <div class="grid grid-cols-3 gap-2">
+            <button onclick="setRole('sales')" id="btn-sales" class="role-btn active py-3 subtle-rounded font-black text-[10px] flex flex-col items-center gap-1 transition-all"><i data-lucide="trending-up" class="w-4 h-4"></i> 영업자</button>
+            <button onclick="setRole('supplier')" id="btn-supplier" class="role-btn py-3 subtle-rounded font-black text-[10px] flex flex-col items-center gap-1 transition-all text-white/50"><i data-lucide="truck" class="w-4 h-4"></i> 공급사</button>
+            <button onclick="setRole('admin')" id="btn-admin" class="role-btn py-3 subtle-rounded font-black text-[10px] flex flex-col items-center gap-1 transition-all text-white/50"><i data-lucide="shield" class="w-4 h-4"></i> 관리자</button>
+        </div>
+
         <div class="space-y-4 text-left">
             <div class="space-y-1">
-                <label class="text-[9px] font-bold text-white/30 ml-1 uppercase">아이디 (전화번호)</label>
-                <input type="text" id="user-phone" placeholder="01012345678" class="w-full p-4 bg-slate-900 border border-slate-700 text-white outline-none focus:border-blue-500 rounded-xl font-bold">
+                <label class="text-[9px] font-bold text-white/40 ml-1">아이디 (휴대전화번호)</label>
+                <input type="text" id="reg-phone" placeholder="01012345678" class="w-full p-4 bg-slate-900 border border-slate-700 text-white outline-none focus:border-blue-500 subtle-rounded font-bold">
             </div>
             <div class="space-y-1">
-                <label class="text-[9px] font-bold text-white/30 ml-1 uppercase">비밀번호 (보안코드)</label>
-                <input type="password" id="user-pw" value="7777" class="w-full p-4 bg-slate-900 border border-slate-700 text-white text-center tracking-[0.5em] outline-none rounded-xl focus:border-blue-500 font-bold">
+                <label class="text-[9px] font-bold text-white/40 ml-1">소속 사업자등록번호 (대조용)</label>
+                <input type="text" id="reg-biz-no" placeholder="000-00-00000" class="w-full p-4 bg-slate-900 border border-slate-700 text-white outline-none focus:border-blue-500 subtle-rounded font-bold">
             </div>
         </div>
 
-        <button onclick="login()" class="w-full py-4 bg-blue-600 text-white font-black rounded-xl shadow-xl hover:bg-blue-500 transition-all font-bold">시스템 보안 접속</button>
+        <button onclick="requestSignup()" class="w-full py-4 bg-blue-600 text-white font-black subtle-rounded shadow-xl hover:bg-blue-500 transition-all font-bold">가입 신청 완료</button>
         
-        <div class="pt-2">
-            <button onclick="location.href='signup.html'" class="text-slate-500 hover:text-blue-400 text-[10px] font-bold transition-colors underline underline-offset-4">신규 계정 생성하기 (회원가입)</button>
-        </div>
+        <button onclick="history.back()" class="text-slate-500 text-[10px] font-bold underline underline-offset-4 font-bold">이전 화면으로</button>
     </div>
 
-    <div class="space-y-1 opacity-20 text-[9px] font-bold text-slate-400 leading-relaxed">
-        <p>■ 본 시스템은 승인된 파트너사 전용 관제 플랫폼입니다.</p>
-        <p>■ 인가되지 않은 접근 및 데이터 탈취 시 법적 책임을 물을 수 있습니다.</p>
-        <p>■ 모든 접속 기록과 활동 내역은 실시간 모니터링 및 기록됩니다.</p>
+    <div class="text-slate-500 text-[9px] font-bold space-y-1">
+        <p>아이디는 반드시 본인의 휴대전화번호를 사용해야 합니다.</p>
+        <p>관리자가 사전에 등록한 사업자번호와 일치해야 가입이 가능합니다.</p>
     </div>
 </div>
 
 <script>
-    function showMessage(msg) {
-        const t = document.getElementById("toast");
-        t.innerText = msg; t.style.visibility = "visible";
-        setTimeout(() => { t.style.visibility = "hidden"; }, 3000);
+    let selectedRole = 'sales';
+    function setRole(role) {
+        selectedRole = role;
+        ['sales', 'supplier', 'admin'].forEach(r => {
+            const btn = document.getElementById('btn-' + r);
+            btn.classList.toggle('active', r === role);
+            btn.classList.toggle('text-white/50', r !== role);
+        });
     }
 
-    async function login() {
-        const phone = document.getElementById('user-phone').value.trim();
-        const pw = document.getElementById('user-pw').value;
-        if(!phone) return showMessage('아이디(전화번호)를 입력해주세요.');
-        if(pw !== '7777') return showMessage('비밀번호 오류');
-        
-        showMessage('■ 권한 확인 중...');
+    function requestSignup() {
+        const phone = document.getElementById('reg-phone').value.trim();
+        const bizNo = document.getElementById('reg-biz-no').value.trim();
+        if(!phone || !bizNo) return alert('모든 정보를 정확히 입력해주세요.');
+        alert('가입 신청이 완료되었습니다. 관리자 승인을 기다려주세요.');
+        location.href = 'index.html';
     }
+    lucide.createIcons();
 </script>
 </body>
 </html>
