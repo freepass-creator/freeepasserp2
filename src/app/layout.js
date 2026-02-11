@@ -5,11 +5,9 @@ import { ToastProvider } from "../components/Toast";
 export default function RootLayout({ children }) {
   return (
     <html lang="ko">
-      <body>
+      <body className="min-h-screen">
         <SessionProvider>
-          <ToastProvider>
-            {children}
-          </ToastProvider>
+          <ToastProvider>{children}</ToastProvider>
         </SessionProvider>
       </body>
     </html>
