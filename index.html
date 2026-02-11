@@ -3,145 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>장기렌터카 영업전용 ERP - 로그인</title>
+    <title>장기렌터카 영업전용 ERP</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="css/layout.css">
     <style>
         @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css');
         * { -webkit-font-smoothing: antialiased; font-family: 'Pretendard', sans-serif; font-weight: 500; }
         body { font-size: 11px; background-color: #0f172a; color: #ffffff; letter-spacing: -0.02em; }
         .subtle-rounded { border-radius: 4px !important; }
-        .animate-fade-in { animation: fadeIn 0.5s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes drawerAppear { 0% { transform: translateX(100%); } 100% { transform: translateX(0); } }
+        .animate-drawer { animation: drawerAppear 0.3s cubic-bezier(0.25, 1, 0.5, 1) forwards; }
     </style>
 </head>
-<body class="h-screen overflow-hidden select-none flex items-center justify-center relative">
+<body class="h-screen overflow-hidden select-none flex items-center justify-center">
 
-<!-- 테스트용 빠른 접속 버튼 (좌측 사이드) -->
-<div class="fixed left-6 top-1/2 -translate-y-1/2 flex flex-col gap-3 z-50">
-    <div class="mb-2 px-2">
-        <p class="text-[9px] font-bold text-blue-400 tracking-tighter uppercase opacity-70">Test Access</p>
-    </div>
-    <button onclick="quickFill('sales')" class="group flex items-center gap-3 px-4 py-3 bg-white/5 border border-white/10 subtle-rounded hover:bg-blue-600/20 hover:border-blue-500/50 transition-all text-left w-40">
-        <div class="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]"></div>
-        <span class="text-[10px] font-bold text-slate-300 group-hover:text-white">영업자 접속</span>
-    </button>
-    <button onclick="quickFill('supplier')" class="group flex items-center gap-3 px-4 py-3 bg-white/5 border border-white/10 subtle-rounded hover:bg-blue-600/20 hover:border-blue-500/50 transition-all text-left w-40">
-        <div class="w-1.5 h-1.5 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.6)]"></div>
-        <span class="text-[10px] font-bold text-slate-300 group-hover:text-white">공급사 접속</span>
-    </button>
-    <button onclick="quickFill('admin')" class="group flex items-center gap-3 px-4 py-3 bg-white/5 border border-white/10 subtle-rounded hover:bg-blue-600/20 hover:border-blue-500/50 transition-all text-left w-40">
-        <div class="w-1.5 h-1.5 rounded-full bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.6)]"></div>
-        <span class="text-[10px] font-bold text-slate-300 group-hover:text-white">관리자 접속</span>
-    </button>
-</div>
+<div id="toast" class="fixed left-1/2 -translate-x-1/2 bottom-10 bg-slate-800 text-white px-6 py-3 rounded shadow-2xl invisible z-[10000]">알림 메시지</div>
 
-<!-- 알림 메시지 (토스트) -->
-<div id="toast" class="fixed left-1/2 -translate-x-1/2 bottom-10 bg-slate-800 text-white px-6 py-3 rounded shadow-2xl invisible z-[10000] text-[10px] font-bold border border-white/10 transition-opacity duration-300"></div>
-
-<div class="w-full max-w-sm space-y-8 p-6 text-center animate-fade-in">
-    <!-- 상단 헤더 섹션 -->
-    <div class="space-y-1 mb-10">
-        <h1 class="text-4xl font-black text-white tracking-tighter mb-2">반갑습니다!</h1>
-        <p class="text-slate-400 font-bold text-xs tracking-widest">장기렌터카 영업전용 시스템</p>
+<div class="w-full max-w-sm space-y-8 animate-drawer p-6 text-center">
+    <div class="space-y-2">
+        <h1 class="text-2xl font-black tracking-tighter text-blue-500 font-bold">반갑습니다.</h1>
+        <p class="text-slate-300 font-bold text-lg tracking-tight font-bold">장기렌터카 영업전용 ERP</p>
     </div>
 
-    <!-- 로그인 카드 -->
     <div class="bg-white/5 p-8 border border-white/10 subtle-rounded backdrop-blur-md shadow-2xl space-y-6">
         <div class="space-y-4 text-left">
             <div class="space-y-1">
-                <label class="text-[9px] font-bold text-white/40 ml-1">계정 아이디</label>
-                <input type="text" id="login-id" placeholder="휴대전화번호 입력" class="w-full p-4 bg-slate-900 border border-slate-700 text-white outline-none focus:border-blue-500 subtle-rounded font-bold text-xs transition-all">
+                <label class="text-[9px] font-bold text-white/40 ml-1 uppercase font-bold">아이디 (휴대전화번호)</label>
+                <input type="text" id="user-phone" placeholder="01012345678" class="w-full p-4 bg-slate-900 border border-slate-700 text-white outline-none focus:border-blue-500 subtle-rounded font-bold">
             </div>
             <div class="space-y-1">
-                <label class="text-[9px] font-bold text-white/40 ml-1">비밀번호</label>
-                <input type="password" id="login-pw" placeholder="비밀번호 입력" class="w-full p-4 bg-slate-900 border border-slate-700 text-white outline-none focus:border-blue-500 subtle-rounded font-bold text-xs transition-all">
+                <label class="text-[9px] font-bold text-white/40 ml-1 uppercase font-bold">사업자등록번호 (관리자용)</label>
+                <input type="text" id="user-biz" placeholder="000-00-00000" class="w-full p-4 bg-slate-900 border border-slate-700 text-white outline-none focus:border-blue-500 subtle-rounded font-bold">
             </div>
-        </div>
-
-        <div class="flex items-center justify-between px-1">
-            <label class="flex items-center gap-2 cursor-pointer group">
-                <input type="checkbox" class="hidden peer">
-                <div class="w-4 h-4 border border-slate-600 rounded bg-slate-900 peer-checked:bg-blue-600 peer-checked:border-blue-600 transition-all flex items-center justify-center">
-                    <div class="w-1.5 h-1.5 bg-white rounded-full opacity-0 peer-checked:opacity-100"></div>
-                </div>
-                <span class="text-[10px] text-slate-400 group-hover:text-slate-200 transition-all">접속 정보 기억</span>
-            </label>
-            <a href="#" class="text-[10px] text-slate-500 hover:text-blue-400 transition-all font-bold">비밀번호 찾기</a>
-        </div>
-
-        <button onclick="handleLogin()" class="w-full py-4 bg-blue-600 text-white font-black subtle-rounded shadow-xl hover:bg-blue-500 active:scale-[0.98] transition-all font-bold text-sm">시스템 접속하기</button>
-        
-        <div class="pt-2 border-t border-white/5">
-            <button onclick="location.href='signup.html'" class="w-full py-3 text-slate-400 hover:text-white text-[10px] font-bold transition-all underline underline-offset-4">
-                신규 계정 만들기
-            </button>
-        </div>
-    </div>
-
-    <!-- 하단 주의사항 및 저작권 정보 -->
-    <div class="text-slate-500 text-[9px] font-bold space-y-3 opacity-60 bg-slate-900/30 p-4 rounded border border-white/5">
-        <p class="leading-relaxed">
-            본 시스템은 인가된 영업 인원 전용 플랫폼입니다. 타인의 정보를 도용하거나 비정상적인 방법으로 접속을 시도할 경우 관계 법령에 따라 민형사상 책임을 질 수 있습니다.
-        </p>
-        <p class="pt-2 border-t border-white/5 opacity-50 italic tracking-tighter text-[8px]">
-            © 2025 FREEPASS MOBILITY. ALL RIGHTS RESERVED.
-        </p>
-    </div>
-</div>
-
-<script>
-    // 메시지 알림 함수
-    function showToast(msg) {
-        const toast = document.getElementById('toast');
-        toast.innerText = msg;
-        toast.classList.remove('invisible');
-        toast.style.opacity = '1';
-        
-        setTimeout(() => {
-            toast.style.opacity = '0';
-            setTimeout(() => toast.classList.add('invisible'), 300);
-        }, 3000);
-    }
-
-    // 테스트용 빠른 입력 함수
-    function quickFill(role) {
-        const idInput = document.getElementById('login-id');
-        const pwInput = document.getElementById('login-pw');
-        
-        const credentials = {
-            'sales': { id: '010-1234-5678', pw: 'sales1234', label: '영업자' },
-            'supplier': { id: '010-5555-5555', pw: 'supplier1234', label: '공급사' },
-            'admin': { id: 'admin', pw: 'admin1234', label: '관리자' }
-        };
-        
-        const data = credentials[role];
-        idInput.value = data.id;
-        pwInput.value = data.pw;
-        
-        showToast(`${data.label} 정보가 입력되었습니다.`);
-        
-        // 입력 필드에 강조 효과
-        idInput.classList.add('border-blue-500');
-        pwInput.classList.add('border-blue-500');
-        setTimeout(() => {
-            idInput.classList.remove('border-blue-500');
-            pwInput.classList.remove('border-blue-500');
-        }, 1000);
-    }
-
-    // 로그인 시도 함수
-    function handleLogin() {
-        const id = document.getElementById('login-id').value.trim();
-        const pw = document.getElementById('login-pw').value.trim();
-        
-        if(!id || !pw) {
-            showToast('아이디와 비밀번호를 모두 입력해주세요.');
-            return;
-        }
-        
-        showToast(`${id} 계정으로 접속을 시도합니다...`);
-        console.log("Login Attempt:", { id, pw });
-    }
-</script>
-</body>
-</html>
+            <div class="space-
