@@ -1,0 +1,115 @@
+/* /styles/components.css */
+
+/* Layout helpers */
+.fp-page {
+  width: 100vw;
+  height: 100vh;
+  background: var(--fp-bg);
+}
+
+.fp-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fp-card {
+  width: 420px;
+  background: var(--fp-surface);
+  border: 1px solid var(--fp-border);
+  border-radius: var(--fp-radius-lg);
+  box-shadow: var(--fp-shadow-card);
+  padding: 32px;
+}
+
+/* Typography */
+.fp-title {
+  font-size: 24px;
+  font-weight: 900;
+  color: var(--fp-primary);
+  font-style: italic;
+  letter-spacing: -0.04em;
+}
+
+.fp-subtitle {
+  margin-top: 4px;
+  font-size: var(--fp-text-md);
+  font-weight: 800;
+  color: var(--fp-muted);
+}
+
+.fp-label {
+  display: block;
+  margin-bottom: 4px;
+  font-size: var(--fp-text-sm);
+  font-weight: 800;
+  color: var(--fp-muted);
+}
+
+/* Inputs */
+.fp-input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--fp-border);
+  border-radius: var(--fp-radius-md);
+  background: #f8fafc;
+  outline: none;
+  transition: 0.15s ease;
+}
+
+.fp-input:focus {
+  background: #fff;
+  border-color: rgba(37, 99, 235, 0.6);
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+}
+
+/* Buttons */
+.fp-btn {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: var(--fp-radius-md);
+  font-weight: 900;
+  font-size: var(--fp-text-md);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: 0.15s ease;
+  user-select: none;
+}
+
+.fp-btn-primary {
+  background: var(--fp-primary);
+  color: #fff;
+}
+
+.fp-btn-primary:hover {
+  background: var(--fp-primary-hover);
+}
+
+.fp-btn-primary:active {
+  transform: scale(0.99);
+}
+
+/* Links */
+.fp-link {
+  font-size: var(--fp-text-sm);
+  font-weight: 800;
+  color: var(--fp-primary);
+}
+
+.fp-link:hover {
+  color: var(--fp-primary-hover);
+}
+
+/* Alerts */
+.fp-alert-error {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: var(--fp-radius-md);
+  border: 1px solid rgba(225, 29, 72, 0.25);
+  background: rgba(225, 29, 72, 0.08);
+  color: var(--fp-danger);
+  font-weight: 800;
+  font-size: var(--fp-text-sm);
+}
