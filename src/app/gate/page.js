@@ -11,37 +11,39 @@ export default function GatePage() {
   const { setMe } = useSession();
   const { showMessage } = useToast();
 
-  const [role, setRole] = useState("sales");
-  const [id, setId] = useState("");
+  const [role, setRole] = useState("sales"); // sales | supplier | admin
+  const [phone, setPhone] = useState("");
+  const [bizId, setBizId] = useState("");
   const [pw, setPw] = useState("1111");
   const [loading, setLoading] = useState(false);
 
   async function handleLogin() {
+    if (loading) return;
+
+    const id = role === "sales" ? phone.trim() : bizId.trim();
+
+    if (pw !== "1111") return showMessage("보안코드 오류 (1111)");
+    if (!id) return showMessage("ID를 입력하세요.");
+
     try {
-      if (loading) return;
       setLoading(true);
 
-      if (pw !== "1111") {
-        showMessage("보안코드 오류 (1111)");
-        return;
-      }
-      if (!id.trim()) {
-        showMessage("ID 입력");
-        return;
-      }
-
-      // Firebase 익명 로그인
+      // 🔐 Firebase 익명 로그인 (여기 실패하면 이동 안 함)
       await loginAnon();
 
       // 세션 저장
-      setMe({ id: id.trim(), role });
+      setMe({
+        role,
+        id,
+        phone: role === "sales" ? id : ""
+      });
 
-      // 이동
+      // 역할별 이동
       if (role === "sales") router.push("/inventory");
       else router.push("/registration");
     } catch (e) {
-      console.error(e);
-      showMessage("로그인 실패 (콘솔 확인)");
+      console.error("Firebase login error:", e);
+      showMessage("Firebase 접속 실패 (설정/권한 확인)");
     } finally {
       setLoading(false);
     }
@@ -49,51 +51,90 @@ export default function GatePage() {
 
   return (
     <div className="h-screen flex items-center justify-center bg-gray-100">
-      <div className="bg-white shadow-xl border border-gray-200 p-8 rounded-xl w-96 space-y-6">
-        <div className="text-center space-y-2">
-          <h1 className="text-2xl font-bold text-blue-600">FREEPASS ERP</h1>
-          <p className="text-gray-500 text-sm">통합 관제 ERP 시스템</p>
+      <div className="bg-white shadow-xl border border-gray-200 p-8 rounded-xl w-[420px] space-y-6">
+        <div className="text-center space-y-1">
+          <h1 className="text-2xl font-black text-blue-600">FREEPASS ERP</h1>
+          <p className="text-gray-500 text-sm">보안 접속 게이트</p>
         </div>
 
-        <div className="space-y-4">
-          <select
-            value={role}
-            onChange={(e) => setRole(e.target.value)}
-            className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="sales">영업자</option>
-            <option value="supplier">공급사</option>
-            <option value="admin">관리자</option>
-          </select>
+        {/* 역할 선택 */}
+        <div className="grid grid-cols-3 gap-2">
+          {[
+            { key: "sales", label: "영업자" },
+            { key: "supplier", label: "공급사" },
+            { key: "admin", label: "관리자" }
+          ].map((r) => {
+            const active = role === r.key;
+            return (
+              <button
+                key={r.key}
+                onClick={() => setRole(r.key)}
+                className={[
+                  "py-3 rounded-lg border text-sm font-bold transition",
+                  active
+                    ? "bg-blue-50 border-blue-300 text-blue-700"
+                    : "bg-white border-gray-200 text-gray-500 hover:text-gray-800"
+                ].join(" ")}
+              >
+                {r.label}
+              </button>
+            );
+          })}
+        </div>
 
-          <input
-            placeholder="접속 아이디 입력"
-            value={id}
-            onChange={(e) => setId(e.target.value)}
-            className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
+        {/* ID 입력 */}
+        {role === "sales" ? (
+          <div className="space-y-1">
+            <label className="text-xs text-gray-500 font-semibold">
+              영업자 연락처(ID)
+            </label>
+            <input
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder="01012345678"
+              className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+        ) : (
+          <div className="space-y-1">
+            <label className="text-xs text-gray-500 font-semibold">
+              사업자번호(ID)
+            </label>
+            <input
+              value={bizId}
+              onChange={(e) => setBizId(e.target.value)}
+              placeholder="사업자번호 입력"
+              className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+        )}
 
+        {/* 보안코드 */}
+        <div className="space-y-1">
+          <label className="text-xs text-gray-500 font-semibold">보안코드</label>
           <input
             type="password"
-            placeholder="보안 비밀번호 입력"
             value={pw}
             onChange={(e) => setPw(e.target.value)}
+            placeholder="1111"
             className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
-
-          <button
-            onClick={handleLogin}
-            disabled={loading}
-            className={[
-              "w-full py-3 rounded-lg font-semibold transition",
-              loading ? "bg-blue-400 text-white cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700 text-white"
-            ].join(" ")}
-          >
-            {loading ? "접속 중..." : "시스템 보안 접속"}
-          </button>
         </div>
 
-        <div className="text-center text-xs text-gray-400">※ 현재 테스트용 보안코드: 1111</div>
+        <button
+          onClick={handleLogin}
+          disabled={loading}
+          className={[
+            "w-full py-3 rounded-lg font-semibold transition text-white",
+            loading ? "bg-blue-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"
+          ].join(" ")}
+        >
+          {loading ? "접속 중..." : "시스템 보안 접속"}
+        </button>
+
+        <div className="text-center text-xs text-gray-400">
+          ※ 테스트 보안코드: 1111
+        </div>
       </div>
     </div>
   );
