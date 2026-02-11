@@ -5,31 +5,33 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>FREEPASS ERP</title>
 
+  <!-- Tailwind & Lucide -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
 
-  <style>
-    @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css');
-    * { font-family: 'Pretendard', sans-serif; -webkit-font-smoothing: antialiased; }
-    body { font-size: 11px; background-color: #f1f3f6; color: #1e293b; overflow: hidden; }
-    .hide-scrollbar::-webkit-scrollbar { display: none; }
-    #right-drawer { transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1); }
-  </style>
+  <!-- ✅ Global Theme Styles -->
+  <link rel="stylesheet" href="./styles/tokens.css" />
+  <link rel="stylesheet" href="./styles/components.css" />
 </head>
 
 <body class="h-screen w-screen overflow-hidden">
-  <!-- 여기 안에 login/workspace/register가 “주입”됨 -->
+  <!-- ✅ 여기 안에 login/register/workspace 화면이 주입됨 -->
   <div id="app-root" class="h-full w-full">
-    <div class="h-full flex flex-col items-center justify-center text-slate-400">
-      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-2"></div>
-      <p class="font-bold">화면 로딩 중...</p>
-    </div>
+    <!-- 초기 로딩(views 로드 전) -->
+    <section class="fp-page fp-center">
+      <div class="text-slate-400 font-bold flex flex-col items-center gap-2">
+        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <p>화면 로딩 중...</p>
+      </div>
+    </section>
   </div>
 
   <script type="module">
     import { initApp } from './js/app.js';
+
     window.addEventListener('DOMContentLoaded', () => {
-      lucide.createIcons();
+      // lucide 아이콘 초기 1회
+      if (window.lucide?.createIcons) window.lucide.createIcons();
       initApp();
     });
   </script>
