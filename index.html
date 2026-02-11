@@ -1,95 +1,37 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FREEPASS ERP - Workspace</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <style>
-        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css');
-        * { font-family: 'Pretendard', sans-serif; -webkit-font-smoothing: antialiased; }
-        body { font-size: 11px; background-color: #f1f3f6; color: #1e293b; overflow: hidden; }
-        
-        /* 사이드바 버튼 공통 스타일 */
-        .side-btn {
-            width: 52px; height: 52px;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            background: white; border: 1px solid #e2e8f0; border-radius: 8px;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05); transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            color: #64748b; cursor: pointer;
-        }
-        .side-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0,0,0,0.1); color: #1e293b; border-color: #cbd5e1; }
-        .side-btn.active { background: #eff6ff; color: #2563eb; border-color: #bfdbfe; border-width: 2px; }
-        .side-btn span { font-size: 8px; font-weight: 800; margin-top: 4px; white-space: nowrap; }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FREEPASS ERP</title>
 
-        /* 스크롤바 숨기기 */
-        .hide-scrollbar::-webkit-scrollbar { display: none; }
-        
-        /* 우측 드로어 애니메이션 */
-        #right-drawer { transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1); }
-    </style>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css');
+    * { font-family: 'Pretendard', sans-serif; -webkit-font-smoothing: antialiased; }
+    body { font-size: 11px; background-color: #f1f3f6; color: #1e293b; overflow: hidden; }
+    .hide-scrollbar::-webkit-scrollbar { display: none; }
+    #right-drawer { transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1); }
+  </style>
 </head>
-<body class="h-screen flex flex-col">
 
-    <header class="h-[50px] bg-white border-b border-slate-200 flex items-center px-4 justify-between z-50 shadow-sm">
-        <div class="flex items-center gap-4">
-            <h1 class="text-xl font-black text-blue-600 italic tracking-tighter">FREEPASS ERP</h1>
-            <div class="flex items-center gap-2 border-l pl-4 border-slate-200">
-                <span id="user-role-tag" class="bg-blue-600 text-white px-2 py-0.5 rounded text-[9px] font-black uppercase">Admin</span>
-                <span id="user-id-display" class="font-bold text-slate-600 text-[12px]">관리자 모드</span>
-            </div>
-        </div>
-
-        <div class="flex items-center gap-4">
-            <div class="relative flex items-center">
-                <i data-lucide="search" class="absolute left-3 text-slate-400 w-3.5 h-3.5"></i>
-                <input type="text" id="global-search" placeholder="차량번호, 영업자, 공급사 통합 검색..." 
-                       class="pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-[11px] w-80 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all">
-            </div>
-            <button onclick="location.reload()" class="text-slate-400 hover:text-rose-500 font-bold text-[11px] flex items-center gap-1 transition-colors">
-                <i data-lucide="log-out" class="w-4 h-4"></i> 로그아웃
-            </button>
-        </div>
-    </header>
-
-    <div class="flex-1 flex overflow-hidden relative">
-        
-        <nav id="main-sidebar" class="w-[80px] bg-white border-r border-slate-200 flex flex-col items-center py-6 gap-4 overflow-y-auto hide-scrollbar z-40">
-            </nav>
-
-        <main id="main-workspace" class="flex-1 bg-[#f1f3f6] relative overflow-hidden">
-            <div id="content-loader" class="h-full flex flex-col items-center justify-center text-slate-400">
-                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-2"></div>
-                <p class="font-bold">시스템 로딩 중...</p>
-            </div>
-        </main>
-
-        <aside id="right-drawer" class="fixed top-[50px] right-0 bottom-0 w-[480px] bg-white border-l border-slate-200 shadow-2xl translate-x-full z-[100] flex flex-col">
-            </aside>
-
+<body class="h-screen w-screen overflow-hidden">
+  <!-- 여기 안에 login/workspace/register가 “주입”됨 -->
+  <div id="app-root" class="h-full w-full">
+    <div class="h-full flex flex-col items-center justify-center text-slate-400">
+      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-2"></div>
+      <p class="font-bold">화면 로딩 중...</p>
     </div>
+  </div>
 
-    <div id="toast" class="fixed bottom-10 left-1/2 -translate-x-1/2 bg-slate-800 text-white px-6 py-3 rounded-full shadow-2xl z-[1000] opacity-0 pointer-events-none transition-all">
-        메시지 내용
-    </div>
-
-    <script type="module">
-        import { initApp } from './js/app.js';
-        import { renderSidebar } from './js/ui.js';
-
-        // 페이지 로드 시 초기화
-        window.addEventListener('DOMContentLoaded', () => {
-            // 초기 UI 렌더링 (사이드바 등)
-            renderSidebar('admin'); // 우선 관리자 권한으로 고정해서 개발
-            lucide.createIcons();
-            
-            // 로딩 메시지 제거 후 초기 탭 설정 (예: 상품현황)
-            setTimeout(() => {
-                document.getElementById('content-loader').classList.add('hidden');
-                // switchTab('inventory'); // 나중에 구현할 함수
-            }, 500);
-        });
-    </script>
+  <script type="module">
+    import { initApp } from './js/app.js';
+    window.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+      initApp();
+    });
+  </script>
 </body>
 </html>
