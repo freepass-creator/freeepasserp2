@@ -1,0 +1,113 @@
+/* Pretendard 폰트 불러오기 */
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css');
+
+/* 기본 초기화 */
+* { 
+    -webkit-font-smoothing: antialiased; 
+    -moz-osx-font-smoothing: grayscale; 
+    text-rendering: optimizeLegibility; 
+    font-family: 'Pretendard', sans-serif;
+    font-weight: 500; 
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body { 
+    font-size: 11px; 
+    background-color: #f1f3f6; 
+    color: #1e293b; 
+    letter-spacing: -0.02em; 
+}
+
+/* 마스터 요청: 각진 듯한 라운드 (4px) 설정 */
+.subtle-rounded { 
+    border-radius: 4px !important; 
+}
+
+/* 폰트 굵기 정의 */
+.font-bold { font-weight: 700 !important; }
+.font-black { font-weight: 900 !important; }
+
+/* 사이드바 전용 버튼 스타일 (Raised Look) */
+.side-btn {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px; /* 4px 라운드 적용 */
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    color: #64748b;
+}
+
+.side-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px -2px rgba(0,0,0,0.12), 0 3px 6px -3px rgba(0,0,0,0.08);
+    border-color: #cbd5e1;
+    color: #1e293b;
+}
+
+.side-btn.active {
+    background-color: #eff6ff;
+    color: #2563eb;
+    border-color: #bfdbfe;
+    border-width: 1.5px;
+}
+
+/* 뷰 타이틀 바 공통 스타일 */
+.view-title-bar { 
+    height: 40px; 
+    background-color: white; 
+    border-bottom: 1px solid #e2e8f0; 
+    display: flex; 
+    align-items: center; 
+    padding: 0 16px; 
+}
+
+.view-title-text { 
+    font-size: 11px; 
+    font-weight: 900; 
+    color: #334155; 
+    display: flex; 
+    align-items: center; 
+    gap: 6px; 
+    text-transform: uppercase; 
+}
+
+/* 토스트 알림 스타일 */
+#toast {
+    visibility: hidden; 
+    min-width: 250px; 
+    background-color: #1e293b; 
+    color: #fff; 
+    text-align: center; 
+    border-radius: 4px; 
+    padding: 16px; 
+    position: fixed; 
+    z-index: 20000; 
+    left: 50%; 
+    bottom: 30px; 
+    transform: translateX(-50%); 
+    font-size: 12px; 
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+#toast.show { 
+    visibility: visible; 
+    animation: fadein 0.5s, fadeout 0.5s 2.5s; 
+}
+
+@keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
+@keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
+
+/* 스크롤바 커스텀 */
+.hide-scrollbar::-webkit-scrollbar { display: none; }
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
