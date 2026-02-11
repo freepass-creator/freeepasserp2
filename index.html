@@ -54,7 +54,6 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
     
-    // 파이어베이스 설정 (기존값 유지)
     const firebaseConfig = { apiKey: "AIzaSyBlVYdSkA7RDgzfOmIWq8BUSMtDQ_H1E5Q", authDomain: "freepasserp.firebaseapp.com", projectId: "freepasserp", storageBucket: "freepasserp.firebasestorage.app", messagingSenderId: "1148826501", appId: "1:1148826501:web:d8c6cede613949a2610aec", measurementId: "G-HVZ10P3ED9" };
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
@@ -89,14 +88,13 @@
             await signInAnonymously(auth);
             const userId = currentRole === 'sales' ? document.getElementById('user-phone').value : document.getElementById('user-id').value;
             
-            // 로컬 스토리지에 세션 정보 저장 (페이지 이동 후 유지용)
-            localStorage.setItem('erp_user_id', userId);
-            localStorage.setItem('erp_role', currentRole);
+            localStorage.setItem('freepass_user_id', userId);
+            localStorage.setItem('freepass_role', currentRole);
 
-            // 역할별 페이지 이동
-            if (currentRole === 'sales') location.href = 'sales/car-list.html';
-            else if (currentRole === 'supplier') location.href = 'supplier/item-register.html';
-            else if (currentRole === 'admin') location.href = 'admin/total-view.html';
+            // 404 방지를 위해 실제 파일명인 registration.html로 정밀 수정함
+            if (currentRole === 'sales') location.href = 'sales/list.html';
+            else if (currentRole === 'supplier') location.href = 'supplier/registration.html';
+            else if (currentRole === 'admin') location.href = 'admin/users.html';
 
         } catch (e) { showMessage('접속 실패'); }
     };
