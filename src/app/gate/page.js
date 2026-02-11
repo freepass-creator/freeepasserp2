@@ -28,7 +28,7 @@ export default function GatePage() {
     try {
       setLoading(true);
 
-      // 🔐 Firebase 익명 로그인 (여기 실패하면 이동 안 함)
+      // 🔐 Firebase 익명 로그인 (실패하면 로그인 자체 실패)
       await loginAnon();
 
       // 세션 저장
@@ -121,16 +121,29 @@ export default function GatePage() {
           />
         </div>
 
+        {/* 로그인 버튼 */}
         <button
           onClick={handleLogin}
           disabled={loading}
           className={[
             "w-full py-3 rounded-lg font-semibold transition text-white",
-            loading ? "bg-blue-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"
+            loading
+              ? "bg-blue-400 cursor-not-allowed"
+              : "bg-blue-600 hover:bg-blue-700"
           ].join(" ")}
         >
           {loading ? "접속 중..." : "시스템 보안 접속"}
         </button>
+
+        {/* 신규 계정 만들기 */}
+        <div className="text-center">
+          <button
+            onClick={() => router.push("/signup")}
+            className="text-sm text-blue-600 hover:underline font-semibold"
+          >
+            신규 계정 만들기
+          </button>
+        </div>
 
         <div className="text-center text-xs text-gray-400">
           ※ 테스트 보안코드: 1111
