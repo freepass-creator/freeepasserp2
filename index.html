@@ -9,7 +9,6 @@
         @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700&display=swap');
         body { font-family: 'Pretendard', sans-serif; overflow-x: hidden; }
         
-        /* Side Panel Transition */
         #side-panel {
             transition: transform 0.3s ease-in-out;
             z-index: 40;
@@ -17,7 +16,6 @@
         .panel-hidden { transform: translateX(100%); }
         .panel-visible { transform: translateX(0); }
 
-        /* Chat Overlay Transition */
         #chat-overlay {
             transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
             z-index: 50;
@@ -32,11 +30,26 @@
 
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+
+        /* Custom Toast Notification */
+        #toast {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+            display: none;
+        }
     </style>
 </head>
 <body class="bg-slate-50 min-h-screen">
 
 <div id="app" class="relative">
+    <!-- Toast Message -->
+    <div id="toast" class="bg-slate-800 text-white px-6 py-3 rounded-full shadow-2xl text-sm font-bold animate-bounce">
+        메시지 내용
+    </div>
+
     <!-- Login Screen -->
     <div id="login-screen" class="hidden fixed inset-0 bg-slate-50 flex items-center justify-center z-[100]">
         <div class="bg-white p-8 rounded-3xl shadow-2xl w-full max-w-md border border-slate-100 text-center">
@@ -56,7 +69,6 @@
             <button onclick="handleLogout()" class="px-4 py-2 text-xs font-bold text-slate-400 hover:text-red-500 transition-colors">로그아웃</button>
         </header>
 
-        <!-- Navigation Tabs -->
         <nav class="max-w-6xl mx-auto px-6 border-b border-slate-200 flex gap-6 bg-white sticky top-0 z-20">
             <button onclick="switchTab('market')" id="tab-market" class="py-4 text-sm font-bold text-slate-500 tab-active">매물 목록</button>
             <button onclick="switchTab('inbox')" id="tab-inbox" class="py-4 text-sm font-bold text-slate-500 flex items-center gap-2">
@@ -67,25 +79,16 @@
         </nav>
 
         <main class="max-w-6xl mx-auto px-6 mt-8">
-            <!-- Market View -->
-            <div id="section-market" class="section grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- Vehicle Cards -->
-            </div>
-
-            <!-- Inbox View -->
+            <div id="section-market" class="section grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
             <div id="section-inbox" class="section hidden max-w-2xl mx-auto space-y-4">
                 <h3 class="text-xl font-bold text-slate-800 mb-6">진행 중인 상담</h3>
-                <div id="inbox-list" class="space-y-3">
-                    <!-- Chat room items -->
-                </div>
+                <div id="inbox-list" class="space-y-3"></div>
             </div>
-
-            <!-- Register View -->
             <div id="section-register" class="section hidden max-w-xl mx-auto bg-white p-8 rounded-3xl border border-slate-100 shadow-sm">
                 <h3 class="text-xl font-bold mb-6">내 차량 매물 등록</h3>
                 <div class="space-y-4">
                     <input type="text" id="reg-plate" placeholder="차량 번호 (예: 11허1111)" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500">
-                    <input type="text" id="reg-desc" placeholder="상세 설명 (모델명, 연식 등)" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500">
+                    <input type="text" id="reg-desc" placeholder="상세 설명" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500">
                     <input type="text" id="reg-price" placeholder="희망 가격 (예: 2,500만원)" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500">
                     <button onclick="registerVehicle()" class="w-full bg-slate-900 text-white py-4 rounded-xl font-bold hover:bg-black transition-all">등록하기</button>
                 </div>
@@ -99,12 +102,10 @@
             <h3 class="font-bold text-slate-800">매물 상세 정보</h3>
             <button onclick="closeDetail()" class="p-2 hover:bg-slate-50 rounded-full transition-colors text-slate-400">닫기</button>
         </div>
-        <div id="detail-body" class="flex-1 overflow-y-auto p-8">
-            <!-- Dynamic Content -->
-        </div>
+        <div id="detail-body" class="flex-1 overflow-y-auto p-8"></div>
     </div>
 
-    <!-- Bottom Up Overlay: Chat -->
+    <!-- Chat Overlay -->
     <div id="chat-overlay" class="fixed bottom-0 left-0 right-0 h-[85vh] md:h-[650px] max-w-2xl mx-auto bg-white shadow-[0_-20px_60px_rgba(0,0,0,0.15)] rounded-t-[40px] border-t border-slate-100 chat-hidden flex flex-col z-50">
         <div class="p-6 border-b border-slate-100 flex justify-between items-center shrink-0">
             <div class="flex items-center gap-3">
@@ -120,20 +121,15 @@
                 </svg>
             </button>
         </div>
-        
-        <div id="chat-log" class="flex-1 overflow-y-auto p-6 space-y-4 bg-slate-50/50">
-            <!-- Chat Bubbles -->
-        </div>
-
+        <div id="chat-log" class="flex-1 overflow-y-auto p-6 space-y-4 bg-slate-50/50"></div>
         <div class="p-6 bg-white border-t border-slate-100">
             <div class="flex gap-2">
                 <input type="text" id="chat-input" placeholder="메시지를 입력하세요..." class="flex-1 px-5 py-3 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 text-sm">
-                <button onclick="sendChatMessage()" class="bg-blue-600 text-white px-6 py-3 rounded-2xl font-bold shadow-lg shadow-blue-100 transition-all hover:bg-blue-700">전송</button>
+                <button onclick="sendChatMessage()" class="bg-blue-600 text-white px-6 py-3 rounded-2xl font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-100">전송</button>
             </div>
         </div>
     </div>
 
-    <!-- Backdrop -->
     <div id="backdrop" class="hidden fixed inset-0 bg-black/30 backdrop-blur-sm z-30" onclick="closeAll()"></div>
 </div>
 
@@ -142,11 +138,32 @@
     import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
     import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, doc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-    const firebaseConfig = JSON.parse(__firebase_config);
+    /**
+     * [중요] 깃허브 등에 배포할 때는 아래 firebaseConfig에 본인의 Firebase 설정값을 넣어주세요.
+     * Firebase Console > 프로젝트 설정 > 일반 > 내 앱에서 확인할 수 있습니다.
+     */
+    let firebaseConfig;
+    try {
+        // 이 환경변수는 현재 에디터 환경에서만 작동합니다.
+        firebaseConfig = JSON.parse(__firebase_config);
+    } catch (e) {
+        // 깃허브 배포 시에는 아래 객체에 실제 값을 채워 넣어야 합니다.
+        firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT_ID.appspot.com",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+    }
+
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
-    const appId = typeof __app_id !== 'undefined' ? __app_id : 'v-layered-marketplace-fixed';
+    
+    // App ID 설정 (깃허브 등에서는 고유한 문자열을 사용하세요)
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'v-layered-marketplace-github';
 
     let currentUser = null;
     let loginId = localStorage.getItem('v_market_user_id');
@@ -154,12 +171,23 @@
     let allMessages = [];
     let activeChatKey = null;
 
-    // --- Authentication ---
+    // Toast Message Helper
+    window.showToast = (msg) => {
+        const toast = document.getElementById('toast');
+        toast.textContent = msg;
+        toast.style.display = 'block';
+        setTimeout(() => { toast.style.display = 'none'; }, 3000);
+    };
+
     async function init() {
-        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-            await signInWithCustomToken(auth, __initial_auth_token);
-        } else {
-            await signInAnonymously(auth);
+        try {
+            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                await signInWithCustomToken(auth, __initial_auth_token);
+            } else {
+                await signInAnonymously(auth);
+            }
+        } catch (err) {
+            console.error("Auth Init Error:", err);
         }
 
         onAuthStateChanged(auth, (user) => {
@@ -175,25 +203,19 @@
         });
     }
 
-    // --- Data Listeners ---
     function startListeners() {
         if (!currentUser) return;
-
-        // Vehicles Sync
         onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'vehicles'), (snap) => {
             allVehicles = snap.docs.map(d => ({id: d.id, ...d.data()}));
             renderMarket();
         });
-
-        // Global Message Sync (Filtering in memory per Rule 2)
         onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'chat_logs'), (snap) => {
             allMessages = snap.docs.map(d => ({id: d.id, ...d.data()}));
             processInquiries();
             if (activeChatKey) renderChatLog();
-        }, (err) => console.error(err));
+        });
     }
 
-    // --- Market UI ---
     function renderMarket() {
         const list = document.getElementById('section-market');
         list.innerHTML = allVehicles.sort((a,b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0)).map(v => `
@@ -211,66 +233,43 @@
         `).join('') || '<div class="col-span-full py-20 text-center text-slate-400 italic">등록된 차량이 없습니다.</div>';
     }
 
-    // --- Detail Side Panel ---
     window.showDetail = (vid) => {
         const vehicle = allVehicles.find(v => v.id === vid);
         if (!vehicle) return;
-
-        const body = document.getElementById('detail-body');
-        body.innerHTML = `
+        document.getElementById('detail-body').innerHTML = `
             <div class="space-y-6">
-                <div>
-                    <h2 class="text-3xl font-black text-slate-900 leading-tight">${vehicle.plateNumber}</h2>
-                    <p class="text-2xl font-bold text-blue-600 mt-1">${vehicle.price}</p>
+                <h2 class="text-3xl font-black text-slate-900 leading-tight">${vehicle.plateNumber}</h2>
+                <p class="text-2xl font-bold text-blue-600 mt-1">${vehicle.price}</p>
+                <div class="bg-slate-50 p-6 rounded-3xl border border-slate-100 text-sm text-slate-700 leading-relaxed">
+                    ${vehicle.description}
                 </div>
-                <div class="bg-slate-50 p-6 rounded-3xl border border-slate-100">
-                    <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">차량 상세 정보</h4>
-                    <p class="text-slate-700 leading-relaxed text-sm">${vehicle.description}</p>
-                </div>
-                <div class="pt-8">
-                    <button onclick="openChat('${vehicle.owner}', '${vehicle.plateNumber}')" 
-                            class="w-full bg-blue-600 text-white py-5 rounded-2xl font-black text-lg hover:bg-blue-700 transition-all shadow-xl shadow-blue-200">
-                        상담하기
-                    </button>
-                    <p class="text-center text-[10px] text-slate-400 mt-4 italic">상담하기를 누르면 실시간 대화창이 열립니다.</p>
-                </div>
+                <button onclick="openChat('${vehicle.owner}', '${vehicle.plateNumber}')" class="w-full bg-blue-600 text-white py-5 rounded-2xl font-black text-lg hover:bg-blue-700 shadow-xl shadow-blue-200 transition-all">
+                    상담하기
+                </button>
             </div>
         `;
-
         document.getElementById('side-panel').classList.remove('panel-hidden');
         document.getElementById('backdrop').classList.remove('hidden');
     };
 
     window.closeDetail = () => {
         document.getElementById('side-panel').classList.add('panel-hidden');
-        if (document.getElementById('chat-overlay').classList.contains('chat-hidden')) {
-            document.getElementById('backdrop').classList.add('hidden');
-        }
+        if (document.getElementById('chat-overlay').classList.contains('chat-hidden')) document.getElementById('backdrop').classList.add('hidden');
     };
 
-    // --- Inbox & Chat Logic ---
     function processInquiries() {
         const rooms = {};
         let totalUnread = 0;
-
         allMessages.forEach(m => {
             if (m.participants?.includes(loginId)) {
                 const partner = m.participants.find(p => p !== loginId);
                 const roomKey = [loginId, partner].sort().join('_') + '::' + m.vehiclePlate;
-                
-                if (!rooms[roomKey]) {
-                    rooms[roomKey] = { partner, plate: m.vehiclePlate, lastMsg: m, unread: 0 };
+                if (!rooms[roomKey] || m.createdAt?.seconds > rooms[roomKey].lastMsg.createdAt?.seconds) {
+                    rooms[roomKey] = { ...rooms[roomKey], partner, plate: m.vehiclePlate, lastMsg: m, unread: rooms[roomKey]?.unread || 0 };
                 }
-                if (m.createdAt?.seconds > rooms[roomKey].lastMsg.createdAt?.seconds) {
-                    rooms[roomKey].lastMsg = m;
-                }
-                if (m.recipient === loginId && !m.isRead) {
-                    rooms[roomKey].unread++;
-                    totalUnread++;
-                }
+                if (m.recipient === loginId && !m.isRead) { rooms[roomKey].unread++; totalUnread++; }
             }
         });
-
         renderInbox(Object.values(rooms));
         document.getElementById('global-unread-dot').classList.toggle('hidden', totalUnread === 0);
     }
@@ -280,98 +279,62 @@
         list.innerHTML = rooms.sort((a,b) => (b.lastMsg.createdAt?.seconds || 0) - (a.lastMsg.createdAt?.seconds || 0)).map(r => `
             <div onclick="openChat('${r.partner}', '${r.plate}')" class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:border-blue-200 cursor-pointer transition-all flex justify-between items-center group">
                 <div class="flex flex-col gap-1">
-                    <div class="flex items-center gap-2">
-                        <span class="font-bold text-slate-800">${r.partner}</span>
-                        <span class="text-[10px] bg-blue-50 text-blue-600 font-bold px-1.5 py-0.5 rounded uppercase">${r.plate}</span>
-                    </div>
+                    <span class="font-bold text-slate-800">${r.partner} <small class="text-blue-600 ml-1 uppercase">${r.plate}</small></span>
                     <p class="text-xs text-slate-500 truncate w-48 md:w-64">${r.lastMsg.content}</p>
                 </div>
-                <div class="text-right flex flex-col items-end gap-2">
-                    <span class="text-[10px] text-slate-400">${r.lastMsg.createdAt ? new Date(r.lastMsg.createdAt.seconds * 1000).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : ''}</span>
-                    ${r.unread > 0 ? `<span class="bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold animate-pulse">${r.unread}</span>` : ''}
-                </div>
+                ${r.unread > 0 ? `<span class="bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold animate-pulse">${r.unread}</span>` : ''}
             </div>
         `).join('') || '<div class="py-20 text-center text-slate-400 italic">상담 내역이 없습니다.</div>';
     }
 
     window.openChat = (partner, plate) => {
-        if (partner === loginId) return alert("자신의 차량입니다.");
-        
+        if (partner === loginId) { showToast("본인의 차량입니다."); return; }
         activeChatKey = [loginId, partner].sort().join('_') + '::' + plate;
-        document.getElementById('chat-target-user').textContent = `${partner} 님과의 대화`;
-        document.getElementById('chat-target-vehicle').textContent = `차량: ${plate}`;
-        
+        document.getElementById('chat-target-user').textContent = partner + " 님";
+        document.getElementById('chat-target-vehicle').textContent = "차량: " + plate;
         document.getElementById('chat-overlay').classList.remove('chat-hidden');
         document.getElementById('backdrop').classList.remove('hidden');
         renderChatLog();
-
-        // Mark as Read
         allMessages.filter(m => m.recipient === loginId && m.sender === partner && m.vehiclePlate === plate && !m.isRead)
-                   .forEach(async (m) => {
-                       const ref = doc(db, 'artifacts', appId, 'public', 'data', 'chat_logs', m.id);
-                       await updateDoc(ref, { isRead: true });
-                   });
+                   .forEach(m => updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'chat_logs', m.id), { isRead: true }));
     };
 
     function renderChatLog() {
         if (!activeChatKey) return;
         const [ids, plate] = activeChatKey.split('::');
-        const log = document.getElementById('chat-log');
-        
-        const filtered = allMessages.filter(m => {
-            const pairId = [m.sender, m.recipient].sort().join('_');
-            return pairId === ids && m.vehiclePlate === plate;
-        }).sort((a,b) => (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0));
-
-        log.innerHTML = filtered.map(m => {
+        const filtered = allMessages.filter(m => [m.sender, m.recipient].sort().join('_') === ids && m.vehiclePlate === plate).sort((a,b) => (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0));
+        document.getElementById('chat-log').innerHTML = filtered.map(m => {
             const isMe = m.sender === loginId;
             return `
                 <div class="flex ${isMe ? 'justify-end' : 'justify-start'}">
                     <div class="max-w-[85%] flex flex-col ${isMe ? 'items-end' : 'items-start'}">
-                        <div class="px-4 py-2.5 rounded-2xl text-sm ${isMe ? 'bubble-me shadow-md' : 'bubble-other'}">
-                            ${m.content}
-                        </div>
-                        <span class="text-[9px] text-slate-400 mt-1 px-1">
-                            ${m.createdAt ? new Date(m.createdAt.seconds * 1000).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : '...'}
-                        </span>
+                        <div class="px-4 py-2.5 rounded-2xl text-sm ${isMe ? 'bubble-me shadow-md' : 'bubble-other'}">${m.content}</div>
+                        <span class="text-[9px] text-slate-400 mt-1">${m.createdAt ? new Date(m.createdAt.seconds * 1000).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : ''}</span>
                     </div>
                 </div>
             `;
         }).join('');
-        log.scrollTop = log.scrollHeight;
+        document.getElementById('chat-log').scrollTop = document.getElementById('chat-log').scrollHeight;
     }
 
     window.sendChatMessage = async () => {
         const input = document.getElementById('chat-input');
         const content = input.value.trim();
         if (!content || !activeChatKey) return;
-
         const [ids, plate] = activeChatKey.split('::');
         const partner = ids.split('_').find(id => id !== loginId);
-
-        try {
-            await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'chat_logs'), {
-                sender: loginId, recipient: partner, participants: [loginId, partner],
-                vehiclePlate: plate, content: content, isRead: false, createdAt: serverTimestamp()
-            });
-            input.value = '';
-        } catch (e) { console.error(e); }
+        await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'chat_logs'), {
+            sender: loginId, recipient: partner, participants: [loginId, partner], vehiclePlate: plate, content, isRead: false, createdAt: serverTimestamp()
+        });
+        input.value = '';
     };
 
-    // --- Helpers ---
     window.handleLogin = () => {
         const id = document.getElementById('user-id-input').value.trim();
-        if (id) {
-            localStorage.setItem('v_market_user_id', id);
-            loginId = id;
-            init();
-        }
+        if (id) { localStorage.setItem('v_market_user_id', id); loginId = id; init(); }
     };
 
-    window.handleLogout = () => {
-        localStorage.removeItem('v_market_user_id');
-        location.reload();
-    };
+    window.handleLogout = () => { localStorage.removeItem('v_market_user_id'); location.reload(); };
 
     window.switchTab = (tab) => {
         document.querySelectorAll('.section').forEach(s => s.classList.add('hidden'));
@@ -383,9 +346,7 @@
     window.closeChat = () => {
         document.getElementById('chat-overlay').classList.add('chat-hidden');
         activeChatKey = null;
-        if (document.getElementById('side-panel').classList.contains('panel-hidden')) {
-            document.getElementById('backdrop').classList.add('hidden');
-        }
+        if (document.getElementById('side-panel').classList.contains('panel-hidden')) document.getElementById('backdrop').classList.add('hidden');
     };
 
     window.closeAll = () => { closeDetail(); closeChat(); };
@@ -394,19 +355,13 @@
         const plate = document.getElementById('reg-plate').value.trim();
         const desc = document.getElementById('reg-desc').value.trim();
         const price = document.getElementById('reg-price').value.trim();
-        if (!plate || !desc || !price) return;
-
-        await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'vehicles'), {
-            owner: loginId, plateNumber: plate, description: desc, price, createdAt: serverTimestamp()
-        });
-        alert("내 차량이 성공적으로 등록되었습니다!");
+        if (!plate || !desc || !price) { showToast("모든 정보를 입력해주세요."); return; }
+        await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'vehicles'), { owner: loginId, plateNumber: plate, description: desc, price, createdAt: serverTimestamp() });
+        showToast("차량이 등록되었습니다!");
         switchTab('market');
     };
 
-    document.getElementById('chat-input')?.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') sendChatMessage();
-    });
-
+    document.getElementById('chat-input')?.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendChatMessage(); });
     init();
 </script>
 
