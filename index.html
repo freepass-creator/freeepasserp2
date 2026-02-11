@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>차량 실시간 채팅 마켓</title>
+    <title>차량 실시간 채팅 마켓 v1.1.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700;900&display=swap');
@@ -19,237 +19,283 @@
 
         .bubble-me { background-color: #2563eb; color: white; border-bottom-right-radius: 2px; }
         .bubble-other { background-color: #f1f5f9; color: #1e293b; border-bottom-left-radius: 2px; border: 1px solid #e2e8f0; }
-        .tab-active { color: #2563eb; border-bottom: 3px solid #2563eb; }
+        .tab-active { color: #2563eb; border-bottom: 4px solid #2563eb; }
 
         #toast { position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%); z-index: 100; display: none; }
-        
-        /* Version Highlight */
-        .version-tag {
-            font-weight: 900;
-            color: #2563eb;
-            background: #eff6ff;
-            padding: 2px 8px;
-            border-radius: 6px;
-            border: 1px solid #dbeafe;
-        }
     </style>
 </head>
 <body class="bg-slate-50 min-h-screen">
 
 <div id="app" class="relative">
-    <div id="toast" class="bg-slate-800 text-white px-6 py-3 rounded-xl shadow-2xl text-sm font-bold transition-all">메시지</div>
+    <!-- 알림 메시지 (Toast) -->
+    <div id="toast" class="bg-slate-900 text-white px-8 py-4 rounded-2xl shadow-2xl text-base font-black transition-all text-center min-w-[300px]">알림</div>
 
-    <!-- Login Screen -->
+    <!-- 로그인 화면 -->
     <div id="login-screen" class="hidden fixed inset-0 bg-slate-50 flex items-center justify-center z-[100]">
-        <div class="bg-white p-10 rounded-[40px] shadow-2xl w-full max-w-md border border-slate-100 text-center relative">
-            <h1 class="text-3xl font-black text-slate-800 mb-8">차량 문의 로그인</h1>
-            <input type="text" id="user-id-input" placeholder="로그인 ID (1111, 2222)" class="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl mb-6 outline-none focus:ring-2 focus:ring-blue-500 text-lg">
-            <button onclick="handleLogin()" class="w-full bg-blue-600 text-white py-5 rounded-2xl font-black text-xl hover:bg-blue-700 shadow-xl shadow-blue-100 transition-all">로그인</button>
-            
-            <!-- Login Screen Version: Bigger & Bolder -->
-            <div class="mt-10 flex flex-col items-center gap-2">
-                <span class="text-xs text-slate-400 font-bold uppercase tracking-widest">System Status</span>
-                <p class="text-lg font-black text-blue-600 bg-blue-50 px-4 py-1 rounded-full border-2 border-blue-100">TEST VERSION v1.0.5</p>
-            </div>
+        <div class="bg-white p-12 rounded-[50px] shadow-2xl w-full max-w-md border border-slate-100 text-center relative">
+            <h1 class="text-3xl font-black text-slate-800 mb-8 tracking-tighter">차량 문의 로그인</h1>
+            <input type="text" id="user-id-input" placeholder="로그인 ID (예: 1111)" class="w-full px-6 py-5 bg-slate-50 border-2 border-slate-100 rounded-3xl mb-6 outline-none focus:ring-4 focus:ring-blue-100 text-xl font-bold transition-all">
+            <button onclick="handleLogin()" class="w-full bg-blue-600 text-white py-5 rounded-3xl font-black text-2xl hover:bg-blue-700 shadow-xl shadow-blue-100 transition-all transform active:scale-95">로그인</button>
+            <p class="mt-12 text-sm font-black text-blue-600 bg-blue-50 py-2 rounded-full inline-block px-6 border-2 border-blue-100">PRODUCTION v1.1.0</p>
         </div>
     </div>
 
-    <!-- Main Dashboard -->
+    <!-- 메인 대시보드 -->
     <div id="dashboard-screen" class="hidden pb-20">
-        <header class="max-w-6xl mx-auto p-6 flex justify-between items-center">
-            <div>
-                <h2 class="text-2xl font-black text-slate-900"><span id="display-user-id" class="text-blue-600">----</span> 님</h2>
-                <p class="text-sm text-slate-400 font-medium">실시간 매물 탐색 시스템</p>
-            </div>
-            <div class="flex flex-col items-end gap-2">
-                <div class="flex items-center gap-3">
-                    <span class="text-sm font-black text-blue-600 bg-blue-50 px-3 py-1 rounded-lg border border-blue-100">v1.0.5</span>
-                    <button onclick="handleLogout()" class="px-4 py-2 text-sm font-bold text-red-500 bg-red-50 rounded-xl hover:bg-red-100 transition-colors">로그아웃</button>
+        <header class="max-w-6xl mx-auto p-8 flex justify-between items-center">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center text-white font-black text-xl shadow-lg shadow-blue-200" id="user-initial">?</div>
+                <div>
+                    <h2 class="text-2xl font-black text-slate-900 leading-none"><span id="display-user-id" class="text-blue-600">----</span> 님</h2>
+                    <p class="text-[11px] text-slate-400 font-black uppercase mt-1 tracking-widest">Real-time Trading System</p>
                 </div>
+            </div>
+            <div class="flex items-center gap-6">
+                <span class="hidden md:inline-block text-lg font-black text-blue-600 bg-blue-50 px-5 py-2 rounded-2xl border-2 border-blue-100 italic">v1.1.0</span>
+                <button onclick="handleLogout()" class="px-6 py-3 text-sm font-black text-red-500 bg-red-50 rounded-2xl hover:bg-red-100 transition-colors shadow-sm">로그아웃</button>
             </div>
         </header>
 
-        <nav class="max-w-6xl mx-auto px-6 border-b border-slate-200 flex gap-8 bg-white sticky top-0 z-20">
-            <button onclick="switchTab('market')" id="tab-market" class="py-5 text-base font-black text-slate-400 tab-active">매물 목록</button>
-            <button onclick="switchTab('inbox')" id="tab-inbox" class="py-5 text-base font-black text-slate-400 flex items-center gap-2">
+        <nav class="max-w-6xl mx-auto px-8 border-b-4 border-slate-100 flex gap-10 bg-white sticky top-0 z-20 shadow-sm rounded-b-[40px]">
+            <button onclick="switchTab('market')" id="tab-market" class="py-6 text-xl font-black text-slate-400 tab-active transition-all">매물 목록</button>
+            <button onclick="switchTab('inbox')" id="tab-inbox" class="py-6 text-xl font-black text-slate-400 flex items-center gap-3 transition-all">
                 채팅 목록
-                <span id="global-unread-dot" class="hidden w-2.5 h-2.5 bg-red-500 rounded-full animate-ping"></span>
+                <span id="global-unread-dot" class="hidden w-3 h-3 bg-red-500 rounded-full animate-ping"></span>
             </button>
-            <button onclick="switchTab('register')" id="tab-register" class="py-5 text-base font-black text-slate-400">차량 등록</button>
+            <button onclick="switchTab('register')" id="tab-register" class="py-6 text-xl font-black text-slate-400 transition-all">차량 등록</button>
         </nav>
 
-        <main class="max-w-6xl mx-auto px-6 mt-10">
-            <div id="section-market" class="section grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8"></div>
-            <div id="section-inbox" class="section hidden max-w-2xl mx-auto space-y-4">
-                <h3 class="text-2xl font-black text-slate-800 mb-8">진행 중인 상담</h3>
+        <main class="max-w-6xl mx-auto px-8 mt-12">
+            <div id="section-market" class="section grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10"></div>
+            
+            <div id="section-inbox" class="section hidden max-w-3xl mx-auto space-y-6">
+                <h3 class="text-3xl font-black text-slate-800 mb-10 border-l-8 border-blue-600 pl-6">상담 진행 내역</h3>
                 <div id="inbox-list" class="space-y-4"></div>
             </div>
-            <div id="section-register" class="section hidden max-w-xl mx-auto bg-white p-10 rounded-[40px] border border-slate-100 shadow-xl">
-                <h3 class="text-2xl font-black mb-8 text-center text-slate-800">내 차량 매물 등록</h3>
-                <div class="space-y-5">
+
+            <div id="section-register" class="section hidden max-w-2xl mx-auto bg-white p-12 rounded-[60px] border-4 border-slate-50 shadow-2xl relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-full h-2 bg-blue-600"></div>
+                <h3 class="text-3xl font-black mb-10 text-center text-slate-800">신규 차량 매물 등록</h3>
+                <div class="space-y-6">
                     <div>
-                        <label class="block text-xs font-black text-slate-400 mb-2 ml-1 uppercase">Plate Number</label>
-                        <input type="text" id="reg-plate" placeholder="차량 번호 (예: 11허1111)" class="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 font-bold">
+                        <label class="block text-xs font-black text-slate-400 mb-2 uppercase ml-3 tracking-widest">License Plate</label>
+                        <input type="text" id="reg-plate" placeholder="예: 11허1111" class="w-full px-6 py-5 bg-slate-50 border-2 border-slate-100 rounded-[30px] outline-none focus:ring-4 focus:ring-blue-100 font-black text-lg transition-all">
                     </div>
                     <div>
-                        <label class="block text-xs font-black text-slate-400 mb-2 ml-1 uppercase">Description</label>
-                        <input type="text" id="reg-desc" placeholder="차량 상세 설명" class="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 font-bold">
+                        <label class="block text-xs font-black text-slate-400 mb-2 uppercase ml-3 tracking-widest">Detail Description</label>
+                        <input type="text" id="reg-desc" placeholder="차량 상태 및 옵션을 설명해주세요" class="w-full px-6 py-5 bg-slate-50 border-2 border-slate-100 rounded-[30px] outline-none focus:ring-4 focus:ring-blue-100 font-black text-lg transition-all">
                     </div>
                     <div>
-                        <label class="block text-xs font-black text-slate-400 mb-2 ml-1 uppercase">Price</label>
-                        <input type="text" id="reg-price" placeholder="판매 가격 (예: 2,500만원)" class="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 font-bold">
+                        <label class="block text-xs font-black text-slate-400 mb-2 uppercase ml-3 tracking-widest">Selling Price</label>
+                        <input type="text" id="reg-price" placeholder="희망 가격 (예: 2,500만원)" class="w-full px-6 py-5 bg-slate-50 border-2 border-slate-100 rounded-[30px] outline-none focus:ring-4 focus:ring-blue-100 font-black text-lg transition-all">
                     </div>
-                    <button id="reg-btn" onclick="registerVehicle()" class="w-full bg-slate-900 text-white py-5 rounded-2xl font-black text-lg hover:bg-black transition-all shadow-xl mt-4">
-                        등록하기
+                    <button id="reg-btn" onclick="registerVehicle()" class="w-full bg-slate-900 text-white py-6 rounded-[30px] font-black text-2xl hover:bg-black shadow-[0_20px_40px_rgba(0,0,0,0.3)] transition-all transform active:scale-95 mt-6">
+                        등록 완료하기
                     </button>
+                    <p id="reg-error-msg" class="text-center text-red-500 font-black text-sm mt-4 hidden"></p>
                 </div>
             </div>
         </main>
     </div>
 
-    <!-- Right Detail Panel -->
-    <div id="side-panel" class="fixed top-0 right-0 h-full w-full max-w-md bg-white shadow-2xl border-l border-slate-100 panel-hidden flex flex-col z-40">
-        <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-            <h3 class="font-black text-slate-800">매물 상세 정보</h3>
-            <button onclick="closeDetail()" class="font-bold text-slate-400 hover:text-slate-900 px-3 py-1">닫기</button>
+    <!-- 상세 페이지 패널 -->
+    <div id="side-panel" class="fixed top-0 right-0 h-full w-full max-w-lg bg-white shadow-[-40px_0_80px_rgba(0,0,0,0.15)] border-l-2 border-slate-50 panel-hidden flex flex-col z-40">
+        <div class="p-10 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+            <h3 class="text-2xl font-black text-slate-800 tracking-tighter uppercase">Detail Specs</h3>
+            <button onclick="closeDetail()" class="font-black text-slate-400 hover:text-slate-900 bg-white px-6 py-3 rounded-2xl border-2 border-slate-100 transition-all text-sm shadow-sm">닫기</button>
         </div>
-        <div id="detail-body" class="flex-1 overflow-y-auto p-8"></div>
+        <div id="detail-body" class="flex-1 overflow-y-auto p-12"></div>
     </div>
 
-    <!-- Chat Overlay -->
-    <div id="chat-overlay" class="fixed bottom-0 left-0 right-0 h-[85vh] md:h-[700px] max-w-2xl mx-auto bg-white shadow-[0_-20px_80px_rgba(0,0,0,0.2)] rounded-t-[50px] border-t border-slate-100 chat-hidden flex flex-col z-50">
-        <div class="p-8 border-b border-slate-100 flex justify-between items-center shrink-0">
-            <div class="flex items-center gap-4">
-                <div class="w-4 h-4 bg-green-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(34,197,94,0.5)]"></div>
+    <!-- 채팅 오버레이 -->
+    <div id="chat-overlay" class="fixed bottom-0 left-0 right-0 h-[85vh] md:h-[750px] max-w-3xl mx-auto bg-white shadow-[0_-30px_100px_rgba(0,0,0,0.3)] rounded-t-[80px] border-t-8 border-blue-600 chat-hidden flex flex-col z-50">
+        <div class="p-10 border-b border-slate-100 flex justify-between items-center bg-white rounded-t-[80px]">
+            <div class="flex items-center gap-5">
+                <div class="w-5 h-5 bg-green-500 rounded-full animate-pulse shadow-[0_0_20px_rgba(34,197,94,0.6)]"></div>
                 <div>
-                    <h4 id="chat-target-user" class="font-black text-slate-800 text-lg">대화 중</h4>
-                    <p id="chat-target-vehicle" class="text-xs text-blue-600 font-black uppercase tracking-widest"></p>
+                    <h4 id="chat-target-user" class="font-black text-slate-800 text-2xl tracking-tighter">상담 채널</h4>
+                    <p id="chat-target-vehicle" class="text-sm text-blue-600 font-black uppercase tracking-widest mt-1"></p>
                 </div>
             </div>
-            <button onclick="closeChat()" class="text-sm font-black text-slate-400 hover:text-slate-900">내리기</button>
+            <button onclick="closeChat()" class="text-xs font-black text-slate-400 hover:text-slate-900 bg-slate-50 px-6 py-3 rounded-2xl border-2 border-slate-100 shadow-sm transition-all">내리기</button>
         </div>
-        <div id="chat-log" class="flex-1 overflow-y-auto p-8 space-y-6 bg-slate-50/50"></div>
-        <div class="p-8 bg-white border-t border-slate-100 flex gap-3">
-            <input type="text" id="chat-input" placeholder="메시지를 입력하세요..." class="flex-1 px-6 py-4 bg-slate-50 border border-slate-200 rounded-3xl outline-none focus:ring-2 focus:ring-blue-500 font-bold text-sm">
-            <button onclick="sendChatMessage()" class="bg-blue-600 text-white px-8 py-4 rounded-3xl font-black shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all">전송</button>
+        <div id="chat-log" class="flex-1 overflow-y-auto p-10 space-y-8 bg-white"></div>
+        <div class="p-10 bg-slate-50 border-t border-slate-100 flex gap-4">
+            <input type="text" id="chat-input" placeholder="메시지를 입력하세요..." class="flex-1 px-8 py-5 bg-white border-2 border-slate-200 rounded-[35px] outline-none font-black text-base focus:ring-4 focus:ring-blue-100 shadow-sm transition-all">
+            <button onclick="sendChatMessage()" class="bg-blue-600 text-white px-12 py-5 rounded-[35px] font-black text-xl shadow-xl shadow-blue-200 hover:bg-blue-700 transition-all active:scale-95">SEND</button>
         </div>
     </div>
 
-    <div id="backdrop" class="hidden fixed inset-0 bg-black/40 backdrop-blur-md z-30" onclick="closeAll()"></div>
+    <div id="backdrop" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-2xl z-30 transition-all" onclick="closeAll()"></div>
 </div>
 
 <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, doc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+    import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+    import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, doc, updateDoc } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
 
-    // Firebase Config - 깃허브 배포 시 실제 값을 꼭 입력하세요!
-    let firebaseConfig;
-    try {
-        firebaseConfig = JSON.parse(__firebase_config);
-    } catch (e) {
-        firebaseConfig = {
-            apiKey: "본인의_API_KEY",
-            authDomain: "본인의_PROJECT_ID.firebaseapp.com",
-            projectId: "본인의_PROJECT_ID",
-            storageBucket: "본인의_PROJECT_ID.appspot.com",
-            messagingSenderId: "본인의_SENDER_ID",
-            appId: "본인의_APP_ID"
-        };
-    }
+    // 🚀 사용자가 제공한 파이어베이스 설정값 적용
+    const firebaseConfig = {
+      apiKey: "AIzaSyBlVYdSkA7RDgzfOmIWq8BUSMtDQ_H1E5Q",
+      authDomain: "freepasserp.firebaseapp.com",
+      projectId: "freepasserp",
+      storageBucket: "freepasserp.firebasestorage.app",
+      messagingSenderId: "1148826501",
+      appId: "1:1148826501:web:d8c6cede613949a2610aec",
+      measurementId: "G-HVZ10P3ED9"
+    };
 
+    // Firebase 초기화
     let app, auth, db;
     try {
         app = initializeApp(firebaseConfig);
         auth = getAuth(app);
         db = getFirestore(app);
     } catch (e) {
-        console.error("Firebase Init Error:", e);
+        console.error("Firebase 초기화 에러:", e);
     }
 
-    const appId = typeof __app_id !== 'undefined' ? __app_id : 'v-layered-marketplace-v1-5';
+    const appId = "v-marketplace-final-v11"; // 새로운 경로를 사용해 충돌 방지
     let currentUser = null;
     let loginId = localStorage.getItem('v_market_user_id');
     let allVehicles = [];
     let allMessages = [];
     let activeChatKey = null;
 
+    // 토스트 알림 함수
     window.showToast = (msg) => {
         const toast = document.getElementById('toast');
         toast.textContent = msg;
         toast.style.display = 'block';
-        setTimeout(() => { toast.style.display = 'none'; }, 3000);
+        setTimeout(() => { toast.style.display = 'none'; }, 4000);
     };
 
-    async function init() {
+    // 앱 초기화 및 인증
+    async function initApp() {
         try {
-            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                await signInWithCustomToken(auth, __initial_auth_token);
-            } else {
-                await signInAnonymously(auth);
-            }
+            // 규칙이 true라면 익명 로그인이 가장 빠르고 확실한 접근 방법입니다.
+            await signInAnonymously(auth);
+            
+            onAuthStateChanged(auth, (user) => {
+                currentUser = user;
+                if (loginId) {
+                    document.getElementById('login-screen').classList.add('hidden');
+                    document.getElementById('dashboard-screen').classList.remove('hidden');
+                    document.getElementById('display-user-id').textContent = loginId;
+                    document.getElementById('user-initial').textContent = loginId.charAt(0).toUpperCase();
+                    startDataSync();
+                } else {
+                    document.getElementById('login-screen').classList.remove('hidden');
+                }
+            });
         } catch (err) { 
-            console.error("Auth Failed:", err);
-            showToast("데이터베이스 연결 실패!");
+            console.error("인증 오류:", err);
+            showToast("데이터베이스 연결 실패! 파이어베이스 설정을 확인하세요.");
         }
-
-        onAuthStateChanged(auth, (user) => {
-            currentUser = user;
-            if (loginId) {
-                document.getElementById('login-screen').classList.add('hidden');
-                document.getElementById('dashboard-screen').classList.remove('hidden');
-                document.getElementById('display-user-id').textContent = loginId;
-                startListeners();
-            } else {
-                document.getElementById('login-screen').classList.remove('hidden');
-            }
-        });
     }
 
-    function startListeners() {
+    // 데이터 실시간 동기화
+    function startDataSync() {
         if (!currentUser) return;
+
+        // 차량 목록 실시간 감시
         onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'vehicles'), (snap) => {
             allVehicles = snap.docs.map(d => ({id: d.id, ...d.data()}));
             renderMarket();
+        }, (err) => {
+            console.error("차량 목록 수신 오류:", err);
+            showToast("데이터를 불러올 수 없습니다 (Rules 확인 필요)");
         });
+
+        // 채팅 내역 실시간 감시
         onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'chat_logs'), (snap) => {
             allMessages = snap.docs.map(d => ({id: d.id, ...d.data()}));
             processInquiries();
             if (activeChatKey) renderChatLog();
+        }, (err) => {
+            console.error("채팅 내역 수신 오류:", err);
         });
     }
 
+    // 차량 매물 목록 렌더링
     function renderMarket() {
         const list = document.getElementById('section-market');
         list.innerHTML = allVehicles.sort((a,b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0)).map(v => `
-            <div onclick="showDetail('${v.id}')" class="bg-white p-8 rounded-[40px] border border-slate-100 shadow-sm hover:shadow-xl transition-all cursor-pointer group">
-                <div class="bg-slate-50 h-40 rounded-[30px] mb-6 flex items-center justify-center text-slate-200 transition-colors group-hover:bg-blue-50">
-                    <svg class="w-14 h-14 group-hover:text-blue-200 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/></svg>
+            <div onclick="showDetail('${v.id}')" class="bg-white p-10 rounded-[50px] border-4 border-slate-50 shadow-sm hover:shadow-2xl transition-all cursor-pointer group hover:border-blue-100 transform hover:-translate-y-2">
+                <div class="bg-slate-50 h-44 rounded-[40px] mb-8 flex items-center justify-center text-slate-200 group-hover:bg-blue-50 transition-colors">
+                    <svg class="w-20 h-20 group-hover:text-blue-100" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/></svg>
                 </div>
-                <h4 class="text-xl font-black text-slate-800">${v.plateNumber}</h4>
-                <p class="text-blue-600 font-black text-lg mt-1">${v.price}</p>
-                <div class="flex justify-between items-center mt-6 pt-4 border-t border-slate-50">
-                    <span class="text-[11px] text-slate-400 font-black uppercase tracking-widest">${v.owner === loginId ? 'MY CAR' : 'SELLER: ' + v.owner}</span>
-                    <span class="text-xs text-blue-500 font-black opacity-0 group-hover:opacity-100 transition-opacity">DETAIL &rarr;</span>
+                <h4 class="text-3xl font-black text-slate-900 tracking-tighter">${v.plateNumber}</h4>
+                <p class="text-blue-600 font-black text-2xl mt-2">${v.price}</p>
+                <div class="mt-8 pt-6 border-t-2 border-slate-50 flex justify-between items-center">
+                    <span class="text-[12px] text-slate-400 font-black uppercase tracking-widest">${v.owner === loginId ? '나의 매물' : '판매자: ' + v.owner}</span>
+                    <span class="text-sm text-blue-500 font-black flex items-center gap-1">SPEC <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg></span>
                 </div>
             </div>
-        `).join('') || '<div class="col-span-full py-40 text-center text-slate-400 font-bold italic">매물이 없습니다.</div>';
+        `).join('') || '<div class="col-span-full py-40 text-center text-slate-300 font-black text-2xl italic tracking-tight">아직 등록된 매물이 없습니다.</div>';
     }
 
+    // 차량 등록 함수
+    window.registerVehicle = async () => {
+        const plate = document.getElementById('reg-plate').value.trim();
+        const desc = document.getElementById('reg-desc').value.trim();
+        const price = document.getElementById('reg-price').value.trim();
+        const btn = document.getElementById('reg-btn');
+        const errorEl = document.getElementById('reg-error-msg');
+
+        if (!plate || !desc || !price) { showToast("모든 칸을 입력해주세요!"); return; }
+        if (!currentUser) { showToast("인증 세션이 유효하지 않습니다. 새로고침 해주세요."); return; }
+
+        try {
+            btn.disabled = true;
+            btn.textContent = "서버 전송 중...";
+            errorEl.classList.add('hidden');
+            
+            console.log("Firestore에 저장 시도중...");
+            
+            // 데이터 저장 시도 (Rule 1 준수)
+            await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'vehicles'), { 
+                owner: loginId, 
+                plateNumber: plate, 
+                description: desc, 
+                price: price, 
+                createdAt: serverTimestamp() 
+            });
+            
+            showToast("🎉 차량 등록이 성공적으로 완료되었습니다!");
+            switchTab('market');
+            
+            // 입력창 초기화
+            document.getElementById('reg-plate').value = '';
+            document.getElementById('reg-desc').value = '';
+            document.getElementById('reg-price').value = '';
+        } catch (e) {
+            console.error("Firestore 등록 실패 상세 에러:", e);
+            errorEl.textContent = `오류 발생: ${e.code || e.message}`;
+            errorEl.classList.remove('hidden');
+            showToast("등록 실패! 에러 메시지를 확인하세요.");
+        } finally {
+            btn.textContent = "등록 완료하기";
+            btn.disabled = false;
+        }
+    };
+
+    // 상세 페이지 노출
     window.showDetail = (vid) => {
         const v = allVehicles.find(item => item.id === vid);
         if (!v) return;
         document.getElementById('detail-body').innerHTML = `
-            <div class="space-y-8">
-                <div>
-                    <h2 class="text-4xl font-black text-slate-900 tracking-tighter">${v.plateNumber}</h2>
-                    <p class="text-2xl font-black text-blue-600 mt-2">${v.price}</p>
+            <div class="space-y-10">
+                <div class="border-b-8 border-slate-900 pb-8">
+                    <h2 class="text-6xl font-black text-slate-900 tracking-tighter leading-none">${v.plateNumber}</h2>
+                    <p class="text-3xl font-black text-blue-600 mt-6 bg-blue-50 px-6 py-2 rounded-2xl inline-block border-2 border-blue-100">${v.price}</p>
                 </div>
-                <div class="p-8 bg-slate-50 rounded-[35px] text-base text-slate-600 leading-relaxed font-medium border border-slate-100">
+                <div class="p-10 bg-slate-900 rounded-[50px] text-xl font-bold text-white leading-relaxed shadow-2xl">
+                    <p class="text-slate-400 text-xs font-black uppercase mb-6 tracking-[0.2em] border-b border-slate-700 pb-4">Vehicle Description</p>
                     ${v.description}
                 </div>
-                <button onclick="openChat('${v.owner}', '${v.plateNumber}')" class="w-full bg-blue-600 text-white py-6 rounded-[30px] font-black text-xl shadow-2xl shadow-blue-200 hover:bg-blue-700 transition-all">
-                    상담 시작하기
+                <button onclick="openChat('${v.owner}', '${v.plateNumber}')" class="w-full bg-blue-600 text-white py-8 rounded-[40px] font-black text-3xl shadow-[0_25px_60px_rgba(37,99,235,0.4)] hover:bg-blue-700 transition-all hover:-translate-y-2 transform active:scale-95">
+                    1:1 실시간 상담하기
                 </button>
             </div>
         `;
@@ -257,11 +303,7 @@
         document.getElementById('backdrop').classList.remove('hidden');
     };
 
-    window.closeDetail = () => {
-        document.getElementById('side-panel').classList.add('panel-hidden');
-        if (document.getElementById('chat-overlay').classList.contains('chat-hidden')) document.getElementById('backdrop').classList.add('hidden');
-    };
-
+    // 채팅 목록 처리
     function processInquiries() {
         const rooms = {};
         let unread = 0;
@@ -275,45 +317,62 @@
                 if (m.recipient === loginId && !m.isRead) { rooms[key].unread++; unread++; }
             }
         });
-        renderInbox(Object.values(rooms));
+        document.getElementById('inbox-list').innerHTML = Object.values(rooms).sort((a,b) => (b.lastMsg.createdAt?.seconds || 0) - (a.lastMsg.createdAt?.seconds || 0)).map(r => `
+            <div onclick="openChat('${r.partner}', '${r.plate}')" class="bg-white p-8 rounded-[45px] border-4 border-slate-50 shadow-sm flex justify-between items-center cursor-pointer hover:border-blue-200 hover:shadow-2xl transition-all group">
+                <div class="flex flex-col">
+                    <span class="font-black text-slate-800 text-2xl tracking-tighter flex items-center gap-3">
+                        ${r.partner} 
+                        <small class="text-blue-600 uppercase px-4 py-1.5 bg-blue-50 rounded-2xl text-[12px] font-black border-2 border-blue-100 tracking-tight">${r.plate}</small>
+                    </span>
+                    <p class="text-lg font-bold text-slate-400 mt-2 truncate w-64 group-hover:text-slate-600 transition-colors">${r.lastMsg.content}</p>
+                </div>
+                ${r.unread > 0 ? `<span class="bg-red-500 text-white text-[12px] px-5 py-2 rounded-full font-black animate-pulse shadow-xl shadow-red-200">NEW MESSAGE</span>` : `
+                    <svg class="w-8 h-8 text-slate-100 group-hover:text-blue-100" fill="currentColor" viewBox="0 0 20 20"><path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z"/></svg>
+                `}
+            </div>
+        `).join('') || '<div class="py-40 text-center text-slate-300 font-black text-2xl">대화 내역이 없습니다.</div>';
         document.getElementById('global-unread-dot').classList.toggle('hidden', unread === 0);
     }
 
-    function renderInbox(rooms) {
-        document.getElementById('inbox-list').innerHTML = rooms.sort((a,b) => (b.lastMsg.createdAt?.seconds || 0) - (a.lastMsg.createdAt?.seconds || 0)).map(r => `
-            <div onclick="openChat('${r.partner}', '${r.plate}')" class="bg-white p-6 rounded-[30px] border border-slate-100 shadow-sm flex justify-between items-center cursor-pointer hover:border-blue-300 hover:shadow-md transition-all">
-                <div class="flex flex-col">
-                    <span class="font-black text-slate-800 text-lg">${r.partner} <small class="text-blue-600 uppercase ml-2 px-2 py-0.5 bg-blue-50 rounded-lg text-xs font-black border border-blue-100">${r.plate}</small></span>
-                    <p class="text-sm text-slate-500 truncate w-48 mt-1 font-medium">${r.lastMsg.content}</p>
-                </div>
-                ${r.unread > 0 ? `<span class="bg-red-500 text-white text-[10px] px-2.5 py-1 rounded-full font-black animate-pulse shadow-lg shadow-red-200">${r.unread}</span>` : ''}
-            </div>
-        `).join('') || '<div class="py-20 text-center text-slate-400 font-bold">대화 내역이 없습니다.</div>';
-    }
-
+    // 채팅창 오픈
     window.openChat = (partner, plate) => {
-        if (partner === loginId) { showToast("본인 매물입니다."); return; }
+        if (partner === loginId) { showToast("본인의 매물은 채팅할 수 없습니다."); return; }
         activeChatKey = [loginId, partner].sort().join('_') + '::' + plate;
-        document.getElementById('chat-target-user').textContent = partner + " 님";
-        document.getElementById('chat-target-vehicle').textContent = plate;
+        document.getElementById('chat-target-user').textContent = partner + " 님과 대화 중";
+        document.getElementById('chat-target-vehicle').textContent = "문의 차량: " + plate;
         document.getElementById('chat-overlay').classList.remove('chat-hidden');
         document.getElementById('backdrop').classList.remove('hidden');
         renderChatLog();
+        
+        // 읽음 처리 (수신자 입장에서)
         allMessages.filter(m => m.recipient === loginId && m.sender === partner && m.vehiclePlate === plate && !m.isRead)
                    .forEach(m => updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'chat_logs', m.id), { isRead: true }));
     };
 
+    // 실시간 채팅 로그 렌더링
     function renderChatLog() {
         if (!activeChatKey) return;
         const [ids, plate] = activeChatKey.split('::');
         const filtered = allMessages.filter(m => [m.sender, m.recipient].sort().join('_') === ids && m.vehiclePlate === plate).sort((a,b) => (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0));
         document.getElementById('chat-log').innerHTML = filtered.map(m => {
             const isMe = m.sender === loginId;
-            return `<div class="flex ${isMe ? 'justify-end' : 'justify-start'} w-full"><div class="max-w-[85%] flex flex-col ${isMe ? 'items-end' : 'items-start'}"><div class="px-5 py-3 rounded-[22px] text-sm font-bold shadow-sm ${isMe ? 'bubble-me' : 'bubble-other'}">${m.content}</div><span class="text-[9px] text-slate-300 mt-2 font-black px-1">${m.createdAt ? new Date(m.createdAt.seconds * 1000).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : ''}</span></div></div>`;
+            return `
+                <div class="flex ${isMe ? 'justify-end' : 'justify-start'} w-full animate-in fade-in slide-in-from-bottom-4 duration-300">
+                    <div class="max-w-[80%] flex flex-col ${isMe ? 'items-end' : 'items-start'}">
+                        <div class="px-8 py-5 rounded-[40px] text-xl font-black shadow-xl ${isMe ? 'bubble-me shadow-blue-200' : 'bubble-other shadow-slate-100'}">
+                            ${m.content}
+                        </div>
+                        <span class="text-[11px] text-slate-300 mt-3 font-black px-4 uppercase tracking-tighter">
+                            ${m.createdAt ? new Date(m.createdAt.seconds * 1000).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : '전송 중'}
+                        </span>
+                    </div>
+                </div>
+            `;
         }).join('');
         document.getElementById('chat-log').scrollTop = document.getElementById('chat-log').scrollHeight;
     }
 
+    // 메시지 전송
     window.sendChatMessage = async () => {
         const input = document.getElementById('chat-input');
         const content = input.value.trim();
@@ -322,15 +381,22 @@
         const partner = ids.split('_').find(id => id !== loginId);
         try {
             await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'chat_logs'), { 
-                sender: loginId, recipient: partner, participants: [loginId, partner], vehiclePlate: plate, content, isRead: false, createdAt: serverTimestamp() 
+                sender: loginId, 
+                recipient: partner, 
+                participants: [loginId, partner], 
+                vehiclePlate: plate, 
+                content, 
+                isRead: false, 
+                createdAt: serverTimestamp() 
             });
             input.value = '';
-        } catch (e) { showToast("메시지 전송 실패!"); }
+        } catch (e) { showToast("메시지 전송 실패! 설정을 확인하세요."); }
     };
 
+    // 공통 헬퍼 함수
     window.handleLogin = () => {
         const id = document.getElementById('user-id-input').value.trim();
-        if (id) { localStorage.setItem('v_market_user_id', id); loginId = id; init(); }
+        if (id) { localStorage.setItem('v_market_user_id', id); loginId = id; initApp(); }
     };
     window.handleLogout = () => { localStorage.removeItem('v_market_user_id'); location.reload(); };
     window.switchTab = (tab) => {
@@ -344,42 +410,14 @@
         activeChatKey = null; 
         if (document.getElementById('side-panel').classList.contains('panel-hidden')) document.getElementById('backdrop').classList.add('hidden'); 
     };
+    window.closeDetail = () => { document.getElementById('side-panel').classList.add('panel-hidden'); if (document.getElementById('chat-overlay').classList.contains('chat-hidden')) document.getElementById('backdrop').classList.add('hidden'); };
     window.closeAll = () => { closeDetail(); closeChat(); };
-
-    window.registerVehicle = async () => {
-        const plate = document.getElementById('reg-plate').value.trim();
-        const desc = document.getElementById('reg-desc').value.trim();
-        const price = document.getElementById('reg-price').value.trim();
-        const btn = document.getElementById('reg-btn');
-
-        if (!plate || !desc || !price) { showToast("빈칸을 채워주세요!"); return; }
-
-        try {
-            btn.disabled = true;
-            btn.textContent = "등록 중...";
-            await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'vehicles'), { 
-                owner: loginId, plateNumber: plate, description: desc, price, createdAt: serverTimestamp() 
-            });
-            showToast("등록 완료!");
-            switchTab('market');
-            document.getElementById('reg-plate').value = '';
-            document.getElementById('reg-desc').value = '';
-            document.getElementById('reg-price').value = '';
-        } catch (e) {
-            console.error("Firestore Error:", e);
-            showToast("오류: Firebase 설정을 확인하세요.");
-            btn.textContent = "등록하기";
-            btn.disabled = false;
-        } finally {
-            if (btn.disabled) {
-                btn.disabled = false;
-                btn.textContent = "등록하기";
-            }
-        }
-    };
-
+    
+    // 키보드 엔터 이벤트
     document.getElementById('chat-input')?.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendChatMessage(); });
-    init();
+    
+    // 실행
+    initApp();
 </script>
 
 </body>
