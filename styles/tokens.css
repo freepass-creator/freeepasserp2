@@ -1,0 +1,40 @@
+/* /styles/tokens.css */
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css');
+
+:root {
+  /* Font */
+  --fp-font: 'Pretendard', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+
+  /* Colors */
+  --fp-bg: #f1f3f6;
+  --fp-surface: #ffffff;
+  --fp-text: #1e293b;
+  --fp-muted: #64748b;
+  --fp-border: #e2e8f0;
+
+  --fp-primary: #2563eb;
+  --fp-primary-hover: #1d4ed8;
+  --fp-danger: #e11d48;
+
+  /* Radius / Shadow */
+  --fp-radius-lg: 16px;
+  --fp-radius-md: 12px;
+  --fp-shadow-card: 0 20px 30px rgba(2, 6, 23, 0.08);
+  --fp-shadow-btn: 0 6px 12px rgba(2, 6, 23, 0.12);
+
+  /* Sizes */
+  --fp-text-sm: 11px;
+  --fp-text-md: 12px;
+}
+
+* {
+  font-family: var(--fp-font);
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  font-size: var(--fp-text-sm);
+  background: var(--fp-bg);
+  color: var(--fp-text);
+  overflow: hidden;
+}
