@@ -1,111 +1,111 @@
 export const DetailView = {
     render(data, manager) {
-        // 복사용 텍스트 미리 정의
-        const copyText = `[차량정보]
-모델명: ${data.모델명}
-차량번호: ${data.차량_번호}
-연식: ${data.연식} / 주행: ${data.주행거리}
-대여료: 월 ${data.대여료} / 보증금: ${data.보증금}
-보험조건: ${data.보험조건 || '만 26세 이상'}
-담당: ${manager.company} ${manager.nameTitle} (${manager.phone})`;
-
         return `
-            <div class="flex flex-col h-full bg-white shadow-2xl">
-                <div class="h-[45px] px-4 border-b border-slate-100 flex items-center justify-between flex-shrink-0">
+            <div class="flex flex-col h-full bg-white">
+                <div class="h-[45px] px-4 border-b border-slate-200 flex items-center justify-between flex-shrink-0">
                     <div class="flex items-center gap-2">
-                        <div class="w-1.5 h-1.5 bg-blue-600 rounded-full"></div>
-                        <span class="text-[11px] font-black text-slate-800 uppercase tracking-tighter">Vehicle Detail</span>
+                        <i data-lucide="car" class="w-4 h-4 text-slate-700"></i>
+                        <span class="text-[12px] font-black text-slate-800 uppercase tracking-tighter">상품 상세 정보</span>
                     </div>
                     <button onclick="UI.closeDetail()" class="text-slate-400 hover:text-slate-600 transition-colors">
-                        <i data-lucide="x" class="w-4 h-4"></i>
+                        <i data-lucide="x" class="w-5 h-5"></i>
                     </button>
                 </div>
 
-                <div class="flex-1 overflow-auto bg-white">
-                    <div class="w-full h-48 bg-slate-100 flex items-center justify-center border-b border-slate-50 relative overflow-hidden">
-                        <i data-lucide="car" class="w-12 h-12 text-slate-300 opacity-20"></i>
-                        <div class="absolute bottom-3 left-3 bg-black/60 text-white px-2 py-1 rounded text-[9px] font-bold">PHOTO 01</div>
-                    </div>
-
-                    <div class="p-5 space-y-6">
-                        <div class="space-y-1">
-                            <div class="flex items-center gap-2">
-                                <span class="bg-blue-600 text-white text-[9px] font-black px-1.5 py-0.5 rounded tracking-tighter uppercase">Available</span>
-                                <span class="text-slate-400 text-[10px] font-bold tracking-tight">${data.차량_번호}</span>
-                            </div>
-                            <h3 class="text-[15px] font-black text-slate-900 tracking-tight leading-tight">${data.모델명}</h3>
+                <div class="flex-1 overflow-auto p-4 bg-white space-y-5">
+                    
+                    <div class="border border-slate-200 rounded-sm overflow-hidden shadow-sm">
+                        <div class="bg-slate-50 px-3 py-2 border-b border-slate-200">
+                            <h3 class="text-[11px] font-black text-slate-800 font-black uppercase">1. 차량 상세 제원</h3>
                         </div>
-
-                        <div class="grid grid-cols-2 gap-y-5 border-y border-slate-50 py-5">
-                            <div class="space-y-1">
-                                <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">연식</p>
-                                <p class="text-[12px] font-black text-slate-800">${data.연식 || '2024년형'}</p>
-                            </div>
-                            <div class="space-y-1">
-                                <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">주행거리</p>
-                                <p class="text-[12px] font-black text-slate-800">${data.주행거리 || '0km'}</p>
-                            </div>
-                            <div class="space-y-1">
-                                <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">대여료</p>
-                                <p class="text-[12px] font-black text-blue-600">${data.대여료 || '상담'}</p>
-                            </div>
-                            <div class="space-y-1">
-                                <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">보증금</p>
-                                <p class="text-[12px] font-black text-slate-800">${data.보증금 || '0원'}</p>
-                            </div>
-                        </div>
-
-                        <div class="space-y-3">
-                            <h4 class="text-[11px] font-black text-slate-800 uppercase border-l-2 border-blue-600 pl-2">Options & Info</h4>
-                            <div class="space-y-2">
-                                <div class="flex justify-between text-[11px] border-b border-slate-50 pb-2">
-                                    <span class="text-slate-400 font-bold">보험 조건</span>
-                                    <span class="text-slate-700 font-bold">${data.보험조건 || '만 26세 이상'}</span>
-                                </div>
-                                <div class="flex justify-between text-[11px] border-b border-slate-50 pb-2">
-                                    <span class="text-slate-400 font-bold">연료 타입</span>
-                                    <span class="text-slate-700 font-bold">휘발유 (가솔린)</span>
-                                </div>
-                                <div class="flex justify-between text-[11px] border-b border-slate-50 pb-2">
-                                    <span class="text-slate-400 font-bold">차량 위치</span>
-                                    <span class="text-slate-700 font-bold">서울 본사 전시장</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="p-4 bg-slate-50 rounded-sm border border-slate-100 space-y-2">
-                            <p class="text-[9px] text-slate-400 font-black uppercase tracking-widest">Support Manager</p>
+                        <div class="p-3 space-y-4">
                             <div class="flex items-center justify-between">
-                                <div class="space-y-0.5">
-                                    <p class="text-[12.5px] font-black text-slate-800">${manager.nameTitle}</p>
-                                    <p class="text-[10px] text-slate-500 font-bold">${manager.company}</p>
+                                <h4 class="text-[13px] font-black text-blue-700">${data.차량_번호 || '456나7890'} <span class="text-slate-800 ml-1 font-black">${data.모델명 || '기아 카니발'}</span></h4>
+                                <div class="flex gap-1">
+                                    <span class="bg-blue-600 text-white text-[9px] px-1.5 py-0.5 font-black uppercase shadow-sm">출고가능</span>
                                 </div>
-                                <a href="tel:${manager.phone}" class="w-8 h-8 bg-white border border-slate-200 rounded-full flex items-center justify-center text-blue-600 shadow-sm">
-                                    <i data-lucide="phone" class="w-3.5 h-3.5"></i>
-                                </a>
                             </div>
-                            <p class="text-[12px] font-black text-blue-600 tracking-tighter pt-1">${manager.phone}</p>
+
+                            <table class="w-full text-[11px]">
+                                <tr class="border-b border-slate-50">
+                                    <td class="py-2 text-slate-400 font-bold w-20 uppercase tracking-tighter">세부모델</td>
+                                    <td class="py-2 text-slate-800 font-black">카니발 KA4 페리 (1.6 터보 하이브리드)</td>
+                                </tr>
+                                <tr class="border-b border-slate-50">
+                                    <td class="py-2 text-slate-400 font-bold uppercase tracking-tighter">세부트림</td>
+                                    <td class="py-2 text-blue-600 font-black">시그니처 9인승</td>
+                                </tr>
+                                <tr class="border-b border-slate-50">
+                                    <td class="py-2 text-slate-400 font-bold uppercase tracking-tighter">주행거리</td>
+                                    <td class="py-2 text-slate-800 font-black">${data.주행거리 || '83,200km'}</td>
+                                </tr>
+                            </table>
+
+                            <div class="grid grid-cols-2 gap-x-6 gap-y-2 text-[11px] pt-1">
+                                <div class="flex justify-between border-b border-slate-50 pb-1">
+                                    <span class="text-slate-400 font-bold uppercase tracking-tighter">연식</span>
+                                    <span class="text-slate-800 font-black">${data.연식 || '2024'}</span>
+                                </div>
+                                <div class="flex justify-between border-b border-slate-50 pb-1">
+                                    <span class="text-slate-400 font-bold uppercase tracking-tighter">배기량</span>
+                                    <span class="text-slate-800 font-black">1,598cc</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="border border-slate-200 rounded-sm overflow-hidden shadow-sm">
+                        <div class="bg-slate-50 px-3 py-2 border-b border-slate-200">
+                            <h3 class="text-[11px] font-black text-slate-800 font-black uppercase">2. 대여료 및 보증금 안내</h3>
+                        </div>
+                        <table class="w-full text-[11px] text-center">
+                            <thead class="bg-slate-50 border-b border-slate-100 text-slate-400 font-bold uppercase tracking-tighter">
+                                <tr>
+                                    <td class="py-2">계약기간</td>
+                                    <td class="py-2">월 대여료</td>
+                                    <td class="py-2 border-l border-slate-100">보증금</td>
+                                </tr>
+                            </thead>
+                            <tbody class="text-slate-700 font-bold">
+                                <tr class="border-b border-slate-50"><td class="py-2.5">24개월</td><td class="text-blue-600 font-black">1,050,000원</td><td class="border-l border-slate-50">400만원</td></tr>
+                                <tr class="border-b border-slate-50 bg-blue-50/20 font-black"><td class="py-2.5">36개월</td><td class="text-blue-600 font-black">980,000원</td><td class="border-l border-slate-50">400만원</td></tr>
+                                <tr class="border-b border-slate-50"><td class="py-2.5">48개월</td><td class="text-blue-600 font-black">920,000원</td><td class="border-l border-slate-50">400만원</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="border border-slate-200 rounded-sm overflow-hidden shadow-sm">
+                        <div class="bg-slate-50 px-3 py-2 border-b border-slate-200">
+                            <h3 class="text-[11px] font-black text-slate-800 font-black uppercase">3. 보험 보상 정보</h3>
+                        </div>
+                        <div class="p-3 space-y-2">
+                            <div class="flex justify-between text-[11px] border-b border-slate-50 pb-1">
+                                <span class="text-slate-400 font-bold tracking-tighter">대인/대물/자손</span>
+                                <span class="text-slate-800 font-black italic">무한 / 1억 / 1억</span>
+                            </div>
+                            <div class="flex justify-between text-[11px]">
+                                <span class="text-slate-400 font-bold tracking-tighter">면책금(건당)</span>
+                                <span class="text-rose-600 font-black">국산차 30만원</span>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="h-[60px] px-2 flex items-center justify-between gap-1.5 border-t border-slate-100 bg-white flex-shrink-0">
+                <div class="h-[60px] px-2 flex items-center justify-between gap-1.5 border-t border-slate-200 bg-white flex-shrink-0">
                     <button onclick="window.openChat()" 
-                            class="flex-[1.5] h-[40px] bg-blue-600 text-white rounded-sm flex flex-col items-center justify-center gap-0.5 hover:bg-blue-700 transition-colors shadow-sm">
+                            class="flex-1 h-[40px] bg-blue-600 text-white rounded-sm flex flex-col items-center justify-center gap-0.5 hover:bg-blue-700 transition-colors shadow-sm">
                         <i data-lucide="message-circle" class="w-3.5 h-3.5"></i>
-                        <span class="text-[9px] font-black tracking-tighter uppercase">문의하기</span>
+                        <span class="text-[9px] font-black uppercase tracking-tighter">문의하기</span>
                     </button>
                     
-                    <button onclick="navigator.clipboard.writeText(window.location.href); alert('링크가 복사되었습니다');"
-                            class="flex-1 h-[40px] bg-white border border-slate-200 text-slate-500 rounded-sm flex flex-col items-center justify-center gap-0.5 hover:bg-slate-50 transition-colors">
+                    <button onclick="alert('링크복사')" class="flex-1 h-[40px] bg-white border border-slate-200 text-slate-500 rounded-sm flex flex-col items-center justify-center gap-0.5 hover:bg-slate-50">
                         <i data-lucide="share-2" class="w-3.5 h-3.5"></i>
-                        <span class="text-[9px] font-black tracking-tighter uppercase">링크복사</span>
+                        <span class="text-[9px] font-black uppercase tracking-tighter">링크복사</span>
                     </button>
                     
-                    <button onclick="navigator.clipboard.writeText(\`${copyText}\`); alert('상세 정보가 복사되었습니다');"
-                            class="flex-1 h-[40px] bg-[#1e293b] text-white rounded-sm flex flex-col items-center justify-center gap-0.5 hover:bg-slate-800 transition-colors">
+                    <button onclick="alert('텍스트복사')" class="flex-1 h-[40px] bg-[#1e293b] text-white rounded-sm flex flex-col items-center justify-center gap-0.5 hover:bg-slate-800">
                         <i data-lucide="copy" class="w-3.5 h-3.5"></i>
-                        <span class="text-[9px] font-black tracking-tighter uppercase">텍스트복사</span>
+                        <span class="text-[9px] font-black uppercase tracking-tighter">텍스트복사</span>
                     </button>
                 </div>
             </div>
