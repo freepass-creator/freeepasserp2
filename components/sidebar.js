@@ -3,16 +3,16 @@ export const Sidebar = {
         const container = document.getElementById('sidebar-container');
         if (!container) return;
 
-        // 1. 상단 메인 메뉴 (페이지 전환용)
+        // 1. 관리자 기준 메인 메뉴 (요청하신 순서대로 재배치)
         const mainMenus = [
             { id: 'inquiry', name: '대화현황', icon: 'message-square' },
-            { id: 'registration', name: '상품등록', icon: 'plus-square' },
-            { id: 'inventory', name: '상품현황', icon: 'layout-grid' },
             { id: 'settlement', name: '정산관리', icon: 'bar-chart-3' },
-            { id: 'approval', name: '승인관리', icon: 'shield-check' }
+            { id: 'approval', name: '승인관리', icon: 'shield-check' },
+            { id: 'registration', name: '상품등록', icon: 'plus-square' },
+            { id: 'inventory', name: '상품현황', icon: 'layout-grid' }
         ];
 
-        // 2. 하단 필터 메뉴 (이미지 하단부 재현)
+        // 2. 필터 메뉴 (중간 영역)
         const filterMenus = [
             { id: 'period', name: '기간', icon: 'calendar' },
             { id: 'rent', name: '대여료', icon: 'banknote' },
@@ -35,14 +35,24 @@ export const Sidebar = {
             <div class="w-full border-t border-slate-100 bg-slate-50/30">
                 ${filterMenus.map(menu => `
                     <button onclick="console.log('${menu.name} 필터 클릭')" 
-                            class="w-full flex flex-col items-center py-3 gap-1 hover:bg-white transition-all group border-b border-slate-50">
-                        <i data-lucide="${menu.icon}" class="w-[16px] h-[16px] text-slate-300 group-hover:text-slate-500 transition-colors"></i>
-                        <span class="text-[8px] font-bold text-slate-400 group-hover:text-slate-600 tracking-tighter">${menu.name}</span>
+                            class="w-full flex flex-col items-center py-3 gap-1 hover:bg-white transition-all group border-b border-slate-50/50">
+                        <i data-lucide="${menu.icon}" class="w-[15px] h-[15px] text-slate-300 group-hover:text-slate-500 transition-colors"></i>
+                        <span class="text-[8.5px] font-bold text-slate-400 group-hover:text-slate-600 tracking-tighter">${menu.name}</span>
                     </button>
                 `).join('')}
             </div>
+
+            <div class="w-full bg-emerald-50/50">
+                <button onclick="alert('엑셀 파일을 준비 중입니다.')" 
+                        class="w-full flex flex-col items-center py-4 gap-1 hover:bg-emerald-100 transition-all group border-t border-emerald-100">
+                    <i data-lucide="download" class="w-[18px] h-[18px] text-emerald-500 group-hover:scale-110 transition-transform"></i>
+                    <span class="text-[9px] font-black text-emerald-600 tracking-tighter italic">EXCEL</span>
+                </button>
+            </div>
         `;
         
-        if (window.lucide) lucide.createIcons();
+        if (window.lucide) {
+            lucide.createIcons();
+        }
     }
 };
