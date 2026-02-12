@@ -11,23 +11,23 @@ export const UI = {
     init() {
         const root = document.getElementById('root');
         root.innerHTML = `
-            <div class="flex flex-col h-full bg-white">
+            <div class="flex flex-col h-full bg-[#f1f3f6]">
                 <header class="h-[40px] bg-white border-b border-slate-200 flex items-center px-4 justify-between z-50 flex-shrink-0">
                     <span class="text-[8px] font-black text-blue-500 border border-blue-200 px-1.5 py-0.5 rounded bg-blue-50 uppercase tracking-tighter">Admin Mode</span>
                     <button onclick="location.reload()" class="text-slate-400 font-bold text-[9px] hover:text-rose-500 transition-colors uppercase">Logout</button>
                 </header>
                 
-                <div class="flex-1 flex overflow-hidden relative gap-0 p-0">
-                    <nav id="sidebar-container" class="w-[64px] bg-white border-r border-slate-200 flex flex-col items-center overflow-y-auto hide-scrollbar flex-shrink-0"></nav>
+                <div class="flex-1 flex overflow-hidden relative">
+                    <nav id="sidebar-container" class="w-[64px] bg-white border-r border-slate-200 flex flex-col items-center overflow-y-auto hide-scrollbar flex-shrink-0 mt-2 mr-2 shadow-sm rounded-r-sm"></nav>
                     
-                    <main id="main-content" class="flex-1 relative overflow-hidden bg-white flex flex-col">
+                    <main id="main-content" class="flex-1 relative overflow-hidden bg-white border border-slate-200 rounded-sm flex flex-col shadow-sm mt-2 mb-2 mr-2">
                         <div id="page-header" class="view-header flex items-center h-[45px] px-4 border-b border-slate-100 flex-shrink-0 bg-white"></div>
                         
-                        <div id="view-body" class="flex-1 overflow-auto bg-[#f8fafc]"></div>
+                        <div id="view-body" class="flex-1 overflow-auto p-2 bg-white"></div>
                     </main>
 
-                    <aside id="chat-drawer" class="fixed top-[40px] right-[400px] bottom-0 w-[350px] z-[90] bg-white border-l border-slate-200 hidden shadow-xl"></aside>
-                    <aside id="right-drawer" class="fixed top-[40px] right-0 bottom-0 w-[400px] z-[100] bg-white border-l border-slate-200 hidden flex flex-col shadow-xl"></aside>
+                    <aside id="chat-drawer" class="fixed top-[48px] right-[410px] bottom-[8px] w-[350px] z-[90] bg-white border border-slate-200 rounded-sm hidden shadow-2xl"></aside>
+                    <aside id="right-drawer" class="fixed top-[48px] right-[8px] bottom-[8px] w-[400px] z-[100] bg-white border border-slate-200 rounded-sm hidden flex flex-col shadow-2xl"></aside>
                 </div>
             </div>
         `;
@@ -56,14 +56,17 @@ export const UI = {
         header.innerHTML = `
             <div class="flex items-center gap-2">
                 <i data-lucide="${cur.icon}" class="w-4 h-4 ${cur.color}"></i>
-                <h2 class="text-[13px] font-black text-slate-800 tracking-tighter">${cur.title}</h2>
+                <h2 class="text-[12.5px] font-black text-slate-800 tracking-tighter">${cur.title}</h2>
             </div>
         `;
 
         if (cur.render) {
             cur.render();
         } else {
-            body.innerHTML = `<div class="h-full flex flex-col items-center justify-center text-slate-300 gap-2 font-black uppercase text-[10px] opacity-30"><i data-lucide="construct" class="w-10 h-10"></i> ${cur.title} 준비중</div>`;
+            body.innerHTML = `
+                <div class="h-full flex flex-col items-center justify-center text-slate-300 gap-2 font-black uppercase text-[9px] opacity-20">
+                    <i data-lucide="construct" class="w-10 h-10"></i> ${cur.title} 준비중
+                </div>`;
         }
 
         if (window.lucide) lucide.createIcons();
