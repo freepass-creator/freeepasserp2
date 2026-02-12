@@ -20,9 +20,9 @@ export const UI = {
                 </header>
                 <div class="flex-1 flex overflow-hidden relative">
                     <nav id="sidebar-container" class="w-[64px] bg-white border-r border-slate-200 flex flex-col items-center overflow-y-auto hide-scrollbar flex-shrink-0"></nav>
-                    <main id="main-content" class="flex-1 relative overflow-hidden bg-white border border-slate-200 shadow-sm mt-2 ml-2">
+                    <main id="main-content" class="flex-1 relative overflow-hidden bg-white border-l border-slate-200 flex flex-col shadow-sm mt-2 ml-2">
                         <div id="page-header" class="view-header flex items-center h-[45px] px-4 border-b border-slate-100 flex-shrink-0 bg-white"></div>
-                        <div id="view-body" class="flex-1 overflow-auto bg-white"></div>
+                        <div id="view-body" class="flex-1 overflow-auto bg-white p-1"></div>
                     </main>
                     <aside id="chat-drawer" class="fixed top-[40px] right-[400px] bottom-0 w-[350px] z-[90] bg-white border-l border-slate-200 hidden shadow-2xl transition-all"></aside>
                     <aside id="right-drawer" class="fixed top-[40px] right-0 bottom-0 w-[400px] z-[100] bg-white border-l border-slate-200 hidden flex flex-col shadow-2xl transition-all"></aside>
@@ -60,24 +60,29 @@ export const UI = {
         }
         this.closeChat();
         drawer.classList.add('hidden');
-        drawer.classList.remove('animate-drawer-reset');
         setTimeout(() => {
             this.selectedCarData = carData;
             drawer.innerHTML = DetailView.render(carData, { company: "프리패스모빌리티", nameTitle: "박영협 팀장", phone: "010-6393-0926" });
             drawer.classList.remove('hidden');
-            drawer.classList.add('animate-drawer-reset');
             if (window.lucide) lucide.createIcons();
-            if (autoChat) setTimeout(() => this.openChat(), 50);
+            if (autoChat) this.toggleChat(); // 문의하기 클릭 시 토글 실행
         }, 10);
     },
 
-    openChat() {
+    // [핵심] 채팅 토글 함수
+    toggleChat() {
         const chat = document.getElementById('chat-drawer');
         if (!this.selectedCarData || !chat) return;
-        chat.innerHTML = ChatView.render(this.selectedCarData);
-        chat.classList.remove('hidden');
-        chat.classList.add('animate-drawer-reset');
-        if (window.lucide) lucide.createIcons();
+
+        if (chat.classList.contains('hidden')) {
+            // 닫혀있으면 열기
+            chat.innerHTML = ChatView.render(this.selectedCarData);
+            chat.classList.remove('hidden');
+            if (window.lucide) lucide.createIcons();
+        } else {
+            // 열려있으면 닫기
+            this.closeChat();
+        }
     },
 
     closeChat() { const c = document.getElementById('chat-drawer'); if (c) c.classList.add('hidden'); },
@@ -86,6 +91,7 @@ export const UI = {
 
 window.openFullChatByIndex = (idx) => { if (window.inquiryData?.[idx]) UI.openDetail(window.inquiryData[idx].차량정보, true); };
 window.openDetailByIndex = (idx) => { if (window.inventoryData?.[idx]) UI.openDetail(window.inventoryData[idx], false); };
-window.openChat = () => UI.openChat();
+window.toggleChat = () => UI.toggleChat();
 window.switchView = (id) => UI.switchView(id);
 window.closeDetail = () => UI.closeDetail();
+window.closeChat = () => UI.closeChat();
