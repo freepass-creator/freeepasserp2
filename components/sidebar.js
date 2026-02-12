@@ -19,33 +19,32 @@ export const Sidebar = {
             { id: 'f-year', label: '연식', icon: 'history' }
         ];
 
-        // 사이드바 컨테이너 스타일 유지
-        container.className = "w-[75px] bg-white border-r border-slate-200 flex flex-col items-center py-4 gap-2 overflow-y-auto hide-scrollbar";
+        container.className = "w-[80px] bg-white border-r border-slate-200 flex flex-col items-center py-5 gap-3 overflow-y-auto hide-scrollbar";
 
-        // [핵심 변경] 버튼에 border-slate-200 추가 및 hover 시 shadow-md 적용
+        // [변경 포인트] rounded-2xl (곡선형) 적용, 텍스트 크기 확대(text-[10px]), 입체감 추가
         let html = menus.filter(m => m.roles.includes(role)).map(m => `
             <button onclick="switchView('${m.id}')" id="side-btn-${m.id}" 
-                class="side-btn flex flex-col items-center justify-center w-[58px] h-[52px] rounded-lg border border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:border-slate-300 hover:shadow-md active:scale-95 transition-all mb-0.5">
-                <i data-lucide="${m.icon}" class="w-4 h-4"></i>
-                <span class="text-[8px] font-black mt-1">${m.label}</span>
+                class="side-btn flex flex-col items-center justify-center w-[62px] h-[62px] rounded-[18px] border border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:border-blue-300 hover:shadow-lg active:scale-95 transition-all mb-1">
+                <i data-lucide="${m.icon}" class="w-5 h-5 mb-0.5"></i>
+                <span class="text-[10px] font-bold tracking-tighter">${m.label}</span>
             </button>
         `).join('');
 
-        html += `<div class="w-8 h-[1px] bg-slate-100 my-1"></div>`;
+        html += `<div class="w-10 h-[1.5px] bg-slate-100 my-2"></div>`;
 
-        // 필터 버튼도 동일하게 테두리 적용
+        // 필터 버튼도 루비 스타일 적용 (살짝 작게)
         html += filters.map(f => `
-            <button class="side-btn flex flex-col items-center justify-center w-[58px] h-[50px] rounded-lg border border-slate-100 bg-white text-slate-400 hover:bg-slate-50 hover:border-slate-300 hover:shadow-sm transition-all">
-                <i data-lucide="${f.icon}" class="w-4 h-4"></i>
-                <span class="text-[8px] font-bold mt-1">${f.label}</span>
+            <button class="side-btn flex flex-col items-center justify-center w-[60px] h-[58px] rounded-[16px] border border-slate-100 bg-white text-slate-400 hover:bg-slate-50 hover:border-slate-300 transition-all mb-1">
+                <i data-lucide="${f.icon}" class="w-4 h-4 mb-0.5"></i>
+                <span class="text-[10px] font-semibold">${f.label}</span>
             </button>
         `).join('');
 
         html += `
-            <div class="mt-auto pt-2">
-                <button class="side-btn flex flex-col items-center justify-center w-[58px] h-[54px] rounded-lg border border-emerald-200 bg-emerald-50 text-emerald-600 shadow-sm hover:shadow-md hover:bg-emerald-100 transition-all">
-                    <i data-lucide="download" class="w-4 h-4"></i>
-                    <span class="text-[8px] font-black mt-1 uppercase">Excel</span>
+            <div class="mt-auto pt-4">
+                <button class="side-btn flex flex-col items-center justify-center w-[62px] h-[64px] rounded-[20px] border border-emerald-200 bg-emerald-50 text-emerald-600 shadow-sm hover:shadow-md hover:bg-emerald-100 transition-all">
+                    <i data-lucide="download" class="w-5 h-5"></i>
+                    <span class="text-[10px] font-black mt-1 uppercase">Excel</span>
                 </button>
             </div>
         `;
