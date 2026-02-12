@@ -1,39 +1,48 @@
-// js/ui.js 내 switchView 부분 수정
-switchView(viewId) {
-    const main = document.getElementById('main-content');
-    
-    const titleMap = {
-        'inquiry': { title: '대화현황', icon: 'message-square', color: 'text-blue-600' },
-        'registration': { title: '상품등록', icon: 'plus-square', color: 'text-emerald-600' },
-        'inventory': { title: '상품현황', icon: 'layout-grid', color: 'text-indigo-600' },
-        'settlement': { title: '정산관리', icon: 'bar-chart-3', color: 'text-amber-600' },
-        'approval': { title: '승인관리', icon: 'shield-check', color: 'text-rose-600' }
-    };
+import { Sidebar } from '../components/sidebar.js';
+import { InventoryView } from '../views/inventory.js';
 
-    const current = titleMap[viewId] || { title: viewId.toUpperCase(), icon: 'box', color: 'text-slate-700' };
-
-    // 사이드바 버튼 활성화 관리
-    document.querySelectorAll('.side-btn').forEach(btn => btn.classList.remove('active', 'bg-blue-50', 'text-blue-600', 'border-blue-300'));
-    const targetBtn = document.getElementById(`side-btn-${viewId}`);
-    if (targetBtn) targetBtn.classList.add('active', 'bg-blue-50', 'text-blue-600', 'border-blue-300');
-
-    // [변경] 아이콘(w-6->w-4.5), 텍스트(18px->14px), 헤더높이(56px->44px)
-    main.innerHTML = `
-        <div class="view-header flex items-center h-[44px] px-6 bg-white border-b border-slate-200 shadow-sm justify-between">
-            <div class="flex items-center gap-2.5">
-                <i data-lucide="${current.icon}" class="w-[18px] h-[18px] ${current.color}"></i>
-                <h2 class="text-[14px] font-bold text-slate-800 tracking-tight">${current.title}</h2>
-            </div>
-            <div id="view-actions" class="flex items-center gap-2 text-[11px]">
+export const UI = {
+    init() {
+        document.body.className = "h-screen overflow-hidden bg-[#f1f3f6] font-medium";
+        const root = document.getElementById('root');
+        root.innerHTML = `
+            <div class="flex flex-col h-full">
+                <header class="h-[44px] bg-white border-b border-slate-200 flex items-center px-4 justify-between z-50">
+                    <div class="flex items-center gap-2">
+                        <span class="text-[8.5px] font-bold text-blue-500 border border-blue-200 px-1.5 py-0.5 rounded uppercase tracking-wider bg-blue-50">Admin Mode</span>
+                    </div>
+                    <button onclick="location.reload()" class="text-slate-400 hover:text-rose-500 font-bold text-[10px]">로그아웃</button>
+                </header>
+                <div class="flex-1 flex overflow-hidden">
+                    <nav id="sidebar-container" class="w-[68px] bg-white border-r flex flex-col items-center py-3 gap-1"></nav>
+                    <main id="main-content" class="flex-1 bg-[#f1f3f6] overflow-hidden flex flex-col"></main>
                 </div>
-        </div>
-        <div class="flex-1 overflow-auto p-5" id="view-body">
             </div>
-    `;
+        `;
+        Sidebar.render('admin');
+        this.switchView('inventory'); // 초기 실행 시 인벤토리 호출
+    },
 
-    if (viewId === 'inventory') {
-        InventoryView.render();
+    switchView(viewId) {
+        const main = document.getElementById('main-content');
+        
+        // 제목 매핑 로직 (생략된 경우를 대비해 다시 작성)
+        const titles = { 'inventory': '상품현황', 'inquiry': '대화현황', 'registration': '상품등록' };
+        const title = titles[viewId] || viewId.toUpperCase();
+
+        main.innerHTML = `
+            <div class="view-header flex items-center h-[40px] px-5 bg-white border-b border-slate-200 shadow-sm">
+                <h2 class="text-[13px] font-bold text-slate-800">${title}</h2>
+            </div>
+            <div class="flex-1 overflow-auto p-4" id="view-body"></div>
+        `;
+
+        if (viewId === 'inventory') {
+            InventoryView.render(); // 여기서 인벤토리 뷰 호출!
+        }
+
+        if (window.lucide) lucide.createIcons();
     }
+};
 
-    if (window.lucide) lucide.createIcons();
-}
+window.switchView = (id) => UI.switchView(id);
