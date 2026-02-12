@@ -2,47 +2,29 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Freepass Mobility ERP</title>
-    <style>
-        /* 초기 로딩 및 배경 설정 */
-        body { 
-            margin: 0; 
-            padding: 0; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            height: 100vh; 
-            background-color: #F4F5F7; /* PALETTE.ui.background */
-            font-family: 'Pretendard', -apple-system, sans-serif;
-        }
-        #auth-shell {
-            width: 100%;
-            display: flex;
-            justify-content: center;
-        }
-    </style>
+    <title>Freepass ERP | Login</title>
 </head>
 <body>
-
-    <div id="auth-shell"></div>
+    <div id="auth-shell">
+        <p>기능 로딩 중...</p>
+    </div>
 
     <script type="module">
-        /**
-         * [움직임] 초기 진입 시 로그인 부품을 로드함
-         */
+        import { AuthHandler } from './actions/auth-handler.js';
+
         async function init() {
             const shell = document.getElementById('auth-shell');
             try {
+                // 1. 껍데기(HTML) 로드
                 const response = await fetch('./components/auth/login-form.html');
-                if (response.ok) {
-                    shell.innerHTML = await response.text();
-                }
+                shell.innerHTML = await response.text();
+                
+                // 2. 움직임(JS) 연결
+                AuthHandler.init();
             } catch (error) {
-                console.error("초기 부품 로드 실패:", error);
+                console.error("인증 시스템 구동 실패:", error);
             }
         }
-
         window.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
