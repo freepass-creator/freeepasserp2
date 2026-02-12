@@ -16,7 +16,7 @@ export const UI = {
                     <div class="flex items-center gap-2">
                         <span class="text-[8px] font-black text-blue-500 border border-blue-200 px-1.5 py-0.5 rounded bg-blue-50 uppercase tracking-tighter">Admin System</span>
                     </div>
-                    <button onclick="location.reload()" class="text-slate-400 font-bold text-[9px] hover:text-rose-500 transition-colors uppercase">Logout</button>
+                    <button onclick="location.reload()" class="text-slate-400 font-bold text-[9px] hover:text-rose-500 transition-colors uppercase font-black">Logout</button>
                 </header>
                 <div class="flex-1 flex overflow-hidden relative">
                     <nav id="sidebar-container" class="w-[64px] bg-white border-r border-slate-200 flex flex-col items-center overflow-y-auto hide-scrollbar flex-shrink-0"></nav>
@@ -54,34 +54,38 @@ export const UI = {
     openDetail(carData, autoChat = false) {
         const drawer = document.getElementById('right-drawer');
         if (!drawer) return;
+
+        // 동일 상품 클릭 시 토글(닫기)
         if (!autoChat && this.selectedCarData && this.selectedCarData.차량_번호 === carData.차량_번호) {
             this.closeDetail();
             return;
         }
+
+        // 기존 내용 닫기
         this.closeChat();
         drawer.classList.add('hidden');
+
+        // [복구] 상세페이지 호출 딜레이를 50ms로 환원하여 안정적인 렌더링 확보
         setTimeout(() => {
             this.selectedCarData = carData;
             drawer.innerHTML = DetailView.render(carData, { company: "프리패스모빌리티", nameTitle: "박영협 팀장", phone: "010-6393-0926" });
             drawer.classList.remove('hidden');
             if (window.lucide) lucide.createIcons();
-            if (autoChat) this.toggleChat(); // 문의하기 클릭 시 토글 실행
-        }, 10);
+            if (autoChat) this.toggleChat(); 
+        }, 50);
     },
 
-    // [핵심] 채팅 토글 함수
+    // [복구] 채팅창 토글 로직 확실히 고정
     toggleChat() {
         const chat = document.getElementById('chat-drawer');
         if (!this.selectedCarData || !chat) return;
 
         if (chat.classList.contains('hidden')) {
-            // 닫혀있으면 열기
             chat.innerHTML = ChatView.render(this.selectedCarData);
             chat.classList.remove('hidden');
             if (window.lucide) lucide.createIcons();
         } else {
-            // 열려있으면 닫기
-            this.closeChat();
+            chat.classList.add('hidden');
         }
     },
 
