@@ -16,14 +16,17 @@ export const UI = {
                     <span class="text-[8px] font-black text-blue-500 border border-blue-200 px-1.5 py-0.5 rounded bg-blue-50 uppercase tracking-tighter">Admin Mode</span>
                     <button onclick="location.reload()" class="text-slate-400 font-bold text-[9px] hover:text-rose-500 transition-colors">LOGOUT</button>
                 </header>
-                <div class="flex-1 flex overflow-hidden relative gap-0">
+                
+                <div class="flex-1 flex overflow-hidden relative gap-2 bg-[#f1f3f6]">
                     <nav id="sidebar-container" class="w-[64px] bg-white border-r border-slate-200 flex flex-col items-center overflow-y-auto hide-scrollbar flex-shrink-0"></nav>
-                    <main id="main-content" class="flex-1 relative overflow-hidden bg-[#f1f3f6] flex flex-col">
-                        <div id="page-header" class="view-header flex items-center h-[45px] px-4 bg-white border-b border-slate-200 shadow-sm flex-shrink-0"></div>
-                        <div id="view-body" class="flex-1 overflow-auto erp-main-container"></div>
+                    
+                    <main id="main-content" class="flex-1 relative overflow-hidden bg-white border-l border-slate-200 flex flex-col shadow-sm">
+                        <div id="page-header" class="view-header flex items-center h-[45px] px-4 border-b border-slate-100 flex-shrink-0"></div>
+                        <div id="view-body" class="flex-1 overflow-auto"></div>
                     </main>
-                    <aside id="chat-drawer" class="fixed top-[40px] right-[400px] bottom-0 w-[350px] z-[90] bg-white border-l border-slate-200 hidden"></aside>
-                    <aside id="right-drawer" class="fixed top-[40px] right-0 bottom-0 w-[400px] z-[100] bg-white border-l border-slate-200 hidden flex flex-col"></aside>
+
+                    <aside id="chat-drawer" class="fixed top-[40px] right-[400px] bottom-0 w-[350px] z-[90] bg-white border-l border-slate-200 hidden shadow-2xl"></aside>
+                    <aside id="right-drawer" class="fixed top-[40px] right-0 bottom-0 w-[400px] z-[100] bg-white border-l border-slate-200 hidden flex flex-col shadow-2xl"></aside>
                 </div>
             </div>
         `;
@@ -34,7 +37,6 @@ export const UI = {
         this.currentView = viewId;
         this.closeDetail();
         
-        // 사이드바에 현재 뷰 ID를 전달하여 상태 업데이트
         Sidebar.render(viewId);
 
         const header = document.getElementById('page-header');
@@ -60,24 +62,20 @@ export const UI = {
         if (cur.render) {
             cur.render();
         } else {
-            body.innerHTML = `
-                <div class="h-full flex flex-col items-center justify-center text-slate-300 gap-2 font-black uppercase text-[9px]">
-                    <i data-lucide="construct" class="w-8 h-8 opacity-10"></i> ${cur.title} 모듈 준비 중
-                </div>`;
+            body.innerHTML = `<div class="h-full flex flex-col items-center justify-center text-slate-300 gap-2 font-black uppercase text-[9px]"><i data-lucide="construct" class="w-8 h-8 opacity-10"></i> ${cur.title} 준비중</div>`;
         }
 
         if (window.lucide) lucide.createIcons();
     },
 
+    // ... openDetail, openChat 등 기존과 동일 ...
     openDetail(carData, autoChat = false) {
         const drawer = document.getElementById('right-drawer');
         if (!drawer) return;
         if (this.selectedCarData?.차량_번호 === carData.차량_번호) { if (autoChat) this.openChat(); return; }
-
         drawer.classList.add('hidden');
         drawer.classList.remove('animate-drawer-reset');
         this.closeChat();
-
         setTimeout(() => {
             this.selectedCarData = carData;
             drawer.innerHTML = DetailView.render(carData, { company: "프리패스모빌리티", nameTitle: "박영협 팀장", phone: "010-6393-0926" });
@@ -87,7 +85,6 @@ export const UI = {
             if (autoChat) setTimeout(() => this.openChat(), 50);
         }, 15);
     },
-
     openChat() {
         const chat = document.getElementById('chat-drawer');
         if (!this.selectedCarData || !chat) return;
@@ -97,7 +94,6 @@ export const UI = {
         chat.classList.add('animate-drawer-reset');
         if (window.lucide) lucide.createIcons();
     },
-
     closeChat() { const c = document.getElementById('chat-drawer'); if (c) c.classList.add('hidden'); },
     closeDetail() { this.selectedCarData = null; this.closeChat(); const d = document.getElementById('right-drawer'); if (d) d.classList.add('hidden'); }
 };
