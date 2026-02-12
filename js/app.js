@@ -1,11 +1,9 @@
 import { UI } from './ui.js';
 
-// 앱 시작 시 로그인 화면 로드
 document.addEventListener('DOMContentLoaded', () => {
     renderLogin();
 });
 
-// [화면 1] 로그인 렌더링
 function renderLogin() {
     document.body.className = "h-screen overflow-hidden bg-[#0f172a]";
     const root = document.getElementById('root');
@@ -20,7 +18,8 @@ function renderLogin() {
                     <div class="space-y-4">
                         <div class="text-left">
                             <label class="text-[9px] text-white/30 ml-1 uppercase font-bold">보안코드 인증</label>
-                            <input type="password" id="login-pw" placeholder="••••" class="w-full p-4 bg-slate-900 border border-slate-700 text-white text-center tracking-[1em] outline-none rounded-xl focus:border-blue-500 mt-1">
+                            <input type="password" id="login-pw" placeholder="••••" 
+                                   class="w-full p-4 bg-slate-900 border border-slate-700 text-white text-center tracking-[1em] outline-none rounded-xl focus:border-blue-500 mt-1">
                         </div>
                         <button onclick="checkAuth()" class="w-full py-4 bg-blue-600 text-white font-black rounded-xl shadow-xl hover:bg-blue-500 transition-all">시스템 보안 접속</button>
                     </div>
@@ -28,13 +27,20 @@ function renderLogin() {
             </div>
         </div>
     `;
+
+    // [추가] 엔터 키 감지 로직
+    const pwInput = document.getElementById('login-pw');
+    pwInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            checkAuth();
+        }
+    });
+    pwInput.focus(); // 시작하자마자 입력창에 커서 배치
 }
 
-// 인증 확인 함수
 window.checkAuth = () => {
     const pw = document.getElementById('login-pw').value;
     if (pw === '7777') {
-        // 로그인 성공 시 작업장으로 전환
         UI.init();
     } else {
         alert('보안코드가 일치하지 않습니다.');
