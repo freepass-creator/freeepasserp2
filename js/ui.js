@@ -12,24 +12,21 @@ export const UI = {
         const root = document.getElementById('root');
         root.innerHTML = `
             <div class="flex flex-col h-full bg-[#f1f3f6]">
-                <header class="h-[40px] bg-white border-b border-slate-200 flex items-center px-4 justify-between z-50 flex-shrink-0">
+                <header class="h-[40px] bg-white border-b border-slate-200 flex items-center px-4 justify-between z-[100] flex-shrink-0">
                     <div class="flex items-center gap-2">
                         <span class="text-[8px] font-black text-blue-500 border border-blue-200 px-1.5 py-0.5 rounded bg-blue-50 uppercase tracking-tighter">Admin System</span>
                     </div>
                     <button onclick="location.reload()" class="text-slate-400 font-bold text-[9px] hover:text-rose-500 transition-colors uppercase">Logout</button>
                 </header>
-                
                 <div class="flex-1 flex overflow-hidden relative">
                     <nav id="sidebar-container" class="w-[64px] bg-white border-r border-slate-200 flex flex-col items-center overflow-y-auto hide-scrollbar flex-shrink-0"></nav>
-                    
-                    <main id="main-content" class="flex-1 relative overflow-hidden bg-white border border-slate-200 flex flex-col shadow-sm mt-2 ml-2 mb-2 mr-2">
+                    <main id="main-content" class="flex-1 relative overflow-hidden bg-white border border-slate-200 shadow-sm mt-2 ml-2 mb-2 mr-2">
                         <div id="page-header" class="view-header flex items-center h-[45px] px-4 border-b border-slate-100 flex-shrink-0 bg-white"></div>
-                        
                         <div id="view-body" class="flex-1 overflow-auto bg-white p-1"></div>
                     </main>
 
-                    <aside id="chat-drawer" class="fixed top-[48px] right-[412px] bottom-[10px] w-[350px] z-[90] bg-white border border-slate-200 hidden shadow-2xl"></aside>
-                    <aside id="right-drawer" class="fixed top-[48px] right-[10px] bottom-[10px] w-[400px] z-[100] bg-white border border-slate-200 hidden flex flex-col shadow-2xl"></aside>
+                    <aside id="chat-drawer" class="fixed top-[48px] right-[412px] bottom-[10px] w-[350px] z-[90] bg-white border border-slate-200 hidden shadow-2xl transition-all"></aside>
+                    <aside id="right-drawer" class="fixed top-[48px] right-[10px] bottom-[10px] w-[400px] z-[100] bg-white border border-slate-200 hidden flex flex-col shadow-2xl transition-all"></aside>
                 </div>
             </div>
         `;
@@ -39,9 +36,7 @@ export const UI = {
     switchView(viewId) {
         this.currentView = viewId;
         this.closeDetail();
-        
         Sidebar.render(viewId);
-
         const header = document.getElementById('page-header');
         const body = document.getElementById('view-body');
         
@@ -52,58 +47,78 @@ export const UI = {
             'registration': { title: '상품등록', icon: 'plus-square', color: 'text-emerald-600' },
             'inventory': { title: '상품현황', icon: 'layout-grid', color: 'text-indigo-600', render: () => InventoryView.render() }
         };
-
         const cur = config[viewId] || { title: viewId, icon: 'box', color: 'text-slate-600' };
-
-        header.innerHTML = `
-            <div class="flex items-center gap-2">
-                <i data-lucide="${cur.icon}" class="w-4 h-4 ${cur.color}"></i>
-                <h2 class="text-[12.5px] font-black text-slate-800 tracking-tighter uppercase">${cur.title}</h2>
-            </div>
-        `;
-
-        if (cur.render) {
-            cur.render();
-        } else {
-            body.innerHTML = `
-                <div class="h-full flex flex-col items-center justify-center text-slate-300 gap-2 font-black uppercase text-[9px] opacity-20">
-                    <i data-lucide="construct" class="w-10 h-10"></i> ${cur.title} 준비중
-                </div>`;
-        }
-
+        header.innerHTML = `<div class="flex items-center gap-2"><i data-lucide="${cur.icon}" class="w-4 h-4 ${cur.color}"></i><h2 class="text-[12.5px] font-black text-slate-800 tracking-tighter uppercase">${cur.title}</h2></div>`;
+        if (cur.render) cur.render();
         if (window.lucide) lucide.createIcons();
     },
 
+    // 리스트 클릭 시 호출되는 메인 함수
     openDetail(carData, autoChat = false) {
         const drawer = document.getElementById('right-drawer');
         if (!drawer) return;
-        if (this.selectedCarData?.차량_번호 === carData.차량_번호) { if (autoChat) this.openChat(); return; }
+
+        // 동일 상품 클릭 시 토글(닫기)
+        if (!autoChat && this.selectedCarData && this.selectedCarData.차량_번호 === carData.차량_번호) {
+            this.closeDetail();
+            return;
+        }
+
+        // 다른 상품 클릭 시 초기화
+        this.closeChat();
         drawer.classList.add('hidden');
         drawer.classList.remove('animate-drawer-reset');
-        this.closeChat();
+
         setTimeout(() => {
             this.selectedCarData = carData;
             drawer.innerHTML = DetailView.render(carData, { company: "프리패스모빌리티", nameTitle: "박영협 팀장", phone: "010-6393-0926" });
             drawer.classList.remove('hidden');
             drawer.classList.add('animate-drawer-reset');
+            
             if (window.lucide) lucide.createIcons();
-            if (autoChat) setTimeout(() => this.openChat(), 50);
-        }, 15);
+            
+            // autoChat이 true이거나 상세페이지 내에서 '문의하기' 클릭 시 채팅창 오픈
+            if (autoChat) {
+                setTimeout(() => this.openChat(), 50);
+            }
+        }, 10);
     },
+
+    // 채팅창 전용 오픈 함수
     openChat() {
         const chat = document.getElementById('chat-drawer');
         if (!this.selectedCarData || !chat) return;
-        if (!chat.classList.contains('hidden')) return;
+
+        // 이미 열려있다면 새로 갱신만
         chat.innerHTML = ChatView.render(this.selectedCarData);
         chat.classList.remove('hidden');
         chat.classList.add('animate-drawer-reset');
+        
         if (window.lucide) lucide.createIcons();
     },
-    closeChat() { const c = document.getElementById('chat-drawer'); if (c) c.classList.add('hidden'); },
-    closeDetail() { this.selectedCarData = null; this.closeChat(); const d = document.getElementById('right-drawer'); if (d) d.classList.add('hidden'); }
+
+    closeChat() { 
+        const c = document.getElementById('chat-drawer'); 
+        if (c) {
+            c.classList.add('hidden'); 
+            c.innerHTML = ''; // 내용 비우기
+        }
+    },
+
+    closeDetail() { 
+        this.selectedCarData = null; 
+        this.closeChat(); 
+        const d = document.getElementById('right-drawer'); 
+        if (d) {
+            d.classList.add('hidden'); 
+            d.innerHTML = ''; // 내용 비우기
+        }
+    }
 };
 
+// 전역 헬퍼 함수 (버튼 onClick에서 호출)
 window.openFullChatByIndex = (idx) => { if (window.inquiryData?.[idx]) UI.openDetail(window.inquiryData[idx].차량정보, true); };
 window.openDetailByIndex = (idx) => { if (window.inventoryData?.[idx]) UI.openDetail(window.inventoryData[idx], false); };
+window.openChat = () => UI.openChat(); // 상세페이지 내 '문의하기' 버튼용
 window.switchView = (id) => UI.switchView(id);
 window.closeDetail = () => UI.closeDetail();
