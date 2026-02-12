@@ -14,7 +14,7 @@ export const UI = {
             <div class="flex flex-col h-full bg-[#f1f3f6] overflow-hidden font-sans">
                 <header class="h-[40px] bg-white border-b border-slate-200 flex items-center px-4 justify-between z-[110] flex-shrink-0">
                     <div class="flex items-center gap-2 font-black text-blue-500 text-[10px] tracking-tighter uppercase">Admin System</div>
-                    <button onclick="location.reload()" class="text-slate-400 font-bold text-[9px] hover:text-rose-500 transition-colors uppercase">Logout</button>
+                    <button onclick="location.reload()" class="text-slate-400 font-bold text-[9px] hover:text-rose-500 transition-colors uppercase font-black">Logout</button>
                 </header>
                 
                 <div class="flex-1 flex overflow-hidden relative">
@@ -25,10 +25,10 @@ export const UI = {
                         <div id="view-body" class="flex-1 overflow-auto bg-white p-1"></div>
                     </main>
 
-                    <aside id="chat-drawer" 
+                    <aside id="chat-drawer" style="will-change: transform;"
                         class="fixed top-[40px] right-[400px] bottom-0 w-[350px] z-[90] bg-white border-l border-slate-200 shadow-2xl translate-x-full transition-transform duration-300 ease-in-out"></aside>
                     
-                    <aside id="right-drawer" 
+                    <aside id="right-drawer" style="will-change: transform;"
                         class="fixed top-[40px] right-0 bottom-0 w-[400px] z-[100] bg-white border-l border-slate-200 shadow-2xl translate-x-full transition-transform duration-300 ease-in-out flex flex-col"></aside>
                 </div>
             </div>
@@ -38,31 +38,38 @@ export const UI = {
 
     switchView(viewId) {
         this.currentView = viewId;
-        this.forceCloseDrawers(); // 메뉴 이동 시 모든 창 즉시 닫기
+        this.forceCloseDrawers(); 
         Sidebar.render(viewId);
-        // ... 생략 ...
+        const header = document.getElementById('page-header');
+        const config = {
+            'inquiry': { title: '대화현황', icon: 'message-square', color: 'text-blue-600', render: () => InquiryView.render() },
+            'settlement': { title: '정산관리', icon: 'bar-chart-3', color: 'text-amber-600' },
+            'approval': { title: '승인관리', icon: 'shield-check', color: 'text-rose-600' },
+            'registration': { title: '상품등록', icon: 'plus-square', color: 'text-emerald-600' },
+            'inventory': { title: '상품현황', icon: 'layout-grid', color: 'text-indigo-600', render: () => InventoryView.render() }
+        };
+        const cur = config[viewId] || { title: viewId, icon: 'box', color: 'text-slate-600' };
+        header.innerHTML = `<div class="flex items-center gap-2 font-black"><i data-lucide="${cur.icon}" class="w-4 h-4 ${cur.color}"></i><h2 class="text-[12.5px] text-slate-800 uppercase tracking-tighter">${cur.title}</h2></div>`;
+        if (cur.render) cur.render();
+        if (window.lucide) lucide.createIcons();
     },
 
     openDetail(carData, autoChat = false) {
         const drawer = document.getElementById('right-drawer');
         if (!drawer) return;
 
-        // 동일 데이터 클릭 시 슬라이딩 클로즈
-        if (!autoChat && this.selectedCarData?.차량_번호 === carData.차량_번호) {
-            this.closeDetail();
-            return;
-        }
-
-        // [잔상 제거 핵심] 1. 즉시 숨기기 (애니메이션 끔)
+        // [잔상 제거 로직]
+        // 1. 일단 기존 애니메이션 끄고 내용 비우고 즉시 숨김
         drawer.style.transition = 'none';
         drawer.classList.add('translate-x-full');
+        drawer.innerHTML = ''; 
 
-        // 2. 데이터 렌더링
-        this.selectedCarData = carData;
-        drawer.innerHTML = DetailView.render(carData);
-
-        // 3. 렌더링이 완료된 후 애니메이션 켜고 슬라이딩 시작
+        // 2. 브라우저가 '비어있는 상태'를 인지하게 한 뒤 새 데이터 삽입
         requestAnimationFrame(() => {
+            this.selectedCarData = carData;
+            drawer.innerHTML = DetailView.render(carData);
+            
+            // 3. 아주 짧은 찰나(50ms) 뒤에 애니메이션 켜면서 슬라이딩 시작
             setTimeout(() => {
                 drawer.style.transition = 'transform 0.3s ease-in-out';
                 drawer.classList.remove('translate-x-full');
@@ -74,11 +81,13 @@ export const UI = {
 
     toggleChat(forceOpen = false) {
         const chat = document.getElementById('chat-drawer');
-        const isClosed = chat.classList.contains('translate-x-full');
+        if (!this.selectedCarData || !chat) return;
 
-        if (isClosed || forceOpen) {
-            chat.style.transition = 'none'; // 렌더링 전 애니메이션 끔
+        if (chat.classList.contains('translate-x-full') || forceOpen) {
+            chat.style.transition = 'none';
+            chat.classList.add('translate-x-full');
             chat.innerHTML = ChatView.render(this.selectedCarData);
+            
             setTimeout(() => {
                 chat.style.transition = 'transform 0.3s ease-in-out';
                 chat.classList.remove('translate-x-full');
@@ -92,15 +101,20 @@ export const UI = {
     forceCloseDrawers() {
         const d = document.getElementById('right-drawer');
         const c = document.getElementById('chat-drawer');
-        if (d) { d.style.transition = 'none'; d.classList.add('translate-x-full'); }
-        if (c) { c.style.transition = 'none'; c.classList.add('translate-x-full'); }
+        if (d) { d.style.transition = 'none'; d.classList.add('translate-x-full'); d.innerHTML = ''; }
+        if (c) { c.style.transition = 'none'; c.classList.add('translate-x-full'); c.innerHTML = ''; }
         this.selectedCarData = null;
     },
 
-    closeChat() { document.getElementById('chat-drawer').classList.add('translate-x-full'); },
-    closeDetail() { 
-        this.closeChat(); 
-        document.getElementById('right-drawer').classList.add('translate-x-full');
+    closeChat() {
+        const c = document.getElementById('chat-drawer');
+        if (c) c.classList.add('translate-x-full');
+    },
+
+    closeDetail() {
+        this.closeChat();
+        const d = document.getElementById('right-drawer');
+        if (d) d.classList.add('translate-x-full');
         this.selectedCarData = null;
     }
 };
