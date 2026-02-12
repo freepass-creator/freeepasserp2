@@ -2,46 +2,66 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>ERP 보안 시스템</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CMS Admin System</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { background-color: #0f172a; margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; font-family: sans-serif; }
+        body { background-color: #0f172a; margin: 0; font-family: sans-serif; }
         .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
-    <div id="login-gate" class="bg-[#1e293b] p-10 rounded-2xl border border-slate-700 shadow-2xl text-center w-[350px]">
-        <h2 class="text-white text-2xl font-bold mb-2">보안 로그인</h2>
-        <p class="text-slate-400 text-sm mb-8">보안코드 1234를 입력하세요</p>
-        <input type="password" id="pw-input" placeholder="••••" class="w-full p-4 bg-[#0f172a] text-white border border-slate-600 rounded-lg text-center text-2xl tracking-[10px] outline-none focus:border-blue-500">
-        <button onclick="checkLogin()" class="w-full mt-6 p-4 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-lg">시스템 접속</button>
+    <div id="login-section" class="min-h-screen flex items-center justify-center">
+        <div class="bg-[#1e293b] p-10 rounded-2xl border border-slate-700 shadow-2xl text-center w-[380px]">
+            <div class="mb-8">
+                <div class="inline-block p-4 rounded-full bg-blue-500/10 mb-4">🛡️</div>
+                <h1 class="text-white text-2xl font-bold">SECURITY GATE</h1>
+                <p class="text-slate-400 text-sm mt-2">인가된 보안코드를 입력하세요</p>
+            </div>
+            <input type="password" id="pw" placeholder="••••" 
+                class="w-full p-4 bg-[#0f172a] text-white border border-slate-600 rounded-lg text-center text-2xl tracking-[10px] outline-none focus:border-blue-500">
+            <button onclick="handleLogin()" 
+                class="w-full mt-6 p-4 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-lg transition-all">
+                시스템 진입
+            </button>
+        </div>
     </div>
 
-    <div id="dashboard" class="hidden w-full max-w-4xl p-10 text-white">
-        <h1 class="text-3xl font-bold text-blue-400 mb-6">📊 ERP 실시간 관리 시스템</h1>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div id="main-section" class="hidden min-h-screen p-8 text-white">
+        <header class="flex justify-between items-center border-bottom border-slate-700 pb-6 mb-8">
+            <h1 class="text-2xl font-black text-blue-500 italic">FREEPASS ERP v1.0</h1>
+            <button onclick="location.reload()" class="text-sm text-slate-400 hover:text-white underline">로그아웃</button>
+        </header>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
             <div class="bg-slate-800 p-6 rounded-xl border border-slate-700">
-                <p class="text-slate-400">오늘의 방문자</p>
-                <p class="text-3xl font-bold">1,240명</p>
+                <p class="text-slate-400 text-sm mb-1">실시간 재고</p>
+                <p class="text-3xl font-bold">4,502 <span class="text-sm font-normal">개</span></p>
+            </div>
+            <div class="bg-slate-800 p-6 rounded-xl border border-slate-700 border-l-4 border-l-red-500">
+                <p class="text-slate-400 text-sm mb-1 text-red-400">품절 임박</p>
+                <p class="text-3xl font-bold">12 <span class="text-sm font-normal text-white">건</span></p>
             </div>
             <div class="bg-slate-800 p-6 rounded-xl border border-slate-700">
-                <p class="text-slate-400">재고 부족</p>
-                <p class="text-3xl font-bold text-red-400">8건</p>
+                <p class="text-slate-400 text-sm mb-1">오늘의 출고</p>
+                <p class="text-3xl font-bold">158 <span class="text-sm font-normal">건</span></p>
             </div>
-            <button onclick="location.reload()" class="bg-red-500/10 text-red-400 p-6 rounded-xl border border-red-500/20 hover:bg-red-500/20">로그아웃</button>
+        </div>
+        
+        <div class="bg-slate-800 p-8 rounded-2xl border border-slate-700 min-h-[400px] flex items-center justify-center text-slate-500 italic">
+            데이터 리스트 준비 중...
         </div>
     </div>
 
     <script>
-        function checkLogin() {
-            const input = document.getElementById('pw-input').value;
-            if (input === '1234') {
-                alert('🔓 인증 성공!');
-                document.getElementById('login-gate').classList.add('hidden');
-                document.getElementById('dashboard').classList.remove('hidden');
+        function handleLogin() {
+            const pw = document.getElementById('pw').value;
+            if (pw === '1234') { // 보안코드
+                document.getElementById('login-section').classList.add('hidden');
+                document.getElementById('main-section').classList.remove('hidden');
             } else {
-                alert('❌ 틀렸습니다!');
+                alert('잘못된 보안코드입니다.');
             }
         }
     </script>
