@@ -17,16 +17,17 @@ export const UI = {
                     <button onclick="location.reload()" class="text-slate-400 font-bold text-[9px] hover:text-rose-500 transition-colors">LOGOUT</button>
                 </header>
                 
-                <div class="flex-1 flex overflow-hidden relative gap-2 bg-[#f1f3f6]">
-                    <nav id="sidebar-container" class="w-[64px] bg-white border-r border-slate-200 flex flex-col items-center overflow-y-auto hide-scrollbar flex-shrink-0"></nav>
+                <div class="flex-1 flex overflow-hidden relative gap-2 p-2 bg-[#f1f3f6]">
+                    <nav id="sidebar-container" class="w-[64px] bg-white border border-slate-200 rounded-sm flex flex-col items-center overflow-y-auto hide-scrollbar flex-shrink-0 shadow-sm"></nav>
                     
-                    <main id="main-content" class="flex-1 relative overflow-hidden bg-white border-l border-slate-200 flex flex-col shadow-sm">
+                    <main id="main-content" class="flex-1 relative overflow-hidden bg-white border border-slate-200 rounded-sm flex flex-col shadow-sm">
                         <div id="page-header" class="view-header flex items-center h-[45px] px-4 border-b border-slate-100 flex-shrink-0"></div>
-                        <div id="view-body" class="flex-1 overflow-auto"></div>
+                        
+                        <div id="view-body" class="flex-1 overflow-auto p-2 mt-1"></div>
                     </main>
 
-                    <aside id="chat-drawer" class="fixed top-[40px] right-[400px] bottom-0 w-[350px] z-[90] bg-white border-l border-slate-200 hidden shadow-2xl"></aside>
-                    <aside id="right-drawer" class="fixed top-[40px] right-0 bottom-0 w-[400px] z-[100] bg-white border-l border-slate-200 hidden flex flex-col shadow-2xl"></aside>
+                    <aside id="chat-drawer" class="fixed top-[48px] right-[408px] bottom-[8px] w-[350px] z-[90] bg-white border border-slate-200 rounded-sm hidden shadow-2xl"></aside>
+                    <aside id="right-drawer" class="fixed top-[48px] right-[8px] bottom-[8px] w-[400px] z-[100] bg-white border border-slate-200 rounded-sm hidden flex flex-col shadow-2xl"></aside>
                 </div>
             </div>
         `;
@@ -68,7 +69,7 @@ export const UI = {
         if (window.lucide) lucide.createIcons();
     },
 
-    // ... openDetail, openChat 등 기존과 동일 ...
+    // ... openDetail, closeDetail 등 기존 로직 동일 ...
     openDetail(carData, autoChat = false) {
         const drawer = document.getElementById('right-drawer');
         if (!drawer) return;
