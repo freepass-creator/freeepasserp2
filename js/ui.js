@@ -18,16 +18,12 @@ export const UI = {
                     </div>
                     <button onclick="location.reload()" class="text-slate-400 font-bold text-[9px] hover:text-rose-500 transition-colors uppercase">Logout</button>
                 </header>
-                
                 <div class="flex-1 flex overflow-hidden relative">
                     <nav id="sidebar-container" class="w-[64px] bg-white border-r border-slate-200 flex flex-col items-center overflow-y-auto hide-scrollbar flex-shrink-0"></nav>
-                    
-                    <main id="main-content" class="flex-1 relative overflow-hidden bg-white border-l border-slate-200 flex flex-col shadow-sm mt-2 ml-2">
+                    <main id="main-content" class="flex-1 relative overflow-hidden bg-white border border-slate-200 shadow-sm mt-2 ml-2">
                         <div id="page-header" class="view-header flex items-center h-[45px] px-4 border-b border-slate-100 flex-shrink-0 bg-white"></div>
-                        
                         <div id="view-body" class="flex-1 overflow-auto bg-white"></div>
                     </main>
-
                     <aside id="chat-drawer" class="fixed top-[40px] right-[400px] bottom-0 w-[350px] z-[90] bg-white border-l border-slate-200 hidden shadow-2xl transition-all"></aside>
                     <aside id="right-drawer" class="fixed top-[40px] right-0 bottom-0 w-[400px] z-[100] bg-white border-l border-slate-200 hidden flex flex-col shadow-2xl transition-all"></aside>
                 </div>
@@ -39,12 +35,9 @@ export const UI = {
     switchView(viewId) {
         this.currentView = viewId;
         this.closeDetail();
-        
         Sidebar.render(viewId);
-
         const header = document.getElementById('page-header');
         const body = document.getElementById('view-body');
-        
         const config = {
             'inquiry': { title: '대화현황', icon: 'message-square', color: 'text-blue-600', render: () => InquiryView.render() },
             'settlement': { title: '정산관리', icon: 'bar-chart-3', color: 'text-amber-600' },
@@ -52,38 +45,22 @@ export const UI = {
             'registration': { title: '상품등록', icon: 'plus-square', color: 'text-emerald-600' },
             'inventory': { title: '상품현황', icon: 'layout-grid', color: 'text-indigo-600', render: () => InventoryView.render() }
         };
-
         const cur = config[viewId] || { title: viewId, icon: 'box', color: 'text-slate-600' };
-
-        header.innerHTML = `
-            <div class="flex items-center gap-2">
-                <i data-lucide="${cur.icon}" class="w-4 h-4 ${cur.color}"></i>
-                <h2 class="text-[12.5px] font-black text-slate-800 tracking-tighter uppercase">${cur.title}</h2>
-            </div>
-        `;
-
-        if (cur.render) {
-            cur.render();
-        } else {
-            body.innerHTML = `<div class="h-full flex flex-col items-center justify-center text-slate-300 gap-2 font-black uppercase text-[9px] opacity-20"><i data-lucide="construct" class="w-10 h-10"></i> ${cur.title} 준비중</div>`;
-        }
-
+        header.innerHTML = `<div class="flex items-center gap-2"><i data-lucide="${cur.icon}" class="w-4 h-4 ${cur.color}"></i><h2 class="text-[12.5px] font-black text-slate-800 tracking-tighter uppercase">${cur.title}</h2></div>`;
+        if (cur.render) cur.render();
         if (window.lucide) lucide.createIcons();
     },
 
     openDetail(carData, autoChat = false) {
         const drawer = document.getElementById('right-drawer');
         if (!drawer) return;
-
         if (!autoChat && this.selectedCarData && this.selectedCarData.차량_번호 === carData.차량_번호) {
             this.closeDetail();
             return;
         }
-
         this.closeChat();
         drawer.classList.add('hidden');
         drawer.classList.remove('animate-drawer-reset');
-
         setTimeout(() => {
             this.selectedCarData = carData;
             drawer.innerHTML = DetailView.render(carData, { company: "프리패스모빌리티", nameTitle: "박영협 팀장", phone: "010-6393-0926" });
