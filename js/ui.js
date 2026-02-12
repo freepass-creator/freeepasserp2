@@ -23,14 +23,12 @@ export const UI = {
             </div>
         `;
         Sidebar.render('admin');
-        this.switchView('inquiry'); // 초기화면
+        this.switchView('inquiry'); 
     },
 
     switchView(viewId) {
         this.closeDetail();
         const main = document.getElementById('main-content');
-        
-        // [고정] 각 페이지별 타이틀과 매칭되는 아이콘 설정
         const pageConfig = {
             'inquiry': { title: '대화현황', icon: 'message-square', color: 'text-blue-600' },
             'registration': { title: '상품등록', icon: 'plus-square', color: 'text-emerald-600' },
@@ -38,7 +36,6 @@ export const UI = {
             'settlement': { title: '정산관리', icon: 'bar-chart-3', color: 'text-amber-600' },
             'approval': { title: '승인관리', icon: 'shield-check', color: 'text-rose-600' }
         };
-
         const current = pageConfig[viewId] || { title: viewId, icon: 'box', color: 'text-slate-600' };
 
         main.innerHTML = `
@@ -56,24 +53,37 @@ export const UI = {
                     </div>` : ''}
             </div>
         `;
-
         if (viewId === 'inventory') InventoryView.render();
-        
-        // 아이콘 렌더링
         if (window.lucide) lucide.createIcons();
     },
 
+    // [중요] 상세페이지 호출 로직: 리셋 후 재등장
     openDetail(carData) {
         const drawer = document.getElementById('right-drawer');
         if (!drawer) return;
-        if (this.selectedCarData?.차량_번호 === carData.차량_번호) { this.closeDetail(); return; }
+
+        // 1. 같은 차량을 클릭하면 그냥 닫기 (토글)
+        if (this.selectedCarData?.차량_번호 === carData.차량_번호) {
+            this.closeDetail();
+            return;
+        }
+
+        // 2. 다른 상품 클릭 시: 창을 즉시 숨기고 애니메이션 클래스 제거 (초기화)
+        drawer.classList.add('hidden');
+        drawer.classList.remove('animate-drawer-reset');
         this.closeChat();
-        this.selectedCarData = carData;
-        const managerInfo = { company: "프리패스모빌리티", nameTitle: "박영협 팀장", phone: "010-6393-0926" };
-        drawer.innerHTML = DetailView.render(carData, managerInfo);
-        drawer.classList.remove('hidden');
-        drawer.classList.add('animate-drawer-reset');
-        if (window.lucide) lucide.createIcons();
+
+        // 3. 0.01초의 찰나의 순간 뒤에 다시 그리기 (이래야 애니메이션이 다시 먹힙니다)
+        setTimeout(() => {
+            this.selectedCarData = carData;
+            const managerInfo = { company: "프리패스모빌리티", nameTitle: "박영협 팀장", phone: "010-6393-0926" };
+            
+            drawer.innerHTML = DetailView.render(carData, managerInfo);
+            drawer.classList.remove('hidden');
+            drawer.classList.add('animate-drawer-reset'); // 새로운 상품이 다시 튀어나옴
+            
+            if (window.lucide) lucide.createIcons();
+        }, 10);
     },
 
     openChat() {
@@ -87,14 +97,20 @@ export const UI = {
 
     closeChat() {
         const chatDrawer = document.getElementById('chat-drawer');
-        if (chatDrawer) { chatDrawer.classList.add('hidden'); chatDrawer.classList.remove('animate-drawer-reset'); }
+        if (chatDrawer) {
+            chatDrawer.classList.add('hidden');
+            chatDrawer.classList.remove('animate-drawer-reset');
+        }
     },
 
     closeDetail() {
         this.selectedCarData = null;
         this.closeChat();
         const drawer = document.getElementById('right-drawer');
-        if (drawer) { drawer.classList.add('hidden'); drawer.classList.remove('animate-drawer-reset'); }
+        if (drawer) {
+            drawer.classList.add('hidden');
+            drawer.classList.remove('animate-drawer-reset');
+        }
     }
 };
 
