@@ -1,39 +1,31 @@
 export const ChatView = {
-    render(car) {
-        if (!car) return `<div class="p-4 text-slate-400 text-[11px]">차량 정보가 없습니다.</div>`;
-
+    render(data) {
         return `
-            <div class="flex flex-col h-full bg-white border-r border-slate-200 shadow-2xl">
-                <div class="h-[45px] flex items-center px-4 border-b border-slate-100 bg-slate-50 justify-between flex-shrink-0">
-                    <div class="flex flex-col">
-                        <span class="font-black text-[11px] text-blue-600 leading-none mb-0.5">${car.차량_번호}</span>
-                        <span class="font-bold text-[10px] text-slate-800 tracking-tighter">${car.차량_제조사} ${car.차량_모델명} 상담</span>
-                    </div>
-                    <button onclick="closeChat()" class="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-rose-500 transition-colors">
-                        <i data-lucide="chevron-right" class="w-5 h-5"></i>
-                    </button>
+            <div class="flex flex-col h-full bg-white">
+                <div class="h-[45px] px-4 border-b border-slate-100 flex items-center justify-between flex-shrink-0">
+                    <span class="text-[11px] font-black text-slate-800 uppercase tracking-tighter">Chat / ${data.차량_번호}</span>
+                    <button onclick="UI.closeChat()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-4 h-4"></i></button>
                 </div>
 
-                <div class="flex-1 overflow-y-auto p-4 space-y-4 bg-[#f1f3f6] hide-scrollbar text-[11px]">
-                    <div class="flex flex-col gap-1.5 max-w-[85%] animate-drawer-reset">
-                        <div class="flex items-center gap-1.5 mb-0.5">
-                            <span class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Assistant</span>
+                <div class="flex-1 overflow-auto p-4 bg-[#f8fafc] space-y-4">
+                    <div class="flex flex-col gap-1">
+                        <div class="bg-white border border-slate-200 rounded-lg rounded-tl-none p-3 shadow-sm max-w-[85%]">
+                            <p class="text-[11.5px] text-slate-700 leading-relaxed font-medium">
+                                안녕하세요. 해당 차량 담당 팀장을 담당 직원이 확인 후 답변해 드리겠습니다. 잠시만 기다려 주세요.
+                            </p>
                         </div>
-                        <div class="bg-white p-3 rounded-2xl rounded-tl-none border border-slate-200 shadow-sm text-slate-700 leading-relaxed font-medium">
-                            안녕하세요! 선택하신 <b class="text-blue-600">${car.차량_모델명}</b> 차량에 대해 궁금하신 점을 남겨주시면 담당 팀장이 확인 후 즉시 답변해 드리겠습니다.
-                        </div>
-                        <span class="text-[8px] text-slate-400 font-bold ml-1">방금 전</span>
+                        <span class="text-[9px] text-slate-400 ml-1 uppercase font-bold tracking-tight">System Message</span>
                     </div>
                 </div>
 
-                <div class="p-3 border-t bg-white flex items-center gap-2 flex-shrink-0">
-                    <div class="flex-1 relative">
-                        <input type="text" placeholder="문의 사항을 입력하세요..." 
-                               class="w-full bg-slate-100 border-none px-4 py-2.5 text-[11px] rounded-full outline-none focus:ring-2 focus:ring-blue-500/20 transition-all font-medium">
+                <div class="h-[60px] px-3 flex items-center border-t border-slate-100 bg-white flex-shrink-0">
+                    <div class="flex-1 relative flex items-center">
+                        <input type="text" placeholder="메시지를 입력하세요..." 
+                               class="w-full h-[40px] bg-slate-50 border border-slate-200 rounded-full px-4 text-[12px] outline-none focus:border-blue-400 transition-all">
+                        <button class="absolute right-1 w-[32px] h-[32px] bg-blue-600 text-white rounded-full flex items-center justify-center hover:bg-blue-700 transition-all">
+                            <i data-lucide="send" class="w-3.5 h-3.5"></i>
+                        </button>
                     </div>
-                    <button class="bg-blue-600 text-white w-9 h-9 rounded-full flex items-center justify-center shadow-lg shadow-blue-100 active:scale-90 transition-transform">
-                        <i data-lucide="send" class="w-4 h-4"></i>
-                    </button>
                 </div>
             </div>
         `;
