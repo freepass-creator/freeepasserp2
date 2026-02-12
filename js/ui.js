@@ -11,23 +11,23 @@ export const UI = {
     init() {
         const root = document.getElementById('root');
         root.innerHTML = `
-            <div class="flex flex-col h-full bg-[#f1f3f6]">
+            <div class="flex flex-col h-full bg-white">
                 <header class="h-[40px] bg-white border-b border-slate-200 flex items-center px-4 justify-between z-50 flex-shrink-0">
                     <span class="text-[8px] font-black text-blue-500 border border-blue-200 px-1.5 py-0.5 rounded bg-blue-50 uppercase tracking-tighter">Admin Mode</span>
-                    <button onclick="location.reload()" class="text-slate-400 font-bold text-[9px] hover:text-rose-500 transition-colors">LOGOUT</button>
+                    <button onclick="location.reload()" class="text-slate-400 font-bold text-[9px] hover:text-rose-500 transition-colors uppercase">Logout</button>
                 </header>
                 
-                <div class="flex-1 flex overflow-hidden relative gap-2 p-2 bg-[#f1f3f6]">
-                    <nav id="sidebar-container" class="w-[64px] bg-white border border-slate-200 rounded-sm flex flex-col items-center overflow-y-auto hide-scrollbar flex-shrink-0 shadow-sm"></nav>
+                <div class="flex-1 flex overflow-hidden relative gap-0 p-0">
+                    <nav id="sidebar-container" class="w-[64px] bg-white border-r border-slate-200 flex flex-col items-center overflow-y-auto hide-scrollbar flex-shrink-0"></nav>
                     
-                    <main id="main-content" class="flex-1 relative overflow-hidden bg-white border border-slate-200 rounded-sm flex flex-col shadow-sm">
-                        <div id="page-header" class="view-header flex items-center h-[45px] px-4 border-b border-slate-100 flex-shrink-0"></div>
+                    <main id="main-content" class="flex-1 relative overflow-hidden bg-white flex flex-col">
+                        <div id="page-header" class="view-header flex items-center h-[45px] px-4 border-b border-slate-100 flex-shrink-0 bg-white"></div>
                         
-                        <div id="view-body" class="flex-1 overflow-auto p-2 mt-1"></div>
+                        <div id="view-body" class="flex-1 overflow-auto bg-[#f8fafc]"></div>
                     </main>
 
-                    <aside id="chat-drawer" class="fixed top-[48px] right-[408px] bottom-[8px] w-[350px] z-[90] bg-white border border-slate-200 rounded-sm hidden shadow-2xl"></aside>
-                    <aside id="right-drawer" class="fixed top-[48px] right-[8px] bottom-[8px] w-[400px] z-[100] bg-white border border-slate-200 rounded-sm hidden flex flex-col shadow-2xl"></aside>
+                    <aside id="chat-drawer" class="fixed top-[40px] right-[400px] bottom-0 w-[350px] z-[90] bg-white border-l border-slate-200 hidden shadow-xl"></aside>
+                    <aside id="right-drawer" class="fixed top-[40px] right-0 bottom-0 w-[400px] z-[100] bg-white border-l border-slate-200 hidden flex flex-col shadow-xl"></aside>
                 </div>
             </div>
         `;
@@ -56,20 +56,19 @@ export const UI = {
         header.innerHTML = `
             <div class="flex items-center gap-2">
                 <i data-lucide="${cur.icon}" class="w-4 h-4 ${cur.color}"></i>
-                <h2 class="text-[12.5px] font-black text-slate-800 tracking-tighter">${cur.title}</h2>
+                <h2 class="text-[13px] font-black text-slate-800 tracking-tighter">${cur.title}</h2>
             </div>
         `;
 
         if (cur.render) {
             cur.render();
         } else {
-            body.innerHTML = `<div class="h-full flex flex-col items-center justify-center text-slate-300 gap-2 font-black uppercase text-[9px]"><i data-lucide="construct" class="w-8 h-8 opacity-10"></i> ${cur.title} 준비중</div>`;
+            body.innerHTML = `<div class="h-full flex flex-col items-center justify-center text-slate-300 gap-2 font-black uppercase text-[10px] opacity-30"><i data-lucide="construct" class="w-10 h-10"></i> ${cur.title} 준비중</div>`;
         }
 
         if (window.lucide) lucide.createIcons();
     },
 
-    // ... openDetail, closeDetail 등 기존 로직 동일 ...
     openDetail(carData, autoChat = false) {
         const drawer = document.getElementById('right-drawer');
         if (!drawer) return;
