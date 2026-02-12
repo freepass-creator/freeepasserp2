@@ -1,5 +1,6 @@
 export const Sidebar = {
-    render(role = 'admin') {
+    // activeFilters 객체를 받아 현재 활성화된 필터인지 확인합니다.
+    render(role = 'admin', activeFilters = {}) {
         const container = document.getElementById('sidebar-container');
         if (!container) return;
 
@@ -12,39 +13,51 @@ export const Sidebar = {
         ];
 
         const filters = [
-            { id: 'f-period', label: '기간', icon: 'calendar' },
-            { id: 'f-rent', label: '대여료', icon: 'banknote' },
-            { id: 'f-deposit', label: '보증금', icon: 'coins' },
-            { id: 'f-mileage', label: '주행거리', icon: 'gauge' },
-            { id: 'f-year', label: '연식', icon: 'history' }
+            { id: 'f-period', label: '기간', icon: 'calendar', key: 'period' },
+            { id: 'f-rent', label: '대여료', icon: 'banknote', key: 'rent' },
+            { id: 'f-deposit', label: '보증금', icon: 'coins', key: 'deposit' },
+            { id: 'f-mileage', label: '주행거리', icon: 'gauge', key: 'mileage' },
+            { id: 'f-year', label: '연식', icon: 'history', key: 'year' }
         ];
 
-        container.className = "w-[80px] bg-white border-r border-slate-200 flex flex-col items-center py-5 gap-3 overflow-y-auto hide-scrollbar";
+        container.className = "w-[80px] bg-white border-r border-slate-200 flex flex-col items-center py-3 gap-1.5 overflow-y-auto hide-scrollbar";
 
-        // [변경 포인트] rounded-2xl (곡선형) 적용, 텍스트 크기 확대(text-[10px]), 입체감 추가
+        // 1. 주요 메뉴 (가로가 더 긴 직사각형, 그림자 효과)
         let html = menus.filter(m => m.roles.includes(role)).map(m => `
             <button onclick="switchView('${m.id}')" id="side-btn-${m.id}" 
-                class="side-btn flex flex-col items-center justify-center w-[62px] h-[62px] rounded-[18px] border border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:border-blue-300 hover:shadow-lg active:scale-95 transition-all mb-1">
-                <i data-lucide="${m.icon}" class="w-5 h-5 mb-0.5"></i>
-                <span class="text-[10px] font-bold tracking-tighter">${m.label}</span>
+                class="side-btn flex flex-col items-center justify-center w-[68px] h-[52px] rounded-[6px] border border-slate-200 bg-white text-slate-500 
+                hover:-translate-y-0.5 hover:shadow-md active:translate-y-0.5 active:shadow-inner transition-all duration-200 mb-0.5">
+                <i data-lucide="${m.icon}" class="w-4 h-4 mb-1"></i>
+                <span class="text-[10px] font-bold tracking-tighter leading-none">${m.label}</span>
             </button>
         `).join('');
 
-        html += `<div class="w-10 h-[1.5px] bg-slate-100 my-2"></div>`;
+        html += `<div class="w-12 h-[1px] bg-slate-100 my-1"></div>`;
 
-        // 필터 버튼도 루비 스타일 적용 (살짝 작게)
-        html += filters.map(f => `
-            <button class="side-btn flex flex-col items-center justify-center w-[60px] h-[58px] rounded-[16px] border border-slate-100 bg-white text-slate-400 hover:bg-slate-50 hover:border-slate-300 transition-all mb-1">
-                <i data-lucide="${f.icon}" class="w-4 h-4 mb-0.5"></i>
-                <span class="text-[10px] font-semibold">${f.label}</span>
-            </button>
-        `).join('');
+        // 2. 필터 버튼 (필터 활성화 시 강조 스타일 적용)
+        html += filters.map(f => {
+            const isActive = activeFilters[f.key] && activeFilters[f.key].length > 0;
+            const activeClass = isActive 
+                ? "bg-blue-50 border-blue-400 text-blue-600 shadow-inner" 
+                : "bg-white border-slate-100 text-slate-400";
 
+            return `
+                <button onclick="toggleFilter('${f.key}')" id="side-btn-${f.id}" 
+                    class="side-btn flex flex-col items-center justify-center w-[68px] h-[48px] rounded-[6px] border ${activeClass}
+                    hover:-translate-y-0.5 hover:shadow-sm active:translate-y-0.5 transition-all mb-0.5">
+                    <i data-lucide="${f.icon}" class="w-4 h-4 mb-0.5"></i>
+                    <span class="text-[10px] font-bold">${f.label}</span>
+                    ${isActive ? '<div class="absolute top-1 right-1 w-1.5 h-1.5 bg-blue-500 rounded-full"></div>' : ''}
+                </button>
+            `;
+        }).join('');
+
+        // 3. 엑셀 버튼
         html += `
-            <div class="mt-auto pt-4">
-                <button class="side-btn flex flex-col items-center justify-center w-[62px] h-[64px] rounded-[20px] border border-emerald-200 bg-emerald-50 text-emerald-600 shadow-sm hover:shadow-md hover:bg-emerald-100 transition-all">
-                    <i data-lucide="download" class="w-5 h-5"></i>
-                    <span class="text-[10px] font-black mt-1 uppercase">Excel</span>
+            <div class="mt-auto pt-2">
+                <button class="side-btn flex flex-col items-center justify-center w-[68px] h-[54px] rounded-[6px] border border-emerald-100 bg-emerald-50 text-emerald-600 hover:-translate-y-0.5 hover:shadow-md transition-all">
+                    <i data-lucide="download" class="w-4 h-4 mb-1"></i>
+                    <span class="text-[10px] font-black uppercase">Excel</span>
                 </button>
             </div>
         `;
