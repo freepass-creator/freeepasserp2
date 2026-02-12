@@ -1,12 +1,49 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8" />
-    <title>ERP SYSTEM</title>
+    <meta charset="UTF-8">
+    <title>ERP 보안 시스템</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #0f172a; margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; font-family: sans-serif; }
+        .hidden { display: none !important; }
+    </style>
 </head>
-<body class="bg-[#0f172a]">
-    <div id="root"></div>
-    <script type="module" src="/main.jsx"></script>
+<body>
+
+    <div id="login-gate" class="bg-[#1e293b] p-10 rounded-2xl border border-slate-700 shadow-2xl text-center w-[350px]">
+        <h2 class="text-white text-2xl font-bold mb-2">보안 로그인</h2>
+        <p class="text-slate-400 text-sm mb-8">보안코드 1234를 입력하세요</p>
+        <input type="password" id="pw-input" placeholder="••••" class="w-full p-4 bg-[#0f172a] text-white border border-slate-600 rounded-lg text-center text-2xl tracking-[10px] outline-none focus:border-blue-500">
+        <button onclick="checkLogin()" class="w-full mt-6 p-4 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-lg">시스템 접속</button>
+    </div>
+
+    <div id="dashboard" class="hidden w-full max-w-4xl p-10 text-white">
+        <h1 class="text-3xl font-bold text-blue-400 mb-6">📊 ERP 실시간 관리 시스템</h1>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="bg-slate-800 p-6 rounded-xl border border-slate-700">
+                <p class="text-slate-400">오늘의 방문자</p>
+                <p class="text-3xl font-bold">1,240명</p>
+            </div>
+            <div class="bg-slate-800 p-6 rounded-xl border border-slate-700">
+                <p class="text-slate-400">재고 부족</p>
+                <p class="text-3xl font-bold text-red-400">8건</p>
+            </div>
+            <button onclick="location.reload()" class="bg-red-500/10 text-red-400 p-6 rounded-xl border border-red-500/20 hover:bg-red-500/20">로그아웃</button>
+        </div>
+    </div>
+
+    <script>
+        function checkLogin() {
+            const input = document.getElementById('pw-input').value;
+            if (input === '1234') {
+                alert('🔓 인증 성공!');
+                document.getElementById('login-gate').classList.add('hidden');
+                document.getElementById('dashboard').classList.remove('hidden');
+            } else {
+                alert('❌ 틀렸습니다!');
+            }
+        }
+    </script>
 </body>
 </html>
