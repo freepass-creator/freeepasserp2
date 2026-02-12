@@ -23,39 +23,56 @@ export const UI = {
             </div>
         `;
         Sidebar.render('admin');
-        this.switchView('inquiry'); 
+        this.switchView('inquiry'); // 초기화면
     },
 
     switchView(viewId) {
         this.closeDetail();
         const main = document.getElementById('main-content');
+        
+        // [고정] 각 페이지별 타이틀과 매칭되는 아이콘 설정
+        const pageConfig = {
+            'inquiry': { title: '대화현황', icon: 'message-square', color: 'text-blue-600' },
+            'registration': { title: '상품등록', icon: 'plus-square', color: 'text-emerald-600' },
+            'inventory': { title: '상품현황', icon: 'layout-grid', color: 'text-indigo-600' },
+            'settlement': { title: '정산관리', icon: 'bar-chart-3', color: 'text-amber-600' },
+            'approval': { title: '승인관리', icon: 'shield-check', color: 'text-rose-600' }
+        };
+
+        const current = pageConfig[viewId] || { title: viewId, icon: 'box', color: 'text-slate-600' };
+
         main.innerHTML = `
-            <div class="view-header flex items-center h-[38px] px-5 bg-white border-b border-slate-200 shadow-sm">
-                <h2 class="text-[12px] font-bold text-slate-800">${viewId === 'inventory' ? '상품현황' : '대화현황'}</h2>
+            <div class="view-header flex items-center h-[45px] px-5 bg-white border-b border-slate-200 shadow-sm">
+                <div class="flex items-center gap-2.5">
+                    <i data-lucide="${current.icon}" class="w-4 h-4 ${current.color}"></i>
+                    <h2 class="text-[13px] font-black text-slate-800 tracking-tighter">${current.title}</h2>
+                </div>
             </div>
-            <div class="flex-1 overflow-auto p-4" id="view-body"></div>
+            <div class="flex-1 overflow-auto p-4" id="view-body">
+                ${['settlement', 'approval', 'registration'].includes(viewId) ? 
+                    `<div class="h-full flex flex-col items-center justify-center text-slate-400 gap-2">
+                        <i data-lucide="construct" class="w-8 h-8 opacity-20"></i>
+                        <p class="text-[11px] font-bold uppercase tracking-widest">${current.title} 모듈 준비 중</p>
+                    </div>` : ''}
+            </div>
         `;
+
         if (viewId === 'inventory') InventoryView.render();
+        
+        // 아이콘 렌더링
         if (window.lucide) lucide.createIcons();
     },
 
     openDetail(carData) {
         const drawer = document.getElementById('right-drawer');
         if (!drawer) return;
-        
-        // 동일 차량 클릭 시 토글 닫기
-        if (this.selectedCarData?.차량_번호 === carData.차량_번호) {
-            this.closeDetail();
-            return;
-        }
-
+        if (this.selectedCarData?.차량_번호 === carData.차량_번호) { this.closeDetail(); return; }
         this.closeChat();
         this.selectedCarData = carData;
         const managerInfo = { company: "프리패스모빌리티", nameTitle: "박영협 팀장", phone: "010-6393-0926" };
-
         drawer.innerHTML = DetailView.render(carData, managerInfo);
         drawer.classList.remove('hidden');
-        drawer.classList.add('animate-drawer-reset'); // 등장 시만 슬라이드
+        drawer.classList.add('animate-drawer-reset');
         if (window.lucide) lucide.createIcons();
     },
 
@@ -70,28 +87,19 @@ export const UI = {
 
     closeChat() {
         const chatDrawer = document.getElementById('chat-drawer');
-        if (chatDrawer) {
-            chatDrawer.classList.add('hidden');
-            chatDrawer.classList.remove('animate-drawer-reset');
-        }
+        if (chatDrawer) { chatDrawer.classList.add('hidden'); chatDrawer.classList.remove('animate-drawer-reset'); }
     },
 
     closeDetail() {
         this.selectedCarData = null;
         this.closeChat();
         const drawer = document.getElementById('right-drawer');
-        if (drawer) {
-            drawer.classList.add('hidden');
-            drawer.classList.remove('animate-drawer-reset');
-        }
+        if (drawer) { drawer.classList.add('hidden'); drawer.classList.remove('animate-drawer-reset'); }
     }
 };
 
-// [매우 중요] 전역 윈도우 객체에 함수 바인딩
 window.openDetailByIndex = (index) => {
-    if (window.inventoryData && window.inventoryData[index]) {
-        UI.openDetail(window.inventoryData[index]);
-    }
+    if (window.inventoryData && window.inventoryData[index]) UI.openDetail(window.inventoryData[index]);
 };
 window.closeDetail = () => UI.closeDetail();
 window.openChat = () => UI.openChat();
