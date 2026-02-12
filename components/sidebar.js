@@ -3,6 +3,7 @@ export const Sidebar = {
         const container = document.getElementById('sidebar-container');
         if (!container) return;
 
+        // 메인 메뉴 설정
         const mainMenus = [
             { id: 'inquiry', name: '대화현황', icon: 'message-square' },
             { id: 'settlement', name: '정산관리', icon: 'bar-chart-3' },
@@ -11,6 +12,7 @@ export const Sidebar = {
             { id: 'inventory', name: '상품현황', icon: 'layout-grid' }
         ];
 
+        // 상품현황 하위 필터 (아래로 쭉 나열)
         const filters = [
             { name: '기간', icon: 'calendar' },
             { name: '대여료', icon: 'banknote' },
@@ -28,17 +30,22 @@ export const Sidebar = {
                     return `
                         <div class="w-full">
                             <button onclick="window.switchView('${menu.id}')" 
-                                    class="relative w-full flex flex-col items-center py-4 gap-1 transition-all border-b border-slate-50 group ${isActive ? 'bg-blue-50/50' : 'hover:bg-slate-50'}">
-                                ${isActive ? '<div class="absolute left-0 top-0 bottom-0 w-[4px] bg-blue-600"></div>' : ''}
-                                <i data-lucide="${menu.icon}" class="w-[19px] h-[19px] ${isActive ? 'text-blue-600' : 'text-slate-400 group-hover:text-blue-600'} transition-all"></i>
-                                <span class="text-[9.5px] font-black ${isActive ? 'text-blue-700' : 'text-slate-500 group-hover:text-slate-900'} tracking-tighter">${menu.name}</span>
+                                    class="relative w-full flex flex-col items-center py-4 gap-1.5 transition-all border-b border-slate-50 group ${isActive ? 'bg-blue-50/50' : 'hover:bg-slate-50'}">
+                                
+                                ${isActive ? '<div class="absolute left-0 top-0 bottom-0 w-[3px] bg-blue-600"></div>' : ''}
+                                
+                                <i data-lucide="${menu.icon}" 
+                                   class="w-[18px] h-[18px] ${isActive ? 'text-blue-600' : 'text-slate-400 group-hover:text-blue-600'} transition-colors"></i>
+                                <span class="text-[9px] font-black ${isActive ? 'text-blue-700' : 'text-slate-500 group-hover:text-slate-900'} tracking-tighter">
+                                    ${menu.name}
+                                </span>
                             </button>
 
                             ${isActive && isInventory ? `
-                                <div class="bg-slate-100/50 grid grid-cols-2 gap-[1px] border-b border-slate-200">
+                                <div class="bg-slate-50 border-b border-slate-100 py-1">
                                     ${filters.map(f => `
-                                        <button class="flex flex-col items-center justify-center py-2.5 bg-white hover:bg-indigo-50 transition-colors group">
-                                            <i data-lucide="${f.icon}" class="w-[14px] h-[14px] text-slate-300 group-hover:text-indigo-500 mb-0.5"></i>
+                                        <button class="w-full flex flex-col items-center py-3 gap-1 hover:bg-white transition-all group border-b border-slate-50/50 last:border-0">
+                                            <i data-lucide="${f.icon}" class="w-[14px] h-[14px] text-slate-300 group-hover:text-indigo-500"></i>
                                             <span class="text-[8px] font-bold text-slate-400 group-hover:text-indigo-700 tracking-tighter">${f.name}</span>
                                         </button>
                                     `).join('')}
@@ -49,15 +56,17 @@ export const Sidebar = {
                 }).join('')}
             </div>
 
-            <div class="w-full bg-emerald-600">
-                <button onclick="alert('EXCEL 준비 중')" 
-                        class="w-full flex flex-col items-center py-4 gap-1 hover:bg-emerald-700 transition-all">
-                    <i data-lucide="download" class="w-[18px] h-[18px] text-white"></i>
-                    <span class="text-[10px] font-black text-white tracking-widest uppercase">EXCEL</span>
+            <div class="w-full bg-white border-t border-slate-100">
+                <button onclick="alert('EXCEL 다운로드 준비 중')" 
+                        class="w-full flex flex-col items-center py-4 gap-1 hover:bg-emerald-50 transition-all group">
+                    <i data-lucide="download" class="w-[18px] h-[18px] text-emerald-500 group-hover:scale-110 transition-transform"></i>
+                    <span class="text-[9px] font-black text-emerald-600 tracking-widest uppercase">Excel</span>
                 </button>
             </div>
         `;
         
-        if (window.lucide) lucide.createIcons();
+        if (window.lucide) {
+            lucide.createIcons();
+        }
     }
 };
