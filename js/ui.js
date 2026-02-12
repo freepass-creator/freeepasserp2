@@ -14,7 +14,7 @@ export const UI = {
             <div class="flex flex-col h-full bg-[#f1f3f6]">
                 <header class="h-[40px] bg-white border-b border-slate-200 flex items-center px-4 justify-between z-50 flex-shrink-0">
                     <div class="flex items-center gap-2">
-                        <span class="text-[10px] font-black text-slate-800 uppercase tracking-tighter italic">Freepass Erp</span>
+                        <span class="text-[8px] font-black text-blue-500 border border-blue-200 px-1.5 py-0.5 rounded bg-blue-50 uppercase tracking-tighter">Admin System</span>
                     </div>
                     <button onclick="location.reload()" class="text-slate-400 font-bold text-[9px] hover:text-rose-500 transition-colors uppercase">Logout</button>
                 </header>
@@ -65,7 +65,10 @@ export const UI = {
         if (cur.render) {
             cur.render();
         } else {
-            body.innerHTML = `<div class="h-full flex flex-col items-center justify-center text-slate-300 gap-2 font-black uppercase text-[9px] opacity-20"><i data-lucide="construct" class="w-10 h-10"></i> ${cur.title} 준비중</div>`;
+            body.innerHTML = `
+                <div class="h-full flex flex-col items-center justify-center text-slate-300 gap-2 font-black uppercase text-[9px] opacity-20">
+                    <i data-lucide="construct" class="w-10 h-10"></i> ${cur.title} 준비중
+                </div>`;
         }
 
         if (window.lucide) lucide.createIcons();
