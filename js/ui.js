@@ -1,12 +1,33 @@
-// ... 상단 import 부분 동일 ...
+import { Sidebar } from '../components/sidebar.js';
+import { InventoryView } from '../views/inventory.js';
+import { DetailView } from '../views/detailView.js';
 
 export const UI = {
-    // ... init 생략 ...
+    init() {
+        const root = document.getElementById('root');
+        root.innerHTML = `
+            <div class="flex flex-col h-full bg-[#f1f3f6]">
+                <header class="h-[40px] bg-white border-b border-slate-200 flex items-center px-4 justify-between z-50">
+                    <div class="flex items-center gap-2">
+                        <span class="text-[8px] font-bold text-blue-500 border border-blue-200 px-1.5 py-0.5 rounded bg-blue-50 uppercase font-black">Admin Mode</span>
+                    </div>
+                    <button onclick="location.reload()" class="text-slate-400 hover:text-rose-500 font-bold text-[9.5px] flex items-center gap-1">
+                        <i data-lucide="log-out" class="w-3 h-3"></i> 로그아웃
+                    </button>
+                </header>
+                <div class="flex-1 flex overflow-hidden relative">
+                    <nav id="sidebar-container" class="w-[68px] bg-white border-r border-slate-200 flex flex-col items-center py-2 gap-1 overflow-y-auto hide-scrollbar"></nav>
+                    <main id="main-content" class="flex-1 relative overflow-hidden bg-[#f1f3f6] flex flex-col"></main>
+                    <aside id="right-drawer" class="fixed top-[40px] right-0 bottom-0 w-[400px] bg-white border-l border-slate-200 shadow-2xl translate-x-full z-[100] transition-transform duration-300 flex flex-col"></aside>
+                </div>
+            </div>
+        `;
+        Sidebar.render('admin');
+        this.switchView('inquiry'); 
+    },
 
     switchView(viewId) {
-        // [중요] 다른 메뉴 클릭 시 상세페이지 즉시 종료
-        this.closeDetail();
-
+        this.closeDetail(); // 메뉴 이동 시 즉시 닫기
         const main = document.getElementById('main-content');
         const titleMap = {
             'inquiry': { title: '대화현황', icon: 'message-square', color: 'text-blue-600' },
@@ -18,7 +39,6 @@ export const UI = {
 
         const current = titleMap[viewId] || { title: viewId.toUpperCase(), icon: 'box', color: 'text-slate-700' };
 
-        // 메인 렌더링
         main.innerHTML = `
             <div class="view-header flex items-center h-[38px] px-5 bg-white border-b border-slate-200 shadow-sm">
                 <div class="flex items-center gap-2">
@@ -32,33 +52,34 @@ export const UI = {
         if (viewId === 'inventory') {
             InventoryView.render();
         } else {
-            document.getElementById('view-body').innerHTML = `<div class="h-full flex flex-col items-center justify-center text-slate-300 font-bold">${current.title} 준비 중</div>`;
+            document.getElementById('view-body').innerHTML = `
+                <div class="h-full flex flex-col items-center justify-center text-slate-300 font-bold">
+                    <i data-lucide="${current.icon}" class="w-8 h-8 mb-2 opacity-20"></i>
+                    ${current.title} 준비 중
+                </div>`;
         }
-
         if (window.lucide) lucide.createIcons();
     },
 
     openDetail(carData) {
         const drawer = document.getElementById('right-drawer');
         const managerInfo = { company: "(주)프리패스", nameTitle: "홍길동 팀장", phone: "010-1234-5678" };
-        
         drawer.innerHTML = DetailView.render(carData, managerInfo);
-        
-        // 드로어 노출
         drawer.classList.remove('translate-x-full');
-        drawer.classList.add('animate-drawer-reset', 'shadow-[-10px_0_30px_rgba(0,0,0,0.05)]');
+        drawer.classList.add('animate-drawer-reset');
         if (window.lucide) lucide.createIcons();
     },
 
     closeDetail() {
         const drawer = document.getElementById('right-drawer');
-        // X 클릭 혹은 메뉴 이동 시 즉시 사라짐 처리
-        drawer.classList.add('translate-x-full');
-        drawer.classList.remove('animate-drawer-reset', 'shadow-[-10px_0_30px_rgba(0,0,0,0.05)]');
+        if (drawer) {
+            drawer.classList.add('translate-x-full');
+            drawer.classList.remove('animate-drawer-reset');
+        }
     }
 };
 
-// 전역 바인딩
-window.closeDetail = () => UI.closeDetail();
-window.openDetail = (data) => UI.openDetail(data);
+// 전역 바인딩 (먹통 방지)
 window.switchView = (id) => UI.switchView(id);
+window.openDetail = (data) => UI.openDetail(data);
+window.closeDetail = () => UI.closeDetail();
