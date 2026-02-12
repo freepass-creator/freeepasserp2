@@ -4,7 +4,7 @@ import { DetailView } from '../views/detailView.js';
 import { ChatView } from '../views/chatView.js';
 
 export const UI = {
-    selectedCarData: null,
+    selectedCarId: null, // 현재 열려있는 차량 ID 저장
 
     init() {
         const root = document.getElementById('root');
@@ -14,13 +14,10 @@ export const UI = {
                     <div class="flex items-center gap-2">
                         <span class="text-[8px] font-bold text-blue-500 border border-blue-200 px-1.5 py-0.5 rounded bg-blue-50 uppercase font-black">Admin Mode</span>
                     </div>
-                    <button onclick="location.reload()" class="text-slate-400 hover:text-rose-500 font-bold text-[9.5px] flex items-center gap-1">
-                        <i data-lucide="log-out" class="w-3 h-3"></i> 로그아웃
-                    </button>
+                    <button onclick="location.reload()" class="text-slate-400 hover:text-rose-500 font-bold text-[9.5px]">로그아웃</button>
                 </header>
                 <div class="flex-1 flex overflow-hidden relative">
                     <nav id="sidebar-container" class="w-[68px] bg-white border-r border-slate-200 flex flex-col items-center py-2 gap-1 overflow-y-auto hide-scrollbar"></nav>
-                    
                     <main id="main-content" class="flex-1 relative overflow-hidden bg-[#f1f3f6] flex flex-col"></main>
                     
                     <aside id="chat-drawer" class="fixed top-[40px] right-[400px] bottom-0 w-[350px] z-[90] bg-white border-l border-slate-200 transition-transform duration-200 translate-x-full"></aside>
@@ -29,16 +26,12 @@ export const UI = {
             </div>
         `;
         Sidebar.render('admin');
-        
-        // [요청사항] 로그인 시 대화현황이 메인페이지로 노출
         this.switchView('inquiry'); 
     },
 
     switchView(viewId) {
-        this.closeDetail(); 
+        this.closeDetail(); // 메뉴 이동 시 모든 창 종료
         const main = document.getElementById('main-content');
-        
-        // [요청사항] 상단 제목 한글 유지 및 아이콘 배치
         const titleMap = {
             'inquiry': { title: '대화현황', icon: 'message-square', color: 'text-blue-600' },
             'registration': { title: '상품등록', icon: 'plus-square', color: 'text-emerald-600' },
@@ -48,11 +41,6 @@ export const UI = {
         };
 
         const current = titleMap[viewId] || { title: viewId, icon: 'box', color: 'text-slate-700' };
-
-        // 사이드바 버튼 활성화
-        document.querySelectorAll('.side-btn').forEach(btn => btn.classList.remove('active', 'bg-blue-50', 'text-blue-600', 'border-blue-200'));
-        const targetBtn = document.getElementById(`side-btn-${viewId}`);
-        if (targetBtn) targetBtn.classList.add('active', 'bg-blue-50', 'text-blue-600', 'border-blue-200');
 
         main.innerHTML = `
             <div class="view-header flex items-center h-[38px] px-5 bg-white border-b border-slate-200 shadow-sm">
@@ -66,35 +54,37 @@ export const UI = {
 
         if (viewId === 'inventory') {
             InventoryView.render();
-        } else {
-            document.getElementById('view-body').innerHTML = `
-                <div class="h-full flex flex-col items-center justify-center text-slate-300 font-bold">
-                    <i data-lucide="${current.icon}" class="w-8 h-8 mb-2 opacity-20"></i>
-                    ${current.title} 데이터를 불러오는 중
-                </div>`;
         }
         if (window.lucide) lucide.createIcons();
     },
 
+    // 토글(Toggle) 기능이 포함된 오픈 로직
     openDetail(carData) {
-        this.closeChat(); 
         const drawer = document.getElementById('right-drawer');
+
+        // [토글] 이미 같은 상품이 열려있다면 닫고 종료
+        if (this.selectedCarId === carData.id) {
+            this.closeDetail();
+            return;
+        }
+
+        // 새 상품 열기 시 기존 채팅창 일단 종료
+        this.closeChat();
+        
+        this.selectedCarId = carData.id;
         const managerInfo = { company: "프리패스모빌리티", nameTitle: "박영협 팀장", phone: "010-6393-0926" };
 
-        // [잔상 제거] 불필요한 shadow 클래스 제거 및 즉시 갱신
-        drawer.innerHTML = '';
-        this.selectedCarData = carData;
         drawer.innerHTML = DetailView.render(carData, managerInfo);
-        
         drawer.classList.remove('translate-x-full');
         if (window.lucide) lucide.createIcons();
     },
 
     openChat() {
         const chatDrawer = document.getElementById('chat-drawer');
-        if (!this.selectedCarData) return;
+        const car = API.getSampleCars().find(c => c.id === this.selectedCarId);
+        if (!car) return;
 
-        chatDrawer.innerHTML = ChatView.render(this.selectedCarData);
+        chatDrawer.innerHTML = ChatView.render(car);
         chatDrawer.classList.remove('translate-x-full');
         if (window.lucide) lucide.createIcons();
     },
@@ -105,7 +95,8 @@ export const UI = {
     },
 
     closeDetail() {
-        this.closeChat();
+        this.selectedCarId = null; // 선택 해제
+        this.closeChat(); // [요청사항] 상세페이지 닫을 때 채팅창 무조건 같이 종료
         const drawer = document.getElementById('right-drawer');
         if (drawer) drawer.classList.add('translate-x-full');
     }
