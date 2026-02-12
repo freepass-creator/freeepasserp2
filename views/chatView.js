@@ -1,13 +1,12 @@
 export const ChatView = {
     render(data) {
-        // 제목: 차량번호 세부모델
-        const chatTitle = `${data.차량_번호 || ''} ${data.세부모델 || ''}`.trim() || '차량 상담';
+        const chatTitle = `${data.차량_번호 || ''} ${data.세부모델 || ''}`.trim();
 
         return `
-            <div class="flex flex-col h-full bg-white font-sans">
+            <div class="flex flex-col h-full bg-white">
                 <div class="h-[45px] px-4 border-b border-slate-200 flex items-center justify-between flex-shrink-0 bg-white">
                     <span class="text-[11px] font-black text-slate-800 uppercase tracking-tighter">${chatTitle}</span>
-                    <button onclick="window.toggleChat()" class="text-slate-400 hover:text-slate-600 transition-colors">
+                    <button onclick="window.closeChat()" class="text-slate-400 hover:text-slate-600 transition-colors">
                         <i data-lucide="chevron-right" class="w-6 h-6"></i>
                     </button>
                 </div>
@@ -27,7 +26,7 @@ export const ChatView = {
                 <div class="h-[60px] px-3 flex items-center border-t border-slate-200 bg-white flex-shrink-0">
                     <div class="flex-1 relative flex items-center">
                         <input type="text" placeholder="담당직원에게 메시지 보내기..." 
-                               class="w-full h-[40px] bg-slate-50 border border-slate-200 rounded-full px-4 text-[12px] outline-none focus:border-blue-400 transition-all">
+                               class="w-full h-[40px] bg-slate-50 border border-slate-200 rounded-full px-4 text-[12px] outline-none focus:border-blue-400">
                         <button class="absolute right-1 w-[32px] h-[32px] bg-blue-600 text-white rounded-full flex items-center justify-center">
                             <i data-lucide="send" class="w-3.5 h-3.5"></i>
                         </button>
