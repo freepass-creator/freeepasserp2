@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Freepass ERP | Main Workspace</title>
+    <style>
+        body { margin: 0; display: flex; height: 100vh; font-family: sans-serif; }
+        #sidebar-container { width: 240px; border-right: 2px solid #000; background: #eee; }
+        #content-wrapper { flex: 1; display: flex; flex-direction: column; }
+        #topbar-container { height: 60px; border-bottom: 2px solid #000; display: flex; align-items: center; padding: 0 20px; }
+        #main-canvas { flex: 1; padding: 20px; background: #fff; overflow-y: auto; }
+    </style>
+</head>
+<body>
+
+    <aside id="sidebar-container"></aside>
+
+    <main id="content-wrapper">
+        <header id="topbar-container"></header>
+        <article id="main-canvas">
+            <h2>바닥면 준비됨</h2>
+            <p>메뉴를 선택하면 여기에 데이터가 올라옵니다.</p>
+        </article>
+    </main>
+
+    <script type="module">
+        import { AuthService } from './services/auth-service.js';
+
+        async function loadShell() {
+            // 1. 로그인 체크 (비정상 접근 차단)
+            const user = AuthService.getCurrentUser();
+            if (!user) {
+                alert("로그인이 필요합니다.");
+                window.location.href = 'index.html';
+                return;
+            }
+
+            // 2. 상단바 부품 로드 및 정보 주입
+            const topRes = await fetch('./components/layout/topbar.html');
+            let topHtml = await topRes.text();
+            topHtml = topHtml.replace('{{user_name}}', user.name).replace('{{user_role}}', user.role);
+            document.getElementById('topbar-container').innerHTML = topHtml;
+
+            // 3. 사이드바 부품 로드
+            const sideRes = await fetch('./components/layout/sidebar.html');
+            document.getElementById('sidebar-container').innerHTML = await sideRes.text();
+
+            console.log(`${user.role} 권한으로 뼈대 조립 완료`);
+        }
+
+        window.addEventListener('DOMContentLoaded', loadShell);
+    </script>
+</body>
+</html>
