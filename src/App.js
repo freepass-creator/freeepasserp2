@@ -1,51 +1,51 @@
 // src/App.js
 
-/**
- * [코딩 원칙]
- * 1. 마스터 트리 경로(src/)를 엄수합니다.
- * 2. 모든 페이지와 전역 훅을 결합하여 구동 가능한 최종 애플리케이션을 완성합니다.
- * 3. 인증 상태(isAuthenticated)에 따라 보안 게이트와 내부 시스템을 분리합니다.
- */
-
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 
-// 1. 페이지 조립품 임포트
+// 페이지 컴포넌트 임포트
 import SecurityGate from './pages/SecurityGate';
 import InventoryPage from './pages/InventoryPage';
 import SettlementPage from './pages/SettlementPage';
 
-// 2. 인증 엔진 임포트
+// 인증 상태 훅 (이전에 만든 것)
 import { useAuth } from './hooks/api/useAuth';
 
 function App() {
-  const { user, isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuth();
 
   return (
     <Router>
-      <div className="app-container" style={{ fontStyle: 'sans-serif' }}>
+      <div className="app-container">
         <Routes>
-          {/* A. 보안 게이트: 인증되지 않은 사용자가 마주하는 첫 화면 */}
+          {/* 1. 루트 경로(/) 처리: 로그인 여부에 따라 목적지 자동 배정 */}
+          <Route 
+            path="/" 
+            element={<Navigate to={isAuthenticated ? "/inventory" : "/login"} replace />} 
+          />
+
+          {/* 2. 로그인 화면: 이미 로그인했다면 메인으로 튕겨냄 */}
           <Route 
             path="/login" 
-            element={!isAuthenticated ? <SecurityGate /> : <Navigate to="/inventory" />} 
+            element={!isAuthenticated ? <SecurityGate /> : <Navigate to="/inventory" replace />} 
           />
 
-          {/* B. 보호된 경로: 인증된 관리자만 접근 가능 */}
+          {/* 3. 인벤토리 메인: 로그인 안 했으면 로그인 창으로 쫓아냄 */}
           <Route 
             path="/inventory" 
-            element={isAuthenticated ? <InventoryPage /> : <Navigate to="/login" />} 
+            element={isAuthenticated ? <InventoryPage /> : <Navigate to="/login" replace />} 
           />
           
+          {/* 4. 정산 관리: 로그인 안 했으면 로그인 창으로 쫓아냄 */}
           <Route 
             path="/settlement" 
-            element={isAuthenticated ? <SettlementPage /> : <Navigate to="/login" />} 
+            element={isAuthenticated ? <SettlementPage /> : <Navigate to="/login" replace />} 
           />
 
-          {/* C. 폴백 경로: 알 수 없는 주소 접근 시 메인으로 리다이렉트 */}
+          {/* 5. 404 예방: 위 경로에 해당하지 않는 모든 접근을 로그인이나 메인으로 리다이렉트 */}
           <Route 
             path="*" 
-            element={<Navigate to={isAuthenticated ? "/inventory" : "/login"} />} 
+            element={<Navigate to={isAuthenticated ? "/inventory" : "/login"} replace />} 
           />
         </Routes>
       </div>
