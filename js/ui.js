@@ -4,19 +4,15 @@ import { DetailView } from '../views/detailView.js';
 import { ChatView } from '../views/chatView.js';
 
 export const UI = {
-    selectedCarData: null, // 현재 선택된 차량 데이터 보관
+    selectedCarId: null,
 
     init() {
         const root = document.getElementById('root');
-        if (!root) return;
-
         root.innerHTML = `
             <div class="flex flex-col h-full bg-[#f1f3f6]">
                 <header class="h-[40px] bg-white border-b border-slate-200 flex items-center px-4 justify-between z-50">
-                    <div class="flex items-center gap-2">
-                        <span class="text-[8px] font-bold text-blue-500 border border-blue-200 px-1.5 py-0.5 rounded bg-blue-50 uppercase font-black">Admin Mode</span>
-                    </div>
-                    <button onclick="location.reload()" class="text-slate-400 hover:text-rose-500 font-bold text-[9.5px]">로그아웃</button>
+                    <span class="text-[8px] font-black text-blue-500 border border-blue-200 px-1.5 py-0.5 rounded bg-blue-50 uppercase">Admin Mode</span>
+                    <button onclick="location.reload()" class="text-slate-400 font-bold text-[9.5px]">로그아웃</button>
                 </header>
                 <div class="flex-1 flex overflow-hidden relative">
                     <nav id="sidebar-container" class="w-[68px] bg-white border-r border-slate-200 flex flex-col items-center py-2 gap-1 overflow-y-auto hide-scrollbar"></nav>
@@ -34,87 +30,70 @@ export const UI = {
     switchView(viewId) {
         this.closeDetail();
         const main = document.getElementById('main-content');
-        
-        const titleMap = {
-            'inquiry': { title: '대화현황', icon: 'message-square', color: 'text-blue-600' },
-            'registration': { title: '상품등록', icon: 'plus-square', color: 'text-emerald-600' },
-            'inventory': { title: '상품현황', icon: 'layout-grid', color: 'text-indigo-600' }
-        };
-
-        const current = titleMap[viewId] || { title: viewId, icon: 'box', color: 'text-slate-700' };
-
         main.innerHTML = `
             <div class="view-header flex items-center h-[38px] px-5 bg-white border-b border-slate-200 shadow-sm">
-                <div class="flex items-center gap-2 text-slate-800">
-                    <i data-lucide="${current.icon}" class="w-[14px] h-[14px] ${current.color}"></i>
-                    <h2 class="text-[12.5px] font-bold tracking-tight">${current.title}</h2>
-                </div>
+                <h2 class="text-[12.5px] font-bold text-slate-800">${viewId === 'inventory' ? '상품현황' : '대화현황'}</h2>
             </div>
             <div class="flex-1 overflow-auto p-4" id="view-body"></div>
         `;
-
-        if (viewId === 'inventory') {
-            InventoryView.render();
-        }
+        if (viewId === 'inventory') InventoryView.render();
         if (window.lucide) lucide.createIcons();
     },
 
-    // [상세페이지 열기 함수]
     openDetail(carData) {
-        // 토글: 동일한 차량번호 클릭 시 닫기
-        if (this.selectedCarData && this.selectedCarData.차량_번호 === carData.차량_번호) {
+        const drawer = document.getElementById('right-drawer');
+        
+        // 토글: 같은 차 누르면 즉시 닫기
+        if (this.selectedCarId === carData.차량_번호) {
             this.closeDetail();
             return;
         }
 
-        const drawer = document.getElementById('right-drawer');
-        if (!drawer) return;
-
-        this.selectedCarData = carData;
-        this.closeChat(); // 새 상세페이지 열 때 채팅창은 닫음
-
+        this.closeChat();
+        this.selectedCarId = carData.차량_번호;
         const managerInfo = { company: "프리패스모빌리티", nameTitle: "박영협 팀장", phone: "010-6393-0926" };
 
-        // 데이터 렌더링 후 hidden 제거 및 애니메이션 추가
         drawer.innerHTML = DetailView.render(carData, managerInfo);
+        
+        // [애니메이션] 나올 때만 슬라이드
         drawer.classList.remove('hidden');
-        drawer.classList.add('animate-drawer-reset');
-
+        drawer.classList.add('animate-drawer-reset'); 
+        
         if (window.lucide) lucide.createIcons();
     },
 
     openChat() {
         const chatDrawer = document.getElementById('chat-drawer');
-        if (!this.selectedCarData || !chatDrawer) return;
+        const car = window.currentCars.find(c => c.차량_번호 === this.selectedCarId);
+        if (!car) return;
 
-        chatDrawer.innerHTML = ChatView.render(this.selectedCarData);
+        chatDrawer.innerHTML = ChatView.render(car);
         chatDrawer.classList.remove('hidden');
         chatDrawer.classList.add('animate-drawer-reset');
-        
         if (window.lucide) lucide.createIcons();
     },
 
     closeChat() {
         const chatDrawer = document.getElementById('chat-drawer');
         if (chatDrawer) {
-            chatDrawer.classList.add('hidden');
+            chatDrawer.classList.add('hidden'); // 즉시 사라짐
             chatDrawer.classList.remove('animate-drawer-reset');
         }
     },
 
     closeDetail() {
-        this.selectedCarData = null;
-        this.closeChat(); 
+        this.selectedCarId = null;
+        this.closeChat();
         const drawer = document.getElementById('right-drawer');
         if (drawer) {
-            drawer.classList.add('hidden');
+            drawer.classList.add('hidden'); // 즉시 사라짐
             drawer.classList.remove('animate-drawer-reset');
         }
     }
 };
 
-// [중요] 버튼 클릭 시 인식되도록 전역 윈도우 객체에 연결
-window.openDetail = (data) => UI.openDetail(data);
+// 전역 연결
+window.openDetailByIndex = (index) => UI.openDetail(window.currentCars[index]);
 window.closeDetail = () => UI.closeDetail();
 window.openChat = () => UI.openChat();
 window.closeChat = () => UI.closeChat();
