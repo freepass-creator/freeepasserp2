@@ -6,7 +6,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        /* [보안] 드래그 및 우측클릭 방지 최소 설정 */
         * { -webkit-user-select: none; user-select: none; font-family: sans-serif; }
         input { -webkit-user-select: text; user-select: text; }
         body { background-color: #0f172a; margin: 0; }
@@ -21,24 +20,44 @@
         <div id="access-gate" class="fixed inset-0 flex flex-col items-center justify-center bg-[#0f172a] z-[9999]">
             <div class="bg-white/5 p-8 border border-white/10 rounded-2xl shadow-2xl text-center space-y-6">
                 <h1 class="text-2xl font-black text-blue-500 italic">FREEPASS ERP</h1>
-                <input type="password" id="login-pw" maxlength="4" placeholder="****" 
-                       class="w-full p-4 bg-slate-900 border border-slate-700 text-center text-3xl text-white outline-none rounded-xl">
-                <button onclick="checkAuth()" class="w-full py-4 bg-blue-600 text-white font-black rounded-xl">접속하기</button>
+                
+                <div class="space-y-4">
+                    <input type="password" id="login-pw" maxlength="4" placeholder="****" 
+                           class="w-full p-4 bg-slate-900 border border-slate-700 text-center text-3xl text-white outline-none rounded-xl">
+                    <button onclick="checkAuth()" class="w-full py-4 bg-blue-600 text-white font-black rounded-xl active:scale-95 transition-transform">접속하기</button>
+                </div>
+
+                <div class="pt-4 border-t border-white/5">
+                    <p class="text-[9px] text-slate-500 font-bold uppercase tracking-widest">
+                        System Version: <span id="sys-version" class="text-blue-400">Loading...</span>
+                    </p>
+                    <p class="text-[8px] text-slate-600 mt-1 italic-none">Authorized Personnel Only</p>
+                </div>
             </div>
         </div>
     </div>
 
     <script type="module">
-        // 1. 페이지 로드 시마다 고유한 버전 번호 생성 (Timestamp)
-        const version = new Date().getTime();
+        // 1. 현재 날짜와 시간을 기반으로 버전 생성 (예: 240521.1230)
+        const now = new Date();
+        const year = String(now.getFullYear()).slice(-2);
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const hours = String(now.getHours()).padStart(2, '0');
+        const mins = String(now.getMinutes()).padStart(2, '0');
+        
+        // 최종 버전 형태: YYMMDD.HHMM
+        const version = `${year}${month}${day}.${hours}${mins}`;
 
-        // 2. 버전 번호를 붙여서 UI 모듈 동적 로드
-        // 이렇게 하면 파일 내용이 바뀌었을 때 브라우저가 무조건 최신본을 가져옵니다.
+        // 화면에 버전 표시
+        document.getElementById('sys-version').innerText = version;
+
+        // 2. 버전 정보를 붙여서 UI 모듈 로드 (캐시 방지)
         import(`./js/ui.js?v=${version}`).then(module => {
             window.UI = module.UI;
-            console.log(`[System] ERP 모듈 로드 완료 (v.${version})`);
         }).catch(err => {
-            console.error("UI 모듈 로드 실패:", err);
+            console.error("시스템 로드 실패:", err);
+            document.getElementById('sys-version').innerText = "ERROR";
         });
 
         window.checkAuth = () => {
@@ -46,13 +65,7 @@
             if (pw === '7777') {
                 const gate = document.getElementById('access-gate');
                 if (gate) gate.remove(); 
-                
-                // 모듈이 로드되었는지 확인 후 실행
-                if (window.UI) {
-                    window.UI.init();
-                } else {
-                    alert('시스템을 로드 중입니다. 잠시 후 다시 시도해주세요.');
-                }
+                if (window.UI) window.UI.init();
             } else {
                 alert('코드 불일치');
                 document.getElementById('login-pw').value = '';
