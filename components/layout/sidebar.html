@@ -1,35 +1,27 @@
-<div style="padding: 0; display: flex; flex-direction: column; height: 100%; background: #172B4D; color: #fff;">
-    <div style="padding: 24px; font-size: 20px; font-weight: bold; border-bottom: 1px solid rgba(255,255,255,0.1); letter-spacing: -0.5px;">
-        Freepass
+<div style="height: 100%; display: flex; flex-direction: column; background: #0f172a; color: #f8fafc; font-family: 'Inter', sans-serif;">
+    <div style="padding: 32px 24px; font-size: 22px; font-weight: 800; letter-spacing: -0.05em; color: #fff;">
+        FREEPASS<span style="color: #38bdf8;">.</span>
     </div>
-    
-    <nav style="flex: 1; padding: 16px 8px;">
-        <ul style="list-style: none; padding: 0; margin: 0;">
-            <li style="margin-bottom: 4px;">
-                <button id="menu-product" style="width: 100%; padding: 12px 16px; background: transparent; border: none; color: #fff; text-align: left; cursor: pointer; border-radius: 6px; font-size: 14px; transition: 0.2s;">
-                    🚗 &nbsp; 상품현황
-                </button>
-            </li>
-            <li style="margin-bottom: 4px;">
-                <button style="width: 100%; padding: 12px 16px; background: transparent; border: none; color: #fff; text-align: left; cursor: pointer; border-radius: 6px; font-size: 14px;">
-                    💬 &nbsp; 대화현황
-                </button>
-            </li>
-            <li style="margin-bottom: 4px;">
-                <button style="width: 100%; padding: 12px 16px; background: transparent; border: none; color: #fff; text-align: left; cursor: pointer; border-radius: 6px; font-size: 14px;">
-                    💰 &nbsp; 정산관리
-                </button>
-            </li>
-            <li style="margin-bottom: 4px;">
-                <button style="width: 100%; padding: 12px 16px; background: #0052CC; border: none; color: #fff; text-align: left; cursor: pointer; border-radius: 6px; font-size: 14px; font-weight: bold;">
-                    ➕ &nbsp; 상품등록
-                </button>
-            </li>
-        </ul>
+
+    <nav style="flex: 1; padding: 0 12px;">
+        <div style="padding: 12px 16px; font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.1em;">Menu</div>
+        
+        <button class="nav-item" style="display: flex; align-items: center; width: 100%; padding: 12px 16px; margin-bottom: 4px; background: rgba(255,255,255,0.05); border: none; border-radius: 8px; color: #fff; cursor: pointer; text-align: left; font-size: 14px; font-weight: 500;">
+            <span style="margin-right: 12px; font-size: 18px;">🚗</span> 상품현황
+        </button>
+        
+        <button class="nav-item" style="display: flex; align-items: center; width: 100%; padding: 12px 16px; margin-bottom: 4px; background: transparent; border: none; border-radius: 8px; color: #94a3b8; cursor: pointer; text-align: left; font-size: 14px;">
+            <span style="margin-right: 12px; font-size: 18px;">💬</span> 대화현황
+        </button>
+
+        <button class="nav-item" style="display: flex; align-items: center; width: 100%; padding: 12px 16px; margin-bottom: 4px; background: transparent; border: none; border-radius: 8px; color: #94a3b8; cursor: pointer; text-align: left; font-size: 14px;">
+            <span style="margin-right: 12px; font-size: 18px;">💰</span> 정산관리
+        </button>
+
+        <div style="margin-top: 24px; padding: 0 16px;">
+            <button style="width: 100%; padding: 12px; background: #2563eb; color: #fff; border: none; border-radius: 8px; font-weight: 600; font-size: 14px; box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2); cursor: pointer;">
+                + 상품등록
+            </button>
+        </div>
     </nav>
 </div>
-
-<style>
-    /* 마우스 올렸을 때 효과 (나중에 global.css로 이동) */
-    nav button:hover { background: rgba(255,255,255,0.1) !important; }
-</style>
