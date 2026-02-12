@@ -1,5 +1,4 @@
 export const Sidebar = {
-    // activeFilters 객체를 받아 현재 활성화된 필터인지 확인합니다.
     render(role = 'admin', activeFilters = {}) {
         const container = document.getElementById('sidebar-container');
         if (!container) return;
@@ -20,44 +19,43 @@ export const Sidebar = {
             { id: 'f-year', label: '연식', icon: 'history', key: 'year' }
         ];
 
-        container.className = "w-[80px] bg-white border-r border-slate-200 flex flex-col items-center py-3 gap-1.5 overflow-y-auto hide-scrollbar";
+        // 사이드바 폭을 살짝 줄임 (75px -> 68px)
+        container.className = "w-[68px] bg-white border-r border-slate-200 flex flex-col items-center py-3 gap-1 overflow-y-auto hide-scrollbar";
 
-        // 1. 주요 메뉴 (가로가 더 긴 직사각형, 그림자 효과)
+        // 주요 메뉴: 아이콘(w-4->w-3.5), 텍스트(10px->8.5px), 버튼높이(52px->44px)
         let html = menus.filter(m => m.roles.includes(role)).map(m => `
             <button onclick="switchView('${m.id}')" id="side-btn-${m.id}" 
-                class="side-btn flex flex-col items-center justify-center w-[68px] h-[52px] rounded-[6px] border border-slate-200 bg-white text-slate-500 
-                hover:-translate-y-0.5 hover:shadow-md active:translate-y-0.5 active:shadow-inner transition-all duration-200 mb-0.5">
-                <i data-lucide="${m.icon}" class="w-4 h-4 mb-1"></i>
-                <span class="text-[10px] font-bold tracking-tighter leading-none">${m.label}</span>
+                class="side-btn flex flex-col items-center justify-center w-[56px] h-[44px] rounded-[5px] border border-slate-200 bg-white text-slate-500 
+                hover:-translate-y-0.5 hover:shadow-sm active:translate-y-0.5 transition-all duration-200 mb-0.5">
+                <i data-lucide="${m.icon}" class="w-[14px] h-[14px] mb-0.5"></i>
+                <span class="text-[8.5px] font-bold tracking-tighter leading-none">${m.label}</span>
             </button>
         `).join('');
 
-        html += `<div class="w-12 h-[1px] bg-slate-100 my-1"></div>`;
+        html += `<div class="w-10 h-[1px] bg-slate-100 my-1"></div>`;
 
-        // 2. 필터 버튼 (필터 활성화 시 강조 스타일 적용)
+        // 필터 버튼: 높이(48px->40px)
         html += filters.map(f => {
             const isActive = activeFilters[f.key] && activeFilters[f.key].length > 0;
-            const activeClass = isActive 
-                ? "bg-blue-50 border-blue-400 text-blue-600 shadow-inner" 
-                : "bg-white border-slate-100 text-slate-400";
+            const activeClass = isActive ? "bg-blue-50 border-blue-300 text-blue-600" : "bg-white border-slate-100 text-slate-400";
 
             return `
                 <button onclick="toggleFilter('${f.key}')" id="side-btn-${f.id}" 
-                    class="side-btn flex flex-col items-center justify-center w-[68px] h-[48px] rounded-[6px] border ${activeClass}
-                    hover:-translate-y-0.5 hover:shadow-sm active:translate-y-0.5 transition-all mb-0.5">
-                    <i data-lucide="${f.icon}" class="w-4 h-4 mb-0.5"></i>
-                    <span class="text-[10px] font-bold">${f.label}</span>
-                    ${isActive ? '<div class="absolute top-1 right-1 w-1.5 h-1.5 bg-blue-500 rounded-full"></div>' : ''}
+                    class="side-btn flex flex-col items-center justify-center w-[56px] h-[40px] rounded-[5px] border ${activeClass}
+                    hover:border-slate-300 transition-all mb-0.5 relative">
+                    <i data-lucide="${f.icon}" class="w-[13px] h-[13px] mb-0.5"></i>
+                    <span class="text-[8.5px] font-bold">${f.label}</span>
+                    ${isActive ? '<div class="absolute top-0.5 right-0.5 w-1 h-1 bg-blue-500 rounded-full"></div>' : ''}
                 </button>
             `;
         }).join('');
 
-        // 3. 엑셀 버튼
+        // 엑셀 버튼
         html += `
             <div class="mt-auto pt-2">
-                <button class="side-btn flex flex-col items-center justify-center w-[68px] h-[54px] rounded-[6px] border border-emerald-100 bg-emerald-50 text-emerald-600 hover:-translate-y-0.5 hover:shadow-md transition-all">
-                    <i data-lucide="download" class="w-4 h-4 mb-1"></i>
-                    <span class="text-[10px] font-black uppercase">Excel</span>
+                <button class="side-btn flex flex-col items-center justify-center w-[56px] h-[46px] rounded-[5px] border border-emerald-100 bg-emerald-50 text-emerald-600 hover:shadow-sm transition-all">
+                    <i data-lucide="download" class="w-[14px] h-[14px] mb-0.5"></i>
+                    <span class="text-[8.5px] font-black uppercase">Excel</span>
                 </button>
             </div>
         `;
