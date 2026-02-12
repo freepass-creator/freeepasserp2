@@ -8,15 +8,54 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css');
-        * { font-family: 'Pretendard', sans-serif; -webkit-font-smoothing: antialiased; }
-        body { margin: 0; padding: 0; transition: background-color 0.3s; }
-        .side-btn.active { background-color: #eff6ff; color: #2563eb; border: 2px solid #bfdbfe; }
+        * { font-family: 'Pretendard', sans-serif; -webkit-font-smoothing: antialiased; letter-spacing: -0.02em; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .animate-drawer-reset { animation: drawer-in 0.3s ease-out forwards; }
+        @keyframes drawer-in { from { transform: translateX(100%); } to { transform: translateX(0); } }
     </style>
 </head>
-<body class="h-screen overflow-hidden">
+<body class="h-screen overflow-hidden bg-[#0f172a]">
+    <div id="root" class="h-full flex flex-col">
+        <div id="access-gate" class="fixed inset-0 flex flex-col items-center justify-center p-6 text-white text-center z-[9999] bg-[#0f172a]">
+            <div class="max-w-md w-full space-y-8">
+                <div>
+                    <h1 class="text-3xl font-black tracking-widest text-blue-500 italic">FREEPASS MOBILITY</h1>
+                    <p class="text-slate-400 font-bold uppercase tracking-widest text-xs mt-2">ERP System Access</p>
+                </div>
+                <div class="bg-white/5 p-8 border border-white/10 rounded-2xl backdrop-blur-md shadow-2xl space-y-6">
+                    <p class="text-sm font-bold">보안 코드를 입력하세요 (4자리)</p>
+                    <input type="password" id="login-pw" maxlength="4" 
+                           class="w-full p-4 bg-slate-900 border border-slate-700 text-center text-2xl tracking-[0.5em] text-white focus:border-blue-500 outline-none rounded-xl" placeholder="****">
+                    <button onclick="checkAuth()" class="w-full py-4 bg-blue-600 hover:bg-blue-500 font-black text-sm tracking-widest transition-all shadow-lg active:translate-y-1 rounded-xl">시스템 접속하기</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    <div id="root" class="h-full"></div>
+    <script type="module">
+        import { UI } from './js/ui.js';
 
-    <script type="module" src="./js/app.js"></script>
+        // 전역 인증 함수
+        window.checkAuth = () => {
+            const pw = document.getElementById('login-pw').value;
+            if (pw === '7777') {
+                document.getElementById('access-gate').classList.add('hidden');
+                UI.init();
+            } else {
+                alert('보안코드가 일치하지 않습니다.');
+                document.getElementById('login-pw').value = '';
+            }
+        };
+
+        // 엔터 키 지원
+        document.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && document.getElementById('login-pw')) {
+                window.checkAuth();
+            }
+        });
+
+        // 초기 포커스
+        window.onload = () => document.getElementById('login-pw')?.focus();
+    </script>
 </body>
 </html>
