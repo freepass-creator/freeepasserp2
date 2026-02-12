@@ -1,7 +1,15 @@
-<div style="width: 100%; display: flex; justify-content: space-between; align-items: center;">
-    <div><strong>Freepass Mobility ERP</strong></div>
-    <div>
-        <span>{{user_name}} ({{user_role}})</span>
-        <button onclick="localStorage.removeItem('freepass_user'); location.href='index.html';">로그아웃</button>
+<div style="width: 100%; height: 100%; display: flex; justify-content: space-between; align-items: center; padding: 0 24px; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+    <div style="font-weight: 600; color: #172B4D; font-size: 14px;">
+        Main Dashboard
+    </div>
+    <div style="display: flex; align-items: center; gap: 16px;">
+        <div style="text-align: right;">
+            <div style="font-size: 13px; font-weight: 700; color: #172B4D;">{{user_name}}</div>
+            <div style="font-size: 11px; color: #5E6C84;">{{user_role}}</div>
+        </div>
+        <button onclick="localStorage.removeItem('freepass_user'); location.href='index.html';" 
+                style="padding: 6px 12px; background: #F4F5F7; border: 1px solid #DFE1E6; border-radius: 4px; color: #172B4D; font-size: 12px; cursor: pointer; font-weight: 600;">
+            로그아웃
+        </button>
     </div>
 </div>
