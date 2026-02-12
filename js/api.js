@@ -34,8 +34,5 @@ export const API = {
                 사진링크: '#'
             }
         ];
-    },
-    getCarDetail(carId) {
-        return this.getSampleCars().find(car => car.id === carId);
     }
 };
