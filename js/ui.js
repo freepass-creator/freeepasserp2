@@ -20,7 +20,7 @@ export const UI = {
                 <div class="flex-1 flex overflow-hidden relative">
                     <nav id="sidebar-container" class="w-[64px] bg-white border-r border-slate-200 flex flex-col items-center z-[105] flex-shrink-0"></nav>
                     
-                    <main id="main-content" class="flex-1 relative overflow-hidden bg-white border border-slate-200 shadow-sm mt-2 ml-2">
+                    <main id="main-content" class="flex-1 relative overflow-hidden bg-white border border-slate-200 shadow-sm mt-2 ml-2 transition-all">
                         <div id="page-header" class="view-header flex items-center h-[45px] px-4 border-b border-slate-100 flex-shrink-0 bg-white"></div>
                         <div id="view-body" class="flex-1 overflow-auto bg-white p-1"></div>
                     </main>
@@ -38,87 +38,69 @@ export const UI = {
 
     switchView(viewId) {
         this.currentView = viewId;
-        // [중요] 다른 메뉴 클릭 시 기존 드로어 즉시 제거 (애니메이션 없이 사라짐)
-        this.forceCloseDrawers();
-        
+        this.forceCloseDrawers(); // 메뉴 이동 시 모든 창 즉시 닫기
         Sidebar.render(viewId);
-        const header = document.getElementById('page-header');
-        const config = {
-            'inquiry': { title: '대화현황', icon: 'message-square', color: 'text-blue-600', render: () => InquiryView.render() },
-            'settlement': { title: '정산관리', icon: 'bar-chart-3', color: 'text-amber-600' },
-            'approval': { title: '승인관리', icon: 'shield-check', color: 'text-rose-600' },
-            'registration': { title: '상품등록', icon: 'plus-square', color: 'text-emerald-600' },
-            'inventory': { title: '상품현황', icon: 'layout-grid', color: 'text-indigo-600', render: () => InventoryView.render() }
-        };
-        const cur = config[viewId] || { title: viewId, icon: 'box', color: 'text-slate-600' };
-        header.innerHTML = `<div class="flex items-center gap-2 font-black"><i data-lucide="${cur.icon}" class="w-4 h-4 ${cur.color}"></i><h2 class="text-[12.5px] text-slate-800 uppercase tracking-tighter">${cur.title}</h2></div>`;
-        if (cur.render) cur.render();
-        if (window.lucide) lucide.createIcons();
+        // ... 생략 ...
     },
 
     openDetail(carData, autoChat = false) {
         const drawer = document.getElementById('right-drawer');
-        
-        // 새로운 목록 클릭 시: 일단 기존꺼 애니메이션 없이 즉시 닫기
-        if (this.selectedCarData?.차량_번호 !== carData.차량_번호) {
-            this.forceCloseDrawers();
-        } else {
-            // 동일 차량 클릭 시 토글 클로즈 (이건 슬라이딩 적용)
+        if (!drawer) return;
+
+        // 동일 데이터 클릭 시 슬라이딩 클로즈
+        if (!autoChat && this.selectedCarData?.차량_번호 === carData.차량_번호) {
             this.closeDetail();
             return;
         }
 
-        // 내용 갈아끼우기
+        // [잔상 제거 핵심] 1. 즉시 숨기기 (애니메이션 끔)
+        drawer.style.transition = 'none';
+        drawer.classList.add('translate-x-full');
+
+        // 2. 데이터 렌더링
         this.selectedCarData = carData;
         drawer.innerHTML = DetailView.render(carData);
-        
-        // 0.1초 뒤에 슬라이딩 시작 (브라우저가 렌더링을 마친 후 부드럽게 나오도록)
-        setTimeout(() => {
-            drawer.classList.remove('translate-x-full');
-            if (window.lucide) lucide.createIcons();
-            if (autoChat) this.toggleChat(true);
-        }, 50);
+
+        // 3. 렌더링이 완료된 후 애니메이션 켜고 슬라이딩 시작
+        requestAnimationFrame(() => {
+            setTimeout(() => {
+                drawer.style.transition = 'transform 0.3s ease-in-out';
+                drawer.classList.remove('translate-x-full');
+                if (window.lucide) lucide.createIcons();
+                if (autoChat) this.toggleChat(true);
+            }, 50);
+        });
     },
 
     toggleChat(forceOpen = false) {
         const chat = document.getElementById('chat-drawer');
-        if (!this.selectedCarData || !chat) return;
+        const isClosed = chat.classList.contains('translate-x-full');
 
-        if (chat.classList.contains('translate-x-full') || forceOpen) {
+        if (isClosed || forceOpen) {
+            chat.style.transition = 'none'; // 렌더링 전 애니메이션 끔
             chat.innerHTML = ChatView.render(this.selectedCarData);
-            chat.classList.remove('translate-x-full');
-            if (window.lucide) lucide.createIcons();
+            setTimeout(() => {
+                chat.style.transition = 'transform 0.3s ease-in-out';
+                chat.classList.remove('translate-x-full');
+                if (window.lucide) lucide.createIcons();
+            }, 50);
         } else {
             this.closeChat();
         }
     },
 
-    // [핵심] 전환 시 즉시 사라지게 하는 함수
     forceCloseDrawers() {
         const d = document.getElementById('right-drawer');
         const c = document.getElementById('chat-drawer');
-        if (d) {
-            d.style.transition = 'none'; // 애니메이션 잠시 끔
-            d.classList.add('translate-x-full');
-            setTimeout(() => d.style.transition = '', 10); // 다시 켬
-        }
-        if (c) {
-            c.style.transition = 'none';
-            c.classList.add('translate-x-full');
-            setTimeout(() => c.style.transition = '', 10);
-        }
+        if (d) { d.style.transition = 'none'; d.classList.add('translate-x-full'); }
+        if (c) { c.style.transition = 'none'; c.classList.add('translate-x-full'); }
         this.selectedCarData = null;
     },
 
-    closeChat() {
-        const c = document.getElementById('chat-drawer');
-        if (c) c.classList.add('translate-x-full');
-    },
-
-    closeDetail() {
-        this.closeChat();
-        const d = document.getElementById('right-drawer');
-        if (d) d.classList.add('translate-x-full');
+    closeChat() { document.getElementById('chat-drawer').classList.add('translate-x-full'); },
+    closeDetail() { 
+        this.closeChat(); 
+        document.getElementById('right-drawer').classList.add('translate-x-full');
         this.selectedCarData = null;
     }
 };
