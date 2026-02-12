@@ -1,79 +1,59 @@
 import React, { useState } from 'react'
 import ReactDOM from 'react-dom/client'
 
-// [통합 컴포넌트] 로그인과 메인 화면을 이 파일 하나에서 다 처리합니다.
-function IntegratedApp() {
+function FinalApp() {
   const [code, setCode] = useState('');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  const handleLogin = (e) => {
-    e.preventDefault(); // 페이지 새로고침 방지
-    
+  // 버튼 클릭 시 실행될 함수
+  const checkCode = () => {
+    console.log("입력된 코드:", code); // 브라우저 F12 콘솔에서 확인용
     if (code === '1234') {
-      alert('🔒 인증 성공! 관리자 시스템에 접속합니다.');
+      alert('🔓 인증 성공!');
       setIsLoggedIn(true);
     } else {
-      alert('❌ 보안 코드가 틀렸습니다. (힌트: 1234)');
-      setCode('');
+      alert('❌ 보안 코드가 틀립니다. (입력값: ' + code + ')');
     }
   };
 
-  // 1. 로그인 성공 시 보여줄 화면
   if (isLoggedIn) {
     return (
-      <div style={{ minHeight: '100vh', backgroundColor: '#0f172a', color: 'white', padding: '40px', fontFamily: 'sans-serif' }}>
-        <h1 style={{ color: '#3b82f6' }}>📊 ERP 대시보드</h1>
-        <hr style={{ borderColor: '#334155', margin: '20px 0' }} />
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-          <div style={{ padding: '20px', background: '#1e293b', borderRadius: '12px' }}>
-            <p style={{ color: '#94a3b8' }}>실시간 재고</p>
-            <h2 style={{ fontSize: '32px' }}>1,245개</h2>
-          </div>
-          <div style={{ padding: '20px', background: '#1e293b', borderRadius: '12px' }}>
-            <p style={{ color: '#94a3b8' }}>오늘의 정산</p>
-            <h2 style={{ fontSize: '32px' }}>₩ 450,000</h2>
-          </div>
-        </div>
-        <button 
-          onClick={() => setIsLoggedIn(false)}
-          style={{ marginTop: '30px', padding: '10px 20px', backgroundColor: '#ef4444', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer' }}
-        >
-          로그아웃
-        </button>
+      <div style={{ padding: '50px', color: 'white', textAlign: 'center', backgroundColor: '#0f172a', minHeight: '100vh' }}>
+        <h1>📊 접속 성공: ERP 대시보드</h1>
+        <button onClick={() => setIsLoggedIn(false)} style={{ padding: '10px', cursor: 'pointer' }}>로그아웃</button>
       </div>
     );
   }
 
-  // 2. 로그인 전 보여줄 보안 게이트
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#0f172a', fontFamily: 'sans-serif' }}>
-      <div style={{ background: '#1e293b', padding: '40px', borderRadius: '24px', textAlign: 'center', color: 'white', border: '1px solid #334155', width: '320px' }}>
-        <h2 style={{ fontSize: '24px', marginBottom: '20px' }}>보안 게이트</h2>
-        <form onSubmit={handleLogin}>
-          <input 
-            type="password" 
-            value={code} 
-            onChange={(e) => setCode(e.target.value)} 
-            placeholder="보안코드 입력"
-            style={{ 
-              width: '100%', padding: '15px', borderRadius: '12px', border: 'none', 
-              backgroundColor: '#0f172a', color: 'white', fontSize: '20px', textAlign: 'center', marginBottom: '20px' 
-            }}
-          />
-          <button 
-            type="submit"
-            style={{ width: '100%', padding: '15px', backgroundColor: '#3b82f6', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}
-          >
-            시스템 접속
-          </button>
-        </form>
+    <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#0f172a' }}>
+      <div style={{ background: '#1e293b', padding: '40px', borderRadius: '20px', textAlign: 'center', color: 'white' }}>
+        <h2 style={{ marginBottom: '20px' }}>보안 게이트</h2>
+        
+        {/* 입력창: value와 onChange가 핵심입니다 */}
+        <input 
+          type="text" 
+          value={code} 
+          onChange={(e) => {
+            console.log("타이핑 중...", e.target.value);
+            setCode(e.target.value);
+          }}
+          placeholder="1234 입력"
+          style={{ padding: '15px', borderRadius: '8px', border: 'none', width: '200px', textAlign: 'center', fontSize: '20px' }}
+        />
+        
+        <br />
+
+        {/* 버튼: onClick이 직접 실행되도록 설정 */}
+        <button 
+          onClick={checkCode}
+          style={{ marginTop: '20px', padding: '15px 30px', backgroundColor: '#3b82f6', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}
+        >
+          시스템 접속
+        </button>
       </div>
     </div>
   );
 }
 
-ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
-    <IntegratedApp />
-  </React.StrictMode>
-);
+ReactDOM.createRoot(document.getElementById('root')).render(<FinalApp />);
