@@ -185,7 +185,7 @@ function renderWork(c) {
       </div>
 
       <div class="contract-section"><div class="contract-section-title">고객정보</div>
-        <div style="padding:var(--sp-2) var(--sp-3);">
+        <div class="contract-section-grid">
           ${inp('고객명','customer_name',c.customer_name)}
           ${inp('연락처','customer_phone',c.customer_phone)}
           ${inp('생년월일','customer_birth',c.customer_birth)}
@@ -365,7 +365,7 @@ function renderSub(c) {
       <div style="font-weight:var(--fw-bold);font-size:var(--fs-sm);">정산</div>
       ${settleHtml}
       <div class="contract-section"><div class="contract-section-title">메모</div>
-        <div style="padding:var(--sp-2) var(--sp-3);">
+        <div class="contract-section-grid">
           <textarea class="input" id="ctMemo" rows="4" style="resize:vertical;height:auto;" placeholder="메모...">${c.admin_memo||''}</textarea>
         </div>
       </div>

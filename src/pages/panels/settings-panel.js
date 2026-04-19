@@ -32,7 +32,7 @@ export function renderSettings(container) {
       <!-- 명함 필드 -->
       <div class="contract-section">
         <div class="contract-section-title">명함 정보</div>
-        <div style="padding: var(--sp-3); display: flex; flex-direction: column; gap: var(--sp-2);">
+        <div class="contract-section-grid" style="grid-template-columns:1fr;">
           ${settingField('이름', 'name', user.name)}
           ${settingField('소속', 'company_name', user.company_name)}
           ${settingField('직급', 'position', user.position)}
@@ -45,7 +45,7 @@ export function renderSettings(container) {
       <!-- 알림 -->
       <div class="contract-section">
         <div class="contract-section-title">알림 설정</div>
-        <div style="padding: var(--sp-3);">
+        <div class="contract-section-grid" style="grid-template-columns:1fr;">
           <button class="btn btn-outline btn-sm" id="pushPermBtn">
             <i class="ph ph-bell"></i> 푸시 알림 허용
           </button>

@@ -301,7 +301,7 @@
     border: 0;
     border-radius: 50%;
     background: var(--c-overlay-chip);
-    color: #fff;
+    color: var(--c-text-inv);
     font-size: 10px;
     display: none;
     align-items: center;
@@ -316,7 +316,7 @@
     padding: 1px 6px;
     font-size: var(--fs-2xs);
     background: var(--c-accent);
-    color: #fff;
+    color: var(--c-text-inv);
     border-radius: 2px;
   }
   .pd-photo-empty {

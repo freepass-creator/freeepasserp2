@@ -35,21 +35,7 @@
     height: 100%;
   }
 
-  .ws4-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--sp-2);
-    padding: 0 var(--sp-3);
-    font-size: var(--fs-xs);
-    font-weight: var(--fw-medium);
-    color: var(--c-text);
-    background: var(--c-bg-sub);
-    border-bottom: 1px solid var(--c-border);
-    flex-shrink: 0;
-    height: var(--panel-head-h);
-    user-select: none;
-  }
+  /* .ws4-head — base styles unified in controls.css .panel-head group */
 
   .ws4-head-toggle {
     font-size: 14px;
@@ -170,7 +156,7 @@
     align-items: center;
     justify-content: center;
     background: var(--c-overlay-med);
-    color: #fff;
+    color: var(--c-text-inv);
     border-radius: 50%;
     font-size: var(--fs-2xs);
     opacity: 0;
@@ -288,20 +274,7 @@
     color: var(--c-text-muted);
     font-variant-numeric: tabular-nums;
   }
-  .room-item-badge {
-    flex-shrink: 0;
-    min-width: 18px;
-    height: 18px;
-    padding: 0 5px;
-    border-radius: 999px;
-    background: var(--c-accent);
-    color: #fff;
-    font-size: var(--fs-2xs);
-    font-weight: var(--fw-bold);
-    line-height: 18px;
-    text-align: center;
-    font-variant-numeric: tabular-nums;
-  }
+  /* .room-item-badge — removed, migrated to .badge.is-filled.is-pill.badge-accent */
 
   .room-item-top {
     display: flex;

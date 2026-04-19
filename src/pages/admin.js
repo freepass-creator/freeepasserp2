@@ -180,7 +180,7 @@ function loadUser(key) {
         }).join('')}
       </div>
       <div class="contract-section"><div class="contract-section-title">계정</div>
-        <div style="padding:var(--sp-2) var(--sp-3);display:flex;flex-direction:column;gap:var(--sp-1);">
+        <div class="contract-section-grid" style="grid-template-columns:1fr;">
           ${fi('이름','name',u)}${fi('이메일','email',u)}${fi('역할','role',u)}
           ${fi('소속코드','company_code',u)}${fi('소속명','company_name',u)}
           ${fi('계정코드','user_code',u)}${fi('연락처','phone',u)}${fi('직급','position',u)}
@@ -233,7 +233,7 @@ function loadPartner(key) {
         }).join('')}
       </div>
       <div class="contract-section"><div class="contract-section-title">회사정보</div>
-        <div style="padding:var(--sp-2) var(--sp-3);display:flex;flex-direction:column;gap:var(--sp-1);">
+        <div class="contract-section-grid" style="grid-template-columns:1fr;">
           ${fi('파트너코드','partner_code',p)}${fi('파트너명','partner_name',p)}
           ${fi('유형','partner_type',p)}${fi('사업자번호','business_number',p)}
           ${fi('대표자','ceo_name',p)}${fi('주소','address',p)}
@@ -241,12 +241,12 @@ function loadPartner(key) {
         </div>
       </div>
       <div class="contract-section"><div class="contract-section-title">담당자</div>
-        <div style="padding:var(--sp-2) var(--sp-3);display:flex;flex-direction:column;gap:var(--sp-1);">
+        <div class="contract-section-grid" style="grid-template-columns:1fr;">
           ${fi('담당자명','manager_name',p)}${fi('직급','manager_position',p)}${fi('연락처','manager_phone',p)}
         </div>
       </div>
       <div class="contract-section"><div class="contract-section-title">비고</div>
-        <div style="padding:var(--sp-2) var(--sp-3);">
+        <div class="contract-section-grid">
           <textarea class="input" id="admMemo" rows="3" style="resize:vertical;height:auto;">${p.note || ''}</textarea>
         </div>
       </div>
@@ -565,14 +565,14 @@ function renderToolsTab(el) {
         </div>
       </div>
       <div class="contract-section"><div class="contract-section-title">동작</div>
-        <div style="padding:var(--sp-2) var(--sp-3);display:flex;flex-direction:column;gap:var(--sp-1);">
+        <div class="contract-section-grid" style="grid-template-columns:1fr;">
           <button class="btn btn-outline btn-sm" id="devCacheClear"><i class="ph ph-trash"></i> 캐시 초기화</button>
           <button class="btn btn-outline btn-sm" id="devStoreView"><i class="ph ph-database"></i> Store 상태 보기</button>
           <button class="btn btn-outline btn-sm" id="devReload"><i class="ph ph-arrow-clockwise"></i> 강제 새로고침</button>
         </div>
       </div>
       <div class="contract-section"><div class="contract-section-title">일회성 마이그레이션</div>
-        <div style="padding:var(--sp-2) var(--sp-3);display:flex;flex-direction:column;gap:var(--sp-1);">
+        <div class="contract-section-grid" style="grid-template-columns:1fr;">
           <button class="btn btn-outline btn-sm" id="devMigrateTermPolicy"><i class="ph ph-swap"></i> policies: term_* → policy_*</button>
           <button class="btn btn-outline btn-sm" id="devMigrateModelName"><i class="ph ph-swap"></i> model_name → model (products · contracts · rooms)</button>
         </div>
@@ -703,7 +703,7 @@ function renderStockTab(el) {
         <span id="stkCount" style="font-size:var(--fs-xs);color:var(--c-text-muted);">0대</span>
         <button class="btn btn-outline btn-sm" id="stkAll">전체 선택</button>
         <button class="btn btn-outline btn-sm" id="stkNone">해제</button>
-        <button class="btn btn-sm" style="background:var(--c-err);color:#fff;margin-left:auto;" id="stkDel"><i class="ph ph-trash"></i> 선택 삭제</button>
+        <button class="btn btn-sm" style="background:var(--c-err);color:var(--c-text-inv);margin-left:auto;" id="stkDel"><i class="ph ph-trash"></i> 선택 삭제</button>
       </div>
       <div id="stkList" style="flex:1;overflow-y:auto;border:1px solid var(--c-border);border-radius:4px;"></div>
     </div>
@@ -768,7 +768,7 @@ function renderNoticeTab(el) {
   el.innerHTML = `
     <div style="display:flex;flex-direction:column;gap:var(--sp-3);">
       <div class="contract-section"><div class="contract-section-title">새 공지 등록</div>
-        <div style="padding:var(--sp-2) var(--sp-3);display:flex;flex-direction:column;gap:var(--sp-1);">
+        <div class="contract-section-grid" style="grid-template-columns:1fr;">
           <input class="input input-sm" id="ncTitle" placeholder="제목" >
           <textarea class="input" id="ncContent" rows="3" placeholder="내용" style="height:auto;font-size:var(--fs-xs);"></textarea>
           <input type="file" id="ncImg" accept="image/*" style="font-size:var(--fs-2xs);">
@@ -791,7 +791,7 @@ function renderNoticeTab(el) {
             <div style="font-size:var(--fs-xs);color:var(--c-text-muted);white-space:pre-wrap;">${n.content||''}</div>
             <div style="font-size:var(--fs-2xs);color:var(--c-text-muted);margin-top:2px;">${new Date(n.created_at||0).toLocaleString('ko')}</div>
           </div>
-          <button class="btn btn-xs" style="background:var(--c-err);color:#fff;" data-del="${n._key}"><i class="ph ph-x"></i></button>
+          <button class="btn btn-xs" style="background:var(--c-err);color:var(--c-text-inv);" data-del="${n._key}"><i class="ph ph-x"></i></button>
         </div>
       </div>
     `).join('') || empty('공지 없음');
@@ -823,7 +823,7 @@ function renderVehicleTab(el) {
   el.innerHTML = `
     <div style="display:flex;flex-direction:column;gap:var(--sp-3);">
       <div class="contract-section"><div class="contract-section-title">차종 추가</div>
-        <div style="padding:var(--sp-2) var(--sp-3);display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-1);">
+        <div class="contract-section-grid">
           <input class="input input-sm" id="vmMaker" placeholder="제조사" >
           <input class="input input-sm" id="vmModel" placeholder="모델명" >
           <input class="input input-sm" id="vmSub" placeholder="세부모델" >
@@ -832,7 +832,7 @@ function renderVehicleTab(el) {
         </div>
       </div>
       <div class="contract-section"><div class="contract-section-title">차종 목록 <span id="vmCount" style="color:var(--c-text-muted);font-weight:normal;font-size:var(--fs-xs);"></span></div>
-        <div style="padding:var(--sp-2) var(--sp-3);">
+        <div class="contract-section-grid">
           <input class="input input-sm" id="vmQ" placeholder="검색" style="margin-bottom:var(--sp-1);">
           <div id="vmList" style="max-height:400px;overflow-y:auto;"></div>
         </div>
@@ -851,7 +851,7 @@ function renderVehicleTab(el) {
         <span style="width:120px;">${it.model||''}</span>
         <span style="flex:1;">${it.sub_model||''}</span>
         <span style="width:80px;color:var(--c-text-muted);">${it.vehicle_category||''}</span>
-        <button class="btn btn-xs" style="background:var(--c-err);color:#fff;" data-vmd="${it._key}"><i class="ph ph-x"></i></button>
+        <button class="btn btn-xs" style="background:var(--c-err);color:var(--c-text-inv);" data-vmd="${it._key}"><i class="ph ph-x"></i></button>
       </div>
     `).join('') || empty('없음');
     document.querySelectorAll('[data-vmd]').forEach(b => b.addEventListener('click', async () => {
@@ -881,7 +881,7 @@ function renderColorTab(el) {
   el.innerHTML = `
     <div style="display:flex;flex-direction:column;gap:var(--sp-3);">
       <div class="contract-section"><div class="contract-section-title">외장색</div>
-        <div style="padding:var(--sp-2) var(--sp-3);">
+        <div class="contract-section-grid">
           <div style="display:flex;gap:var(--sp-1);margin-bottom:var(--sp-2);">
             <input class="input input-sm" id="extIn" placeholder="색상명" style="flex:1;">
             <button class="btn btn-primary btn-sm" id="extAdd"><i class="ph ph-plus"></i> 추가</button>
@@ -890,7 +890,7 @@ function renderColorTab(el) {
         </div>
       </div>
       <div class="contract-section"><div class="contract-section-title">내장색</div>
-        <div style="padding:var(--sp-2) var(--sp-3);">
+        <div class="contract-section-grid">
           <div style="display:flex;gap:var(--sp-1);margin-bottom:var(--sp-2);">
             <input class="input input-sm" id="intIn" placeholder="색상명" style="flex:1;">
             <button class="btn btn-primary btn-sm" id="intAdd"><i class="ph ph-plus"></i> 추가</button>
@@ -945,7 +945,7 @@ function renderUploadTab(el) {
   el.innerHTML = `
     <div style="display:flex;flex-direction:column;gap:var(--sp-3);">
       <div class="contract-section"><div class="contract-section-title">상품 CSV 업로드</div>
-        <div style="padding:var(--sp-2) var(--sp-3);display:flex;flex-direction:column;gap:var(--sp-2);">
+        <div class="contract-section-grid" style="grid-template-columns:1fr;">
           <div style="font-size:var(--fs-xs);color:var(--c-text-muted);">차량번호 컬럼 필수 · 헤더 첫 행</div>
           <input type="file" id="upFile" accept=".csv,.tsv" style="font-size:var(--fs-xs);">
           <button class="btn btn-primary btn-sm" id="upBtn"><i class="ph ph-upload-simple"></i> 업로드</button>
@@ -988,7 +988,7 @@ function renderSyncTab(el) {
   el.innerHTML = `
     <div style="display:flex;flex-direction:column;gap:var(--sp-3);">
       <div class="contract-section"><div class="contract-section-title">외부 시트 동기화</div>
-        <div style="padding:var(--sp-2) var(--sp-3);display:flex;flex-direction:column;gap:var(--sp-2);">
+        <div class="contract-section-grid" style="grid-template-columns:1fr;">
           <input class="input input-sm" id="syncUrl" placeholder="구글시트 공유 URL" >
           <button class="btn btn-primary btn-sm" id="syncBtn"><i class="ph ph-google-drive-logo"></i> 가져오기</button>
         </div>

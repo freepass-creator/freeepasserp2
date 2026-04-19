@@ -126,7 +126,7 @@
     font-size: var(--fs-2xs);
     font-weight: var(--fw-bold);
     text-align: center;
-    color: #fff;
+    color: var(--c-text-inv);
     letter-spacing: 1px;
     line-height: 1.2;
   }
@@ -355,8 +355,11 @@
   .empty-state i { font-size: 32px; color: var(--c-text-muted); }
   .empty-state p { font-size: var(--fs-sm); margin: 0; }
 
-  /* ── Panel Head (공통) ── */
-  .panel-head {
+  /* ── Panel Head (공통 — 모든 패널 헤더 통일) ── */
+  .panel-head,
+  .ws4-head,
+  .srch-panel-head,
+  .pg2-head {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -369,6 +372,7 @@
     border-bottom: 1px solid var(--c-border);
     background: var(--c-bg-sub);
     flex-shrink: 0;
+    user-select: none;
   }
 
   /* ── Scroll (전역 통일 — 6px 트랙, 얇고 연하게, 컨테이너 hover 시 살짝 진해짐) ── */
@@ -486,12 +490,13 @@
   /* Filled variant — 카운트 뱃지·필터 뱃지·알림 수 등 "강조 필요" 한정.
    *  일반 상태 표시는 outlined 기본 유지. */
   .badge.is-filled {
-    color: #fff;
+    color: var(--c-text-inv);
     background: currentColor;
     border-color: currentColor;
   }
-  .badge.is-filled > * { color: #fff; }
-  .badge.is-filled.badge-muted { color: #fff; background: var(--c-text-muted); border-color: var(--c-text-muted); }
+  .badge.is-filled > * { color: var(--c-text-inv); }
+  .badge.is-filled.badge-muted { color: var(--c-text-inv); background: var(--c-text-muted); border-color: var(--c-text-muted); }
+  .badge.is-pill { border-radius: 999px; min-width: 18px; justify-content: center; font-variant-numeric: tabular-nums; }
 
   /* ── Status Dot ── */
   .dot {

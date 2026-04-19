@@ -19,7 +19,7 @@ export function mount() {
     <div class="st-page">
 
       <div class="contract-section"><div class="contract-section-title">앱 환경</div>
-        <div style="padding:var(--sp-2) var(--sp-3);display:flex;flex-direction:column;gap:var(--sp-1);">
+        <div class="contract-section-grid" style="grid-template-columns:1fr;">
           <div class="contract-field" style="cursor:pointer;" id="stTheme">
             <span class="contract-field-label">다크모드</span>
             <span style="font-size:var(--fs-xs);"><i class="ph ${store.theme === 'dark' ? 'ph-sun' : 'ph-moon'}"></i> ${store.theme === 'dark' ? 'ON' : 'OFF'}</span>
@@ -42,7 +42,7 @@ export function mount() {
       </div>
 
       <div class="contract-section"><div class="contract-section-title">알림</div>
-        <div style="padding:var(--sp-2) var(--sp-3);display:flex;flex-direction:column;gap:var(--sp-1);">
+        <div class="contract-section-grid" style="grid-template-columns:1fr;">
           <div class="contract-field" style="cursor:pointer;" id="stPush">
             <span class="contract-field-label">웹 푸시 알림</span>
             <span style="font-size:var(--fs-xs);color:${Notification.permission === 'granted' ? 'var(--c-ok)' : 'var(--c-text-muted)'};">${Notification.permission === 'granted' ? '허용됨' : '허용 필요'}</span>
@@ -63,7 +63,7 @@ export function mount() {
       </div>
 
       <div class="contract-section"><div class="contract-section-title">카탈로그 공유</div>
-        <div style="padding:var(--sp-2) var(--sp-3);display:flex;flex-direction:column;gap:var(--sp-2);">
+        <div class="contract-section-grid" style="grid-template-columns:1fr;">
           <div style="display:flex;gap:var(--sp-2);align-items:center;">
             <input class="input input-sm" id="stCatalogUrl" readonly value="${location.origin}/catalog.html?a=${user.user_code || ''}" style="flex:1;">
             <button class="btn btn-sm btn-outline" id="stCatalogCopy"><i class="ph ph-copy"></i> 복사</button>

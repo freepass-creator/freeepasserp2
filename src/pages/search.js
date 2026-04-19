@@ -636,7 +636,7 @@ function renderFilters() {
       <details class="srch-accordion ${activeCount ? 'has-active' : ''}" open>
         <summary class="srch-accordion-sum">
           <i class="${f.icon || 'ph ph-funnel'} srch-acc-icon"></i>
-          <span class="srch-acc-label">${f.label}${activeCount ? `<span class="srch-filter-badge">${activeCount}</span>` : ''}</span>
+          <span class="srch-acc-label">${f.label}${activeCount ? `<span class="badge is-filled is-pill badge-accent">${activeCount}</span>` : ''}</span>
           <i class="ph ph-caret-down srch-acc-caret"></i>
         </summary>
         <div class="srch-accordion-body">${chipsHtml}</div>

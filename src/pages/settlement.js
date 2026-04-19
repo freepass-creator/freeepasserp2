@@ -272,17 +272,17 @@ function renderSub(s) {
   el.innerHTML = `
     <div style="padding:var(--sp-3);display:flex;flex-direction:column;gap:var(--sp-3);">
       <div class="contract-section"><div class="contract-section-title">공급사 메모</div>
-        <div style="padding:var(--sp-2) var(--sp-3);">
+        <div class="contract-section-grid">
           <textarea class="input st-memo" data-memo="provider_memo" rows="3" style="resize:vertical;height:auto;" placeholder="공급사 메모...">${s.provider_memo||''}</textarea>
         </div>
       </div>
       <div class="contract-section"><div class="contract-section-title">영업자 메모</div>
-        <div style="padding:var(--sp-2) var(--sp-3);">
+        <div class="contract-section-grid">
           <textarea class="input st-memo" data-memo="agent_memo" rows="3" style="resize:vertical;height:auto;" placeholder="영업자 메모...">${s.agent_memo||''}</textarea>
         </div>
       </div>
       <div class="contract-section"><div class="contract-section-title">관리자 메모</div>
-        <div style="padding:var(--sp-2) var(--sp-3);">
+        <div class="contract-section-grid">
           <textarea class="input st-memo" data-memo="admin_memo" rows="3" style="resize:vertical;height:auto;" placeholder="관리자 메모...">${s.admin_memo||''}</textarea>
         </div>
       </div>

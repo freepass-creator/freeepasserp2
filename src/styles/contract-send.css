@@ -54,7 +54,7 @@
     width: 210mm;
     min-height: 297mm;
     border: none;
-    background: #fff;
+    background: var(--c-text-inv);
     box-shadow: var(--shadow-lg);
     border-radius: 2px;
     transition: transform var(--dur) var(--ease);

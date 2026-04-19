@@ -87,7 +87,7 @@
     height: 18px;
     padding: 0 5px;
     background: var(--c-accent, #6366f1);
-    color: #fff;
+    color: var(--c-text-inv);
     font-size: var(--fs-2xs);
     font-weight: var(--fw-medium);
     line-height: 18px;
@@ -464,7 +464,7 @@
     position: absolute;
     inset: 0;
     background: var(--c-overlay-thin);
-    color: #fff;
+    color: var(--c-text-inv);
     display: flex;
     align-items: center;
     justify-content: center;

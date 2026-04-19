@@ -5,21 +5,7 @@
     overflow: hidden;
   }
 
-  /* ── Panel Head (공용 토큰 준수) ── */
-  .srch-panel-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--sp-2);
-    padding: 0 var(--sp-3);
-    font-size: var(--fs-xs);
-    font-weight: var(--fw-medium);
-    color: var(--c-text);
-    border-bottom: 1px solid var(--c-border);
-    background: var(--c-bg-sub);
-    flex-shrink: 0;
-    height: var(--panel-head-h);
-  }
+  /* .srch-panel-head — base styles unified in controls.css .panel-head group */
 
   /* ── Filter Panel (좌측) — 1/4 ── */
   .srch-filter-panel {
@@ -94,20 +80,7 @@
     color: var(--c-accent);
   }
 
-  .srch-filter-badge {
-    font-size: var(--fs-2xs);
-    font-weight: var(--fw-bold);
-    background: var(--c-accent);
-    color: #fff;
-    min-width: 16px;
-    height: 16px;
-    padding: 0 5px;
-    border-radius: 999px;
-    line-height: 16px;
-    text-align: center;
-    flex-shrink: 0;
-    font-variant-numeric: tabular-nums;
-  }
+  /* .srch-filter-badge — removed, migrated to .badge.is-filled.is-pill.badge-accent */
 
   .srch-accordion-body {
     padding: var(--sp-1) var(--sp-3) var(--sp-2);
@@ -318,7 +291,7 @@
     height: 32px;
     border-radius: 999px;
     background: var(--c-overlay-med);
-    color: #fff;
+    color: var(--c-text-inv);
     border: none;
     display: flex;
     align-items: center;
@@ -336,7 +309,7 @@
     right: 8px;
     padding: 2px 8px;
     background: var(--c-overlay-chip);
-    color: #fff;
+    color: var(--c-text-inv);
     border-radius: 999px;
     font-size: var(--fs-xs);
     font-variant-numeric: tabular-nums;
@@ -380,7 +353,7 @@
     border: 0;
     background: var(--c-overlay-xdark);
     z-index: 10000;
-    color: #fff;
+    color: var(--c-text-inv);
   }
   dialog.srch-fullscreen::backdrop { background: var(--c-overlay-dark); }
   .srch-fs-scroll {
@@ -413,7 +386,7 @@
     height: 36px;
     border-radius: 999px;
     background: rgba(255,255,255,0.15);
-    color: #fff;
+    color: var(--c-text-inv);
     border: none;
     cursor: pointer;
     font-size: 18px;
@@ -429,7 +402,7 @@
     transform: translateX(-50%);
     padding: 4px 14px;
     background: rgba(255,255,255,0.15);
-    color: #fff;
+    color: var(--c-text-inv);
     border-radius: 999px;
     font-size: var(--fs-sm);
     font-variant-numeric: tabular-nums;

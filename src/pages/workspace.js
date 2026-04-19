@@ -211,7 +211,7 @@ function renderRoomList() {
           </div>
           <div class="room-item-msg">
             <span>${preview}</span>
-            ${unread > 0 ? `<span class="room-item-badge">${unread > 99 ? '99+' : unread}</span>` : ''}
+            ${unread > 0 ? `<span class="badge is-filled is-pill badge-accent">${unread > 99 ? '99+' : unread}</span>` : ''}
           </div>
         </div>
       </div>
@@ -422,7 +422,7 @@ function loadContract(room) {
 
       <div class="contract-section">
         <div class="contract-section-title">고객</div>
-        <div style="padding:var(--sp-2) var(--sp-3);">
+        <div class="contract-section-grid">
           ${cInput('고객명', 'customer_name', c.customer_name, c.contract_code)}
           ${cInput('연락처', 'customer_phone', c.customer_phone, c.contract_code)}
         </div>
@@ -506,7 +506,7 @@ async function loadVehicleDetail(productKey) {
         <div style="font-size:var(--fs-xs);color:var(--c-text-muted);margin-top:2px;">${p.car_number||''} · ${p.maker||''}</div>
       </div>
 
-      <div class="contract-section" style="margin:0 var(--sp-3) var(--sp-2);">
+      <div class="contract-section">
         <div class="contract-section-title">스펙</div>
         <div class="contract-section-grid">
           ${cField('연식',p.year)}${cField('연료',p.fuel_type)}
@@ -515,7 +515,7 @@ async function loadVehicleDetail(productKey) {
         </div>
       </div>
 
-      <div class="contract-section" style="margin:0 var(--sp-3) var(--sp-2);">
+      <div class="contract-section">
         <div class="contract-section-title">대여료</div>
         <table class="srch-price-table" style="width:100%;">
           <thead><tr><th></th><th>12</th><th>24</th><th>36</th></tr></thead>
@@ -526,7 +526,7 @@ async function loadVehicleDetail(productKey) {
         </table>
       </div>
 
-      <div class="contract-section" style="margin:0 var(--sp-3);">
+      <div class="contract-section">
         <div class="contract-section-title">부가</div>
         <div class="contract-section-grid">
           ${cField('공급사',p.provider_company_code)}${cField('정책',p.policy_name)}

@@ -148,7 +148,7 @@ function renderForm(p, key) {
         }).join('')}
       </div>
       <div class="contract-section"><div class="contract-section-title">기본정보</div>
-        <div style="padding:var(--sp-2) var(--sp-3);display:flex;flex-direction:column;gap:var(--sp-1);">
+        <div class="contract-section-grid" style="grid-template-columns:1fr;">
           ${fi('정책코드','policy_code',p)}
           ${fi('정책명','policy_name',p)}
           ${fi('공급사코드','provider_company_code',p)}
@@ -184,7 +184,7 @@ function renderNewForm() {
     <div style="padding:var(--sp-3);display:flex;flex-direction:column;gap:var(--sp-3);">
       <div style="font-weight:var(--fw-heavy);">정책 등록</div>
       <div class="contract-section"><div class="contract-section-title">기본정보</div>
-        <div style="padding:var(--sp-2) var(--sp-3);display:flex;flex-direction:column;gap:var(--sp-1);">
+        <div class="contract-section-grid" style="grid-template-columns:1fr;">
           ${finew('정책명','policy_name')}
           ${finew('공급사코드','provider_company_code')}
           ${finew('정책유형','policy_type')}

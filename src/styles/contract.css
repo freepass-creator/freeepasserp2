@@ -20,20 +20,7 @@
     overflow: hidden;
   }
 
-  .pg2-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--sp-2);
-    padding: 0 var(--sp-3);
-    font-size: var(--fs-xs);
-    font-weight: var(--fw-medium);
-    color: var(--c-text);
-    background: var(--c-bg-sub);
-    border-bottom: 1px solid var(--c-border);
-    flex-shrink: 0;
-    height: var(--panel-head-h);
-  }
+  /* .pg2-head — base styles unified in controls.css .panel-head group */
 
   .pg2-filter {
     padding: var(--sp-2) var(--sp-3);
@@ -252,26 +239,32 @@
     color: var(--c-text-inv);
   }
 
-  /* ── Contract Info Section ── */
+  /* ── Contract Info Section (flat-stacked, canonical) ── */
   .contract-section {
-    border: 1px solid var(--c-border);
-    border-radius: var(--ctrl-r);
-    overflow: hidden;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    overflow: visible;
   }
 
   .contract-section-title {
+    padding: 0;
+    margin: 0 0 var(--sp-2);
     font-size: var(--fs-xs);
-    font-weight: var(--fw-medium);
-    color: var(--c-text-sub);
-    padding: var(--sp-2) var(--sp-3);
-    background: var(--c-bg-sub);
-    border-bottom: 1px solid var(--c-border);
+    font-weight: var(--fw-semibold);
+    color: var(--c-text);
+    background: transparent;
+    border-bottom: 0;
+    display: flex;
+    align-items: center;
+    gap: var(--sp-1);
   }
 
   .contract-section-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    padding: var(--sp-2) var(--sp-3);
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    padding: 0;
+    gap: var(--sp-2) var(--sp-3);
   }
 
   .contract-field {
