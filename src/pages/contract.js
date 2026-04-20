@@ -45,24 +45,24 @@ export function mount() {
         <div class="ws4-body" id="ctList"></div>
       </div>
       <div class="ws4-resize" data-idx="0"></div>
-      <div class="ws4-panel" data-panel="work">
-        <div class="ws4-head"><span>작업</span><div style="display:flex;gap:var(--sp-1);" id="ctWorkActions"></div></div>
+      <div class="ws4-panel" data-panel="progress">
+        <div class="ws4-head"><span>진행상황</span><div style="display:flex;gap:var(--sp-1);" id="ctWorkActions"></div></div>
         <div class="ws4-body" id="ctWork">
           <div class="srch-empty"><i class="ph ph-clipboard-text"></i><p>계약을 선택하세요</p></div>
         </div>
       </div>
       <div class="ws4-resize" data-idx="1"></div>
       <div class="ws4-panel" data-panel="detail">
-        <div class="ws4-head">상세</div>
+        <div class="ws4-head">계약접수내용</div>
         <div class="ws4-body" id="ctDetail">
-          <div class="srch-empty"><i class="ph ph-info"></i><p>상세 정보</p></div>
+          <div class="srch-empty"><i class="ph ph-file-text"></i><p>계약 접수 내용</p></div>
         </div>
       </div>
       <div class="ws4-resize" data-idx="2"></div>
       <div class="ws4-panel" data-panel="sub">
         <div class="ws4-head">보조</div>
         <div class="ws4-body" id="ctSub">
-          <div class="srch-empty"><i class="ph ph-note"></i><p>보조 정보</p></div>
+          <div class="srch-empty"><i class="ph ph-note"></i><p>정산 · 메모</p></div>
         </div>
       </div>
     </div>
@@ -178,35 +178,37 @@ function renderWork(c) {
     <button class="btn btn-xs btn-outline" id="ctDeleteBtn" style="color:var(--c-err);"><i class="ph ph-trash"></i> 삭제</button>
   `;
   const el = document.getElementById('ctWork');
+  const stepsDone = STEPS.filter(s => c[s.key] === 'yes' || c[s.key] === true).length;
   el.innerHTML = `
-    <div style="padding:var(--sp-3);display:flex;flex-direction:column;gap:var(--sp-3);">
-      <div style="font-weight:var(--fw-heavy);">${c.contract_code}</div>
-
-      <div class="contract-steps">
-        ${STEPS.map(s => {
-          const done = c[s.key] === 'yes' || c[s.key] === true;
-          return `<div class="contract-step ${done ? 'is-done' : ''}" data-step="${s.key}"><span style="font-size:14px;">${s.icon}</span><span>${s.label}</span></div>`;
-        }).join('')}
-      </div>
-
-      <div style="display:flex;gap:3px;flex-wrap:wrap;">
-        ${['계약대기','계약요청','계약발송','계약완료','계약취소'].map(s => {
-          const active = c.contract_status === s;
-          const colors = { '계약대기':'var(--c-warn)','계약요청':'var(--c-info)','계약발송':'var(--c-accent)','계약완료':'var(--c-ok)','계약취소':'var(--c-err)' };
-          return `<div class="status-toggle" data-status="${s}" style="font-size:var(--fs-2xs);padding:3px 8px;${active ? `background:${colors[s]}20;color:${colors[s]};` : ''}">${s.replace('계약','')}</div>`;
-        }).join('')}
-      </div>
-
-      <div class="form-section"><div class="form-section-title">고객정보</div>
-        <div class="form-section-body">
-          ${ffi('고객명','customer_name',c)}
-          ${ffi('연락처','customer_phone',c)}
-          ${ffi('생년월일','customer_birth',c)}
+    <div style="padding:var(--sp-3);display:flex;flex-direction:column;gap:var(--sp-3);overflow-y:auto;height:100%;">
+      <div class="form-section">
+        <div class="form-section-title"><i class="ph ph-list-checks"></i> 진행 단계 <span class="form-section-hint" style="color:${stepsDone === STEPS.length ? 'var(--c-ok)' : 'var(--c-info)'};">${stepsDone}/${STEPS.length}</span></div>
+        <div class="contract-steps">
+          ${STEPS.map(s => {
+            const done = c[s.key] === 'yes' || c[s.key] === true;
+            return `<div class="contract-step ${done ? 'is-done' : ''}" data-step="${s.key}"><span style="font-size:14px;">${s.icon}</span><span>${s.label}</span></div>`;
+          }).join('')}
         </div>
       </div>
 
-      <button class="btn btn-primary btn-sm" id="ctDocBtn" style="width:100%;"><i class="ph ph-pencil-line"></i> 계약서 작성</button>
-      ${renderSignReqButton(c)}
+      <div class="form-section">
+        <div class="form-section-title"><i class="ph ph-toggle-right"></i> 계약 상태</div>
+        <div style="display:flex;gap:3px;flex-wrap:wrap;">
+          ${['계약대기','계약요청','계약발송','계약완료','계약취소'].map(s => {
+            const active = c.contract_status === s;
+            const colors = { '계약대기':'var(--c-warn)','계약요청':'var(--c-info)','계약발송':'var(--c-accent)','계약완료':'var(--c-ok)','계약취소':'var(--c-err)' };
+            return `<div class="status-toggle" data-status="${s}" style="font-size:var(--fs-2xs);padding:3px 8px;${active ? `background:${colors[s]}20;color:${colors[s]};` : ''}">${s.replace('계약','')}</div>`;
+          }).join('')}
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title"><i class="ph ph-paper-plane-tilt"></i> 서류 처리</div>
+        <div style="display:flex;flex-direction:column;gap:var(--sp-2);">
+          <button class="btn btn-primary btn-sm" id="ctDocBtn" style="width:100%;"><i class="ph ph-pencil-line"></i> 계약서 작성</button>
+          ${renderSignReqButton(c)}
+        </div>
+      </div>
     </div>
   `;
 
@@ -321,27 +323,45 @@ function renderSignReqButton(c) {
 function renderDetail(c) {
   const el = document.getElementById('ctDetail');
   el.innerHTML = `
-    <div style="padding:var(--sp-3);display:flex;flex-direction:column;gap:var(--sp-3);">
-      <div class="form-section"><div class="form-section-title">차량정보</div>
+    <div style="padding:var(--sp-3);display:flex;flex-direction:column;gap:var(--sp-4);overflow-y:auto;height:100%;">
+      <div class="form-section">
+        <div class="form-section-title"><i class="ph ph-user"></i> 고객정보</div>
         <div class="form-section-body">
-          ${ffv('차량번호',c.car_number_snapshot)}${ffv('차량명',c.vehicle_name_snapshot)}
-          ${ffv('모델',c.model_snapshot)}${ffv('세부',c.sub_model_snapshot)}
+          ${ffi('고객명','customer_name',c)}
+          ${ffi('연락처','customer_phone',c)}
+          ${ffi('생년월일','customer_birth',c)}
         </div>
       </div>
-      <div class="form-section"><div class="form-section-title">대여정보</div>
+      <div class="form-section">
+        <div class="form-section-title"><i class="ph ph-car-simple"></i> 차량정보</div>
         <div class="form-section-body">
-          ${ffv('기간',c.rent_month_snapshot?c.rent_month_snapshot+'개월':'-')}${ffv('월대여료',fmtWon(c.rent_amount_snapshot))}
-          ${ffv('보증금',fmtWon(c.deposit_amount_snapshot))}${ffv('계약일',c.contract_date)}
+          ${ffv('차량번호',c.car_number_snapshot)}
+          ${ffv('세부모델',c.sub_model_snapshot || c.model_snapshot)}
+          ${ffv('차량명',c.vehicle_name_snapshot)}
         </div>
       </div>
-      <div class="form-section"><div class="form-section-title">관계자</div>
+      <div class="form-section">
+        <div class="form-section-title"><i class="ph ph-currency-krw"></i> 대여정보</div>
         <div class="form-section-body">
-          ${ffv('영업자',c.agent_code)}${ffv('공급사',c.provider_company_code)}
-          ${ffv('채널',c.agent_channel_code)}${ffv('정책',c.policy_code)}
+          ${ffv('기간',c.rent_month_snapshot?c.rent_month_snapshot+'개월':'-')}
+          ${ffv('월대여료',fmtWon(c.rent_amount_snapshot))}
+          ${ffv('보증금',fmtWon(c.deposit_amount_snapshot))}
+          ${ffv('계약일',c.contract_date)}
+        </div>
+      </div>
+      <div class="form-section">
+        <div class="form-section-title"><i class="ph ph-users"></i> 관계자</div>
+        <div class="form-section-body">
+          ${ffv('공급사',c.provider_company_code)}
+          ${ffv('영업자',c.agent_code)}
+          ${ffv('채널',c.agent_channel_code)}
+          ${ffv('정책',c.policy_code)}
+          ${ffv('계약코드',c.contract_code)}
         </div>
       </div>
     </div>
   `;
+  bindFormAutoSave(el, (field, value) => updateRecord(`contracts/${c.contract_code}`, { [field]: value }));
 }
 
 /* ── 보조 패널: 정산 + 메모 ── */
