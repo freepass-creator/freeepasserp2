@@ -145,16 +145,21 @@ function renderList() {
 
   el.innerHTML = list.map(p => {
     const tone = p.status === 'active' ? 'ok' : 'muted';
-    const badge = p.status === 'active' ? '<span class="badge is-filled badge-ok">활성</span>' : p.status ? `<span class="badge is-filled badge-muted">${p.status}</span>` : '';
+    const badge = p.status !== 'active' && p.status ? `<span class="badge is-filled badge-muted">${p.status}</span>` : '';
+    // 파트너명 조회
+    const partner = (store.partners || []).find(pt => pt.partner_code === p.provider_company_code);
+    const providerName = partner?.partner_name || p.provider_company_code || '';
     return `
     <div class="room-item ${activeCode === p._key ? 'is-active' : ''}" data-key="${p._key}">
-      <div class="room-item-avatar is-${tone}"><i class="ph ph-scroll"></i></div>
+      <div class="room-item-avatar is-${tone}" style="flex-direction:column;gap:1px;font-size:var(--fs-2xs);"><i class="ph ph-scroll"></i>${p.status === 'active' ? '활성' : '비활'}</div>
       <div class="room-item-body">
         <div class="room-item-top">
-          <span class="room-item-name">${p.policy_name || p.policy_code || ''}</span>
+          <span class="room-item-name">${providerName} · ${p.policy_name || '-'}</span>
           ${badge}
         </div>
-        <div class="room-item-msg">${p.provider_company_code || ''} · ${p.policy_code || ''}</div>
+        <div class="room-item-msg">
+          <span>${[p.provider_company_code, p.policy_code, p.term_description].filter(Boolean).join(' · ')}</span>
+        </div>
       </div>
     </div>`;
   }).join('') || empty('정책 없음');

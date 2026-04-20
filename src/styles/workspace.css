@@ -206,12 +206,12 @@
   /* 상태별 아바타 색상 */
   /* 상태 아바타 — 색상 tone 클래스는 전부 중립 유지 (상태는 뱃지로만 표현) */
   /* 상태별 아바타 — 왼쪽 3px 라인으로 직관적 상태 표현 */
-  .room-item-avatar.is-ok      { border-left: 3px solid var(--c-ok); color: var(--c-ok); }
-  .room-item-avatar.is-warn    { border-left: 3px solid var(--c-warn); color: var(--c-warn); }
-  .room-item-avatar.is-err     { border-left: 3px solid var(--c-err); color: var(--c-err); }
-  .room-item-avatar.is-info    { border-left: 3px solid var(--c-info); color: var(--c-info); }
-  .room-item-avatar.is-accent  { border-left: 3px solid var(--c-accent); color: var(--c-accent); }
-  .room-item-avatar.is-muted   { border-left: 3px solid var(--c-border); color: var(--c-text-muted); }
+  .room-item-avatar.is-ok      { color: var(--c-ok); }
+  .room-item-avatar.is-warn    { color: var(--c-warn); }
+  .room-item-avatar.is-err     { color: var(--c-err); }
+  .room-item-avatar.is-info    { color: var(--c-info); }
+  .room-item-avatar.is-accent  { color: var(--c-accent); }
+  .room-item-avatar.is-muted   { color: var(--c-text-muted); }
 
   .room-item-body {
     flex: 1;
