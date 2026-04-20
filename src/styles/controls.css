@@ -283,7 +283,14 @@
   select.contract-field-input,
   select.ac-input:not([readonly]),
   select.pd-hero-select,
-  select.input-flat { cursor: pointer; }
+  select.input-flat {
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 5l3 3 3-3' fill='none' stroke='%23868e96' stroke-width='1' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    padding-right: 24px;
+  }
 
   /* 신규 등록(draft) — 부모에 .is-draft 걸면 내부 입력칸 전체가 시각 구분 */
   .is-draft .contract-field-input,
@@ -771,9 +778,14 @@
   .form-photo-preview { width: 48px; height: 36px; object-fit: cover; border-radius: var(--ctrl-r); border: 1px solid var(--c-border); }
   .form-photo-empty { width: 48px; height: 36px; display: flex; align-items: center; justify-content: center; background: var(--c-bg-sub); border-radius: var(--ctrl-r); color: var(--c-text-muted); font-size: 18px; }
   .form-photo-btn { flex-shrink: 0; }
-  .form-state.is-editing { color: var(--c-accent); }
-  .form-state.is-saved   { color: var(--c-ok); }
-  .form-state.is-error   { color: var(--c-err); }
+  .form-state.is-editing { color: var(--c-info); font-weight: var(--fw-medium); }
+  .form-state.is-saved   { color: var(--c-ok); font-weight: var(--fw-medium); }
+  .form-state.is-error   { color: var(--c-err); font-weight: var(--fw-medium); }
+
+  /* 상태별 입력칸 테두리 */
+  .form-row-control:has(.form-state.is-editing) .contract-field-input { border-color: var(--c-info); }
+  .form-row-control:has(.form-state.is-saved)   .contract-field-input { border-color: var(--c-ok); }
+  .form-row-control:has(.form-state.is-error)    .contract-field-input { border-color: var(--c-err); }
 
   /* 공용 섹션 구조 — 페이지별 prefix 대신 이것 재사용 권장
    * .section > .section-title + .section-body(grid/flex) */

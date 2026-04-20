@@ -711,7 +711,7 @@
   .login-brand {
     font-family: 'Exo 2', 'Pretendard', -apple-system, system-ui, sans-serif;
     font-size: 20px;
-    letter-spacing: 0.18em;
+    letter-spacing: normal;
     display: flex;
     align-items: baseline;
     justify-content: center;
