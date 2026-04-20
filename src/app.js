@@ -275,98 +275,124 @@ function renderLogin() {
   const app = document.getElementById('app');
   app.innerHTML = `
     <div class="login-page">
-      <div class="login-card">
-        ${renderLoginBrand()}
-        <div class="login-fields">
-          <input class="input" id="loginEmail" type="email" placeholder="이메일" autocomplete="email">
-          <input class="input" id="loginPw" type="password" placeholder="비밀번호" autocomplete="current-password">
-          <button class="btn btn-primary btn-lg btn-full" id="loginBtn"><i class="ph ph-sign-in"></i> 로그인</button>
-        </div>
+      <div class="login-brand">FREEPASS ERP</div>
+      <section class="login-card">
+        <header class="login-head">
+          <h2 class="login-title">로그인</h2>
+          <p class="login-sub">이메일과 비밀번호를 입력해주세요.</p>
+        </header>
+        <form class="login-form" id="loginForm" novalidate>
+          <div class="login-field">
+            <label for="loginEmail">이메일</label>
+            <input id="loginEmail" type="email" placeholder="name@company.com" autocomplete="username" required>
+          </div>
+          <div class="login-field">
+            <label for="loginPw">비밀번호</label>
+            <input id="loginPw" type="password" placeholder="비밀번호 입력" autocomplete="current-password" required>
+          </div>
+          <button type="submit" class="login-submit" id="loginBtn">로그인</button>
+        </form>
         <div class="login-links">
           <a href="#" id="signupLink">계정 만들기</a>
           <span class="login-links-sep">·</span>
           <a href="#" id="resetLink">비밀번호 재설정</a>
         </div>
-      </div>
+        <p class="login-msg" id="loginMsg" aria-live="polite"></p>
+      </section>
+      <div class="login-copy">&copy; 2026 freepassmobility. All Rights Reserved.</div>
     </div>
   `;
 
-  document.getElementById('loginBtn').addEventListener('click', async () => {
+  document.getElementById('loginForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
     const email = document.getElementById('loginEmail').value;
     const pw = document.getElementById('loginPw').value;
     if (!email || !pw) return;
 
     const btn = document.getElementById('loginBtn');
+    const card = btn.closest('.login-card');
     btn.disabled = true;
-    btn.innerHTML = '<i class="ph ph-circle-notch ph-spin"></i> 로그인 중...';
+    card.classList.add('is-loading');
 
     try {
       const { login } = await import('./firebase/auth.js');
       await login(email, pw);
     } catch (e) {
       btn.disabled = false;
-      btn.innerHTML = '<i class="ph ph-sign-in"></i> 로그인';
+      card.classList.remove('is-loading');
       const { showToast } = await import('./core/toast.js');
       showToast('로그인 실패: 이메일 또는 비밀번호를 확인하세요', 'error');
     }
   });
 
-  // Enter key
-  document.getElementById('loginPw').addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') document.getElementById('loginBtn').click();
-  });
-
-  // 회원가입
   document.getElementById('signupLink')?.addEventListener('click', (e) => {
     e.preventDefault();
     renderSignup();
   });
 
-  // 비밀번호 찾기
   document.getElementById('resetLink')?.addEventListener('click', (e) => {
     e.preventDefault();
     renderResetPassword();
   });
 }
 
-function renderLoginBrand() {
-  return `
-    <div class="login-brand">
-      <span class="login-brand-main">freepass</span><span class="login-brand-sub">erp</span>
-    </div>
-  `;
-}
-
 function renderSignup() {
   const app = document.getElementById('app');
   app.innerHTML = `
     <div class="login-page">
-      <div class="login-card">
-        ${renderLoginBrand()}
-        <div class="login-title">계정 만들기</div>
-        <div class="login-fields">
-          <input class="input" id="suEmail" type="email" placeholder="이메일">
-          <input class="input" id="suPw" type="password" placeholder="비밀번호 (6자 이상)">
-          <input class="input" id="suName" placeholder="이름">
-          <input class="input" id="suPhone" placeholder="연락처">
-          <input class="input" id="suCompany" placeholder="소속 회사명">
-          <select class="select" id="suRole">
-            <option value="agent">영업자</option>
-            <option value="provider">공급사</option>
-          </select>
-          <button class="btn btn-primary btn-lg btn-full" id="suBtn"><i class="ph ph-user-plus"></i> 가입하기</button>
-        </div>
+      <div class="login-brand">FREEPASS ERP</div>
+      <section class="login-card">
+        <header class="login-head">
+          <h2 class="login-title">계정 만들기</h2>
+          <p class="login-sub">가입 후 관리자 승인이 필요합니다.</p>
+        </header>
+        <form class="login-form" id="suForm" novalidate>
+          <div class="login-field">
+            <label for="suEmail">이메일</label>
+            <input id="suEmail" type="email" placeholder="name@company.com" autocomplete="username" required>
+          </div>
+          <div class="login-field">
+            <label for="suPw">비밀번호</label>
+            <input id="suPw" type="password" placeholder="6자 이상" autocomplete="new-password" required>
+          </div>
+          <div class="login-field">
+            <label for="suName">이름</label>
+            <input id="suName" placeholder="홍길동" required>
+          </div>
+          <div class="login-field">
+            <label for="suPhone">연락처</label>
+            <input id="suPhone" type="tel" placeholder="010-0000-0000">
+          </div>
+          <div class="login-field">
+            <label for="suCompany">소속 회사명</label>
+            <input id="suCompany" placeholder="회사명">
+          </div>
+          <div class="login-field">
+            <label for="suRole">역할</label>
+            <select id="suRole">
+              <option value="agent">영업자</option>
+              <option value="provider">공급사</option>
+            </select>
+          </div>
+          <button type="submit" class="login-submit" id="suBtn">가입하기</button>
+        </form>
         <div class="login-links">
-          <a href="#" id="suBack"><i class="ph ph-arrow-left icon-hint" aria-hidden="true"></i> 로그인</a>
+          <a href="#" id="suBack">로그인으로 돌아가기</a>
         </div>
-      </div>
+      </section>
+      <div class="login-copy">&copy; 2026 freepassmobility. All Rights Reserved.</div>
     </div>
   `;
 
-  document.getElementById('suBtn')?.addEventListener('click', async () => {
+  document.getElementById('suForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
     const email = document.getElementById('suEmail').value;
     const pw = document.getElementById('suPw').value;
     if (!email || !pw || pw.length < 6) { showToast('이메일과 비밀번호(6자+) 필수', 'error'); return; }
+    const btn = document.getElementById('suBtn');
+    const card = btn.closest('.login-card');
+    btn.disabled = true;
+    card.classList.add('is-loading');
     try {
       const { signup } = await import('./firebase/auth.js');
       const user = await signup(email, pw);
@@ -378,8 +404,11 @@ function renderSignup() {
         company_name: document.getElementById('suCompany').value.trim(),
         role: document.getElementById('suRole').value,
       });
+      card.classList.remove('is-loading');
       showToast('가입 완료. 관리자 승인 후 이용 가능합니다.');
     } catch (e) {
+      btn.disabled = false;
+      card.classList.remove('is-loading');
       showToast('가입 실패: ' + (e.message || ''), 'error');
     }
   });
@@ -391,22 +420,29 @@ function renderResetPassword() {
   const app = document.getElementById('app');
   app.innerHTML = `
     <div class="login-page">
-      <div class="login-card">
-        ${renderLoginBrand()}
-        <div class="login-title">비밀번호 재설정</div>
-        <p class="login-hint">가입한 이메일로 재설정 링크를 보내드립니다</p>
-        <div class="login-fields">
-          <input class="input" id="rpEmail" type="email" placeholder="이메일">
-          <button class="btn btn-primary btn-lg btn-full" id="rpBtn"><i class="ph ph-paper-plane-right"></i> 재설정 메일 전송</button>
-        </div>
+      <div class="login-brand">FREEPASS ERP</div>
+      <section class="login-card">
+        <header class="login-head">
+          <h2 class="login-title">비밀번호 재설정</h2>
+          <p class="login-sub">가입한 이메일로 재설정 링크를 보내드립니다.</p>
+        </header>
+        <form class="login-form" id="rpForm" novalidate>
+          <div class="login-field">
+            <label for="rpEmail">이메일</label>
+            <input id="rpEmail" type="email" placeholder="name@company.com" autocomplete="username" required>
+          </div>
+          <button type="submit" class="login-submit" id="rpBtn">재설정 메일 전송</button>
+        </form>
         <div class="login-links">
-          <a href="#" id="rpBack"><i class="ph ph-arrow-left icon-hint" aria-hidden="true"></i> 로그인</a>
+          <a href="#" id="rpBack">로그인으로 돌아가기</a>
         </div>
-      </div>
+      </section>
+      <div class="login-copy">&copy; 2026 freepassmobility. All Rights Reserved.</div>
     </div>
   `;
 
-  document.getElementById('rpBtn')?.addEventListener('click', async () => {
+  document.getElementById('rpForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
     const email = document.getElementById('rpEmail').value;
     if (!email) return;
     try {
