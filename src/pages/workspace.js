@@ -10,6 +10,7 @@ import { uploadFile } from '../firebase/storage-helper.js';
 import { markRoomRead } from '../firebase/collections.js';
 import { setBreadcrumbTail, setBreadcrumbBrief } from '../core/breadcrumb.js';
 import { fmtMoney, fmtWon, fmtTime, cField } from '../core/format.js';
+import { fieldInput as ffi, fieldView as ffv, bindAutoSave as bindFormAutoSave } from '../core/form-fields.js';
 import { initWs4Resize } from '../core/resize.js';
 import { getSettlementStatus, SETTLEMENT_STATUSES_BASIC } from '../core/settlement-status.js';
 
@@ -411,20 +412,20 @@ function loadContract(room) {
         }).join('')}
       </div>
 
-      <div class="contract-section">
-        <div class="contract-section-title">정보</div>
-        <div class="contract-section-grid">
-          ${cField('상태', c.contract_status)}${cField('기간', c.rent_month_snapshot ? c.rent_month_snapshot+'개월' : '-')}
-          ${cField('월대여료', fmtWon(c.rent_amount_snapshot))}${cField('보증금', fmtWon(c.deposit_amount_snapshot))}
-          ${cField('계약일', c.contract_date)}${cField('영업자', c.agent_code)}
+      <div class="form-section">
+        <div class="form-section-title">정보</div>
+        <div class="form-section-body">
+          ${ffv('상태', c.contract_status)}${ffv('기간', c.rent_month_snapshot ? c.rent_month_snapshot+'개월' : '-')}
+          ${ffv('월대여료', fmtWon(c.rent_amount_snapshot))}${ffv('보증금', fmtWon(c.deposit_amount_snapshot))}
+          ${ffv('계약일', c.contract_date)}${ffv('영업자', c.agent_code)}
         </div>
       </div>
 
-      <div class="contract-section">
-        <div class="contract-section-title">고객</div>
-        <div class="contract-section-grid">
-          ${cInput('고객명', 'customer_name', c.customer_name, c.contract_code)}
-          ${cInput('연락처', 'customer_phone', c.customer_phone, c.contract_code)}
+      <div class="form-section">
+        <div class="form-section-title">고객</div>
+        <div class="form-section-body">
+          ${ffi('고객명','customer_name',c)}
+          ${ffi('연락처','customer_phone',c)}
         </div>
       </div>
 
@@ -506,17 +507,17 @@ async function loadVehicleDetail(productKey) {
         <div style="font-size:var(--fs-xs);color:var(--c-text-muted);margin-top:2px;">${p.car_number||''} · ${p.maker||''}</div>
       </div>
 
-      <div class="contract-section">
-        <div class="contract-section-title">스펙</div>
-        <div class="contract-section-grid">
-          ${cField('연식',p.year)}${cField('연료',p.fuel_type)}
-          ${cField('주행',p.mileage?Number(p.mileage).toLocaleString()+'km':'-')}${cField('색상',p.ext_color||p.exterior_color)}
-          ${cField('위치',p.location)}${cField('유형',p.product_type)}
+      <div class="form-section">
+        <div class="form-section-title">스펙</div>
+        <div class="form-section-body">
+          ${ffv('연식',p.year)}${ffv('연료',p.fuel_type)}
+          ${ffv('주행',p.mileage?Number(p.mileage).toLocaleString()+'km':'-')}${ffv('색상',p.ext_color||p.exterior_color)}
+          ${ffv('위치',p.location)}${ffv('유형',p.product_type)}
         </div>
       </div>
 
-      <div class="contract-section">
-        <div class="contract-section-title">대여료</div>
+      <div class="form-section">
+        <div class="form-section-title">대여료</div>
         <table class="srch-price-table" style="width:100%;">
           <thead><tr><th></th><th>12</th><th>24</th><th>36</th></tr></thead>
           <tbody>
@@ -526,11 +527,11 @@ async function loadVehicleDetail(productKey) {
         </table>
       </div>
 
-      <div class="contract-section">
-        <div class="contract-section-title">부가</div>
-        <div class="contract-section-grid">
-          ${cField('공급사',p.provider_company_code)}${cField('정책',p.policy_name)}
-          ${cField('상태',p.vehicle_status)}${cField('코드',p.product_code)}
+      <div class="form-section">
+        <div class="form-section-title">부가</div>
+        <div class="form-section-body">
+          ${ffv('공급사',p.provider_company_code)}${ffv('정책',p.policy_name)}
+          ${ffv('상태',p.vehicle_status)}${ffv('코드',p.product_code)}
         </div>
       </div>
     </div>
@@ -580,11 +581,11 @@ function renderSettlementSection(contract) {
         }).join('')}
       </div>
 
-      <div class="contract-section">
-        <div class="contract-section-title">정산정보</div>
-        <div class="contract-section-grid">
-          ${cField('월대여료', fmtWon(s.rent_amount))}${cField('보증금', fmtWon(s.deposit_amount))}
-          ${cField('정산일', s.settled_date||'-')}${cField('상태', status)}
+      <div class="form-section">
+        <div class="form-section-title">정산정보</div>
+        <div class="form-section-body">
+          ${ffv('월대여료', fmtWon(s.rent_amount))}${ffv('보증금', fmtWon(s.deposit_amount))}
+          ${ffv('정산일', s.settled_date||'-')}${ffv('상태', status)}
         </div>
       </div>
     </div>
@@ -592,7 +593,6 @@ function renderSettlementSection(contract) {
 }
 
 /* ── Helpers ── */
-function cInput(l, field, v) { return `<div class="contract-field"><span class="contract-field-label">${l}</span><input class="contract-field-input" data-field="${field}" value="${v || ''}" placeholder="-"></div>`; }
 
 /* ── Unmount ── */
 export function unmount() {

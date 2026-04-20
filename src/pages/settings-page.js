@@ -18,22 +18,22 @@ export function mount() {
   main.innerHTML = `
     <div class="st-page">
 
-      <div class="contract-section"><div class="contract-section-title">앱 환경</div>
-        <div class="contract-section-grid" style="grid-template-columns:1fr;">
-          <div class="contract-field" style="cursor:pointer;" id="stTheme">
-            <span class="contract-field-label">다크모드</span>
+      <div class="form-section"><div class="form-section-title">앱 환경</div>
+        <div class="form-section-body" style="grid-template-columns:1fr;">
+          <div class="form-row" style="cursor:pointer;" id="stTheme">
+            <span class="form-row-label">다크모드</span>
             <span style="font-size:var(--fs-xs);"><i class="ph ${store.theme === 'dark' ? 'ph-sun' : 'ph-moon'}"></i> ${store.theme === 'dark' ? 'ON' : 'OFF'}</span>
           </div>
-          <div class="contract-field">
-            <span class="contract-field-label">시작 페이지</span>
+          <div class="form-row">
+            <span class="form-row-label">시작 페이지</span>
             <select class="select input-xs" id="stLanding" style="width:120px;">
               ${[{v:'/search',l:'찾기'},{v:'/',l:'작업'},{v:'/contract',l:'계약'},{v:'/settle',l:'정산'}].map(o =>
                 `<option value="${o.v}" ${landingPage === o.v ? 'selected' : ''}>${o.l}</option>`
               ).join('')}
             </select>
           </div>
-          <div class="contract-field">
-            <span class="contract-field-label">대여 기간 필터</span>
+          <div class="form-row">
+            <span class="form-row-label">대여 기간 필터</span>
             <div style="display:flex;gap:3px;">
               ${[12,24,36,48,60].map(m => `<button class="chip chip-xs ${periodFilter.includes(m) ? 'is-active' : ''}" data-period="${m}">${m}</button>`).join('')}
             </div>
@@ -41,29 +41,29 @@ export function mount() {
         </div>
       </div>
 
-      <div class="contract-section"><div class="contract-section-title">알림</div>
-        <div class="contract-section-grid" style="grid-template-columns:1fr;">
-          <div class="contract-field" style="cursor:pointer;" id="stPush">
-            <span class="contract-field-label">웹 푸시 알림</span>
+      <div class="form-section"><div class="form-section-title">알림</div>
+        <div class="form-section-body" style="grid-template-columns:1fr;">
+          <div class="form-row" style="cursor:pointer;" id="stPush">
+            <span class="form-row-label">웹 푸시 알림</span>
             <span style="font-size:var(--fs-xs);color:${Notification.permission === 'granted' ? 'var(--c-ok)' : 'var(--c-text-muted)'};">${Notification.permission === 'granted' ? '허용됨' : '허용 필요'}</span>
           </div>
-          <div class="contract-field" style="cursor:pointer;" id="stSound">
-            <span class="contract-field-label">알림 소리</span>
+          <div class="form-row" style="cursor:pointer;" id="stSound">
+            <span class="form-row-label">알림 소리</span>
             <span style="font-size:var(--fs-xs);color:${soundOn ? 'var(--c-ok)' : 'var(--c-text-muted)'};">${soundOn ? 'ON' : 'OFF'}</span>
           </div>
           ${['chat','contract','settle'].map(key => {
             const labels = { chat: '대화 알림 뱃지', contract: '계약 알림 뱃지', settle: '정산 알림 뱃지' };
             const on = badgeSettings[key] !== false;
-            return `<div class="contract-field" style="cursor:pointer;" data-badge="${key}">
-              <span class="contract-field-label">${labels[key]}</span>
+            return `<div class="form-row" style="cursor:pointer;" data-badge="${key}">
+              <span class="form-row-label">${labels[key]}</span>
               <span style="font-size:var(--fs-xs);color:${on ? 'var(--c-ok)' : 'var(--c-text-muted)'};">${on ? 'ON' : 'OFF'}</span>
             </div>`;
           }).join('')}
         </div>
       </div>
 
-      <div class="contract-section"><div class="contract-section-title">카탈로그 공유</div>
-        <div class="contract-section-grid" style="grid-template-columns:1fr;">
+      <div class="form-section"><div class="form-section-title">카탈로그 공유</div>
+        <div class="form-section-body" style="grid-template-columns:1fr;">
           <div style="display:flex;gap:var(--sp-2);align-items:center;">
             <input class="input input-sm" id="stCatalogUrl" readonly value="${location.origin}/catalog.html?a=${user.user_code || ''}" style="flex:1;">
             <button class="btn btn-sm btn-outline" id="stCatalogCopy"><i class="ph ph-copy"></i> 복사</button>

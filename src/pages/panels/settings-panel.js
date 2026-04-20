@@ -6,6 +6,7 @@ import { store } from '../../core/store.js';
 import { updateRecord } from '../../firebase/db.js';
 import { uploadImage } from '../../firebase/storage-helper.js';
 import { showToast } from '../../core/toast.js';
+import { fieldInput as ffi, bindAutoSave as bindFormAutoSave } from '../../core/form-fields.js';
 import { requestNotificationPermission } from '../../firebase/messaging.js';
 import { logout } from '../../firebase/auth.js';
 
@@ -30,22 +31,22 @@ export function renderSettings(container) {
       </div>
 
       <!-- 명함 필드 -->
-      <div class="contract-section">
-        <div class="contract-section-title">명함 정보</div>
-        <div class="contract-section-grid" style="grid-template-columns:1fr;">
-          ${settingField('이름', 'name', user.name)}
-          ${settingField('소속', 'company_name', user.company_name)}
-          ${settingField('직급', 'position', user.position)}
-          ${settingField('연락처', 'phone', user.phone)}
-          ${settingField('이메일', 'email', user.email)}
-          ${settingField('한마디', 'bio', user.bio, '최저가 보장합니다!')}
+      <div class="form-section">
+        <div class="form-section-title">명함 정보</div>
+        <div class="form-section-body">
+          ${ffi('이름','name',user)}
+          ${ffi('소속','company_name',user)}
+          ${ffi('직급','position',user)}
+          ${ffi('연락처','phone',user)}
+          ${ffi('이메일','email',user,{ readonly: true })}
+          ${ffi('한마디','bio',user)}
         </div>
       </div>
 
       <!-- 알림 -->
-      <div class="contract-section">
-        <div class="contract-section-title">알림 설정</div>
-        <div class="contract-section-grid" style="grid-template-columns:1fr;">
+      <div class="form-section">
+        <div class="form-section-title">알림 설정</div>
+        <div class="form-section-body" style="grid-template-columns:1fr;">
           <button class="btn btn-outline btn-sm" id="pushPermBtn">
             <i class="ph ph-bell"></i> 푸시 알림 허용
           </button>
@@ -81,17 +82,9 @@ export function renderSettings(container) {
   });
 
   // Auto-save fields
-  container.querySelectorAll('.setting-input').forEach(input => {
-    input.addEventListener('blur', async () => {
-      const field = input.dataset.field;
-      const val = input.value.trim();
-      if (val !== (user[field] || '')) {
-        await updateRecord(`users/${user.uid}`, { [field]: val });
-        store.currentUser = { ...store.currentUser, [field]: val };
-        showToast('저장됨');
-      }
-    });
-    input.addEventListener('keydown', e => { if (e.key === 'Enter') input.blur(); });
+  bindFormAutoSave(container, async (field, value) => {
+    await updateRecord(`users/${user.uid}`, { [field]: value });
+    store.currentUser = { ...store.currentUser, [field]: value };
   });
 
   // Push permission
@@ -104,11 +97,3 @@ export function renderSettings(container) {
   container.querySelector('#logoutBtn')?.addEventListener('click', () => logout());
 }
 
-function settingField(label, field, value, placeholder = '') {
-  return `
-    <div style="display: flex; align-items: center; gap: var(--sp-3);">
-      <span style="width: 56px; font-size: var(--fs-xs); color: var(--c-text-muted); flex-shrink: 0;">${label}</span>
-      <input class="input setting-input" data-field="${field}" value="${value || ''}" placeholder="${placeholder}" style="height: 32px; font-size: var(--fs-sm);">
-    </div>
-  `;
-}

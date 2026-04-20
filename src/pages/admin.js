@@ -492,25 +492,25 @@ function renderSignDetail(code) {
 
   el.innerHTML = `
     <div style="padding:var(--sp-3);display:flex;flex-direction:column;gap:var(--sp-3);">
-      <div class="contract-section">
-        <div class="contract-section-title">계약 정보</div>
-        <div class="contract-section-grid">
-          ${cField('계약번호', c.contract_code)}
-          ${cField('차량', c.car_number_snapshot)}
-          ${cField('차량명', c.vehicle_name_snapshot)}
-          ${cField('고객', c.customer_name)}
-          ${cField('월 대여료', c.rent_amount_snapshot ? Number(c.rent_amount_snapshot).toLocaleString('ko-KR') + '원' : '-')}
-          ${cField('기간', c.rent_month_snapshot ? c.rent_month_snapshot + '개월' : '-')}
+      <div class="form-section">
+        <div class="form-section-title">계약 정보</div>
+        <div class="form-section-body">
+          ${ffv('계약번호', c.contract_code)}
+          ${ffv('차량', c.car_number_snapshot)}
+          ${ffv('차량명', c.vehicle_name_snapshot)}
+          ${ffv('고객', c.customer_name)}
+          ${ffv('월 대여료', c.rent_amount_snapshot ? Number(c.rent_amount_snapshot).toLocaleString('ko-KR') + '원' : '-')}
+          ${ffv('기간', c.rent_month_snapshot ? c.rent_month_snapshot + '개월' : '-')}
         </div>
       </div>
 
-      <div class="contract-section">
-        <div class="contract-section-title">발송 요청</div>
-        <div class="contract-section-grid">
-          ${cField('요청자', c.sign_requested_by || '-')}
-          ${cField('요청일시', c.sign_requested_at ? new Date(c.sign_requested_at).toLocaleString('ko-KR') : '-')}
-          ${cField('발송일시', c.sign_token && c.sign_requested_at ? new Date(c.sign_requested_at).toLocaleString('ko-KR') : '-')}
-          ${cField('서명일시', c.signed_at ? new Date(c.signed_at).toLocaleString('ko-KR') : '-')}
+      <div class="form-section">
+        <div class="form-section-title">발송 요청</div>
+        <div class="form-section-body">
+          ${ffv('요청자', c.sign_requested_by || '-')}
+          ${ffv('요청일시', c.sign_requested_at ? new Date(c.sign_requested_at).toLocaleString('ko-KR') : '-')}
+          ${ffv('발송일시', c.sign_token && c.sign_requested_at ? new Date(c.sign_requested_at).toLocaleString('ko-KR') : '-')}
+          ${ffv('서명일시', c.signed_at ? new Date(c.signed_at).toLocaleString('ko-KR') : '-')}
         </div>
       </div>
 
@@ -636,20 +636,20 @@ function renderDevTab(id) {
 function renderToolsTab(el) {
   el.innerHTML = `
     <div style="display:flex;flex-direction:column;gap:var(--sp-3);">
-      <div class="contract-section"><div class="contract-section-title">시스템</div>
-        <div class="contract-section-grid">
-          ${cField('버전','v2.0.0')}${cField('Firebase','freepasserp3')}${cField('빌드','Vite 8')}
+      <div class="form-section"><div class="form-section-title">시스템</div>
+        <div class="form-section-body">
+          ${ffv('버전','v2.0.0')}${ffv('Firebase','freepasserp3')}${ffv('빌드','Vite 8')}
         </div>
       </div>
-      <div class="contract-section"><div class="contract-section-title">동작</div>
-        <div class="contract-section-grid" style="grid-template-columns:1fr;">
+      <div class="form-section"><div class="form-section-title">동작</div>
+        <div class="form-section-body" style="grid-template-columns:1fr;">
           <button class="btn btn-outline btn-sm" id="devCacheClear"><i class="ph ph-trash"></i> 캐시 초기화</button>
           <button class="btn btn-outline btn-sm" id="devStoreView"><i class="ph ph-database"></i> Store 상태 보기</button>
           <button class="btn btn-outline btn-sm" id="devReload"><i class="ph ph-arrow-clockwise"></i> 강제 새로고침</button>
         </div>
       </div>
-      <div class="contract-section"><div class="contract-section-title">일회성 마이그레이션</div>
-        <div class="contract-section-grid" style="grid-template-columns:1fr;">
+      <div class="form-section"><div class="form-section-title">일회성 마이그레이션</div>
+        <div class="form-section-body" style="grid-template-columns:1fr;">
           <button class="btn btn-outline btn-sm" id="devMigrateTermPolicy"><i class="ph ph-swap"></i> policies: term_* → policy_*</button>
           <button class="btn btn-outline btn-sm" id="devMigrateModelName"><i class="ph ph-swap"></i> model_name → model (products · contracts · rooms)</button>
         </div>
@@ -844,15 +844,15 @@ function renderStockTab(el) {
 function renderNoticeTab(el) {
   el.innerHTML = `
     <div style="display:flex;flex-direction:column;gap:var(--sp-3);">
-      <div class="contract-section"><div class="contract-section-title">새 공지 등록</div>
-        <div class="contract-section-grid" style="grid-template-columns:1fr;">
+      <div class="form-section"><div class="form-section-title">새 공지 등록</div>
+        <div class="form-section-body" style="grid-template-columns:1fr;">
           <input class="input input-sm" id="ncTitle" placeholder="제목" >
           <textarea class="input" id="ncContent" rows="3" placeholder="내용" style="height:auto;font-size:var(--fs-xs);"></textarea>
           <input type="file" id="ncImg" accept="image/*" style="font-size:var(--fs-2xs);">
           <button class="btn btn-primary btn-sm" id="ncSave"><i class="ph ph-megaphone"></i> 등록</button>
         </div>
       </div>
-      <div class="contract-section"><div class="contract-section-title">공지 목록</div>
+      <div class="form-section"><div class="form-section-title">공지 목록</div>
         <div id="ncList" style="padding:var(--sp-2) var(--sp-3);"></div>
       </div>
     </div>
@@ -899,8 +899,8 @@ function renderNoticeTab(el) {
 function renderVehicleTab(el) {
   el.innerHTML = `
     <div style="display:flex;flex-direction:column;gap:var(--sp-3);">
-      <div class="contract-section"><div class="contract-section-title">차종 추가</div>
-        <div class="contract-section-grid">
+      <div class="form-section"><div class="form-section-title">차종 추가</div>
+        <div class="form-section-body">
           <input class="input input-sm" id="vmMaker" placeholder="제조사" >
           <input class="input input-sm" id="vmModel" placeholder="모델명" >
           <input class="input input-sm" id="vmSub" placeholder="세부모델" >
@@ -908,8 +908,8 @@ function renderVehicleTab(el) {
           <button class="btn btn-primary btn-sm" id="vmSave" style="grid-column:span 2;"><i class="ph ph-plus"></i> 추가</button>
         </div>
       </div>
-      <div class="contract-section"><div class="contract-section-title">차종 목록 <span id="vmCount" style="color:var(--c-text-muted);font-weight:normal;font-size:var(--fs-xs);"></span></div>
-        <div class="contract-section-grid">
+      <div class="form-section"><div class="form-section-title">차종 목록 <span id="vmCount" style="color:var(--c-text-muted);font-weight:normal;font-size:var(--fs-xs);"></span></div>
+        <div class="form-section-body">
           <input class="input input-sm" id="vmQ" placeholder="검색" style="margin-bottom:var(--sp-1);">
           <div id="vmList" style="max-height:400px;overflow-y:auto;"></div>
         </div>
@@ -957,8 +957,8 @@ function renderVehicleTab(el) {
 function renderColorTab(el) {
   el.innerHTML = `
     <div style="display:flex;flex-direction:column;gap:var(--sp-3);">
-      <div class="contract-section"><div class="contract-section-title">외장색</div>
-        <div class="contract-section-grid">
+      <div class="form-section"><div class="form-section-title">외장색</div>
+        <div class="form-section-body">
           <div style="display:flex;gap:var(--sp-1);margin-bottom:var(--sp-2);">
             <input class="input input-sm" id="extIn" placeholder="색상명" style="flex:1;">
             <button class="btn btn-primary btn-sm" id="extAdd"><i class="ph ph-plus"></i> 추가</button>
@@ -966,8 +966,8 @@ function renderColorTab(el) {
           <div id="extList" style="display:flex;flex-wrap:wrap;gap:4px;"></div>
         </div>
       </div>
-      <div class="contract-section"><div class="contract-section-title">내장색</div>
-        <div class="contract-section-grid">
+      <div class="form-section"><div class="form-section-title">내장색</div>
+        <div class="form-section-body">
           <div style="display:flex;gap:var(--sp-1);margin-bottom:var(--sp-2);">
             <input class="input input-sm" id="intIn" placeholder="색상명" style="flex:1;">
             <button class="btn btn-primary btn-sm" id="intAdd"><i class="ph ph-plus"></i> 추가</button>
@@ -1021,8 +1021,8 @@ function renderColorTab(el) {
 function renderUploadTab(el) {
   el.innerHTML = `
     <div style="display:flex;flex-direction:column;gap:var(--sp-3);">
-      <div class="contract-section"><div class="contract-section-title">상품 CSV 업로드</div>
-        <div class="contract-section-grid" style="grid-template-columns:1fr;">
+      <div class="form-section"><div class="form-section-title">상품 CSV 업로드</div>
+        <div class="form-section-body" style="grid-template-columns:1fr;">
           <div style="font-size:var(--fs-xs);color:var(--c-text-muted);">차량번호 컬럼 필수 · 헤더 첫 행</div>
           <input type="file" id="upFile" accept=".csv,.tsv" style="font-size:var(--fs-xs);">
           <button class="btn btn-primary btn-sm" id="upBtn"><i class="ph ph-upload-simple"></i> 업로드</button>
@@ -1064,8 +1064,8 @@ function renderUploadTab(el) {
 function renderSyncTab(el) {
   el.innerHTML = `
     <div style="display:flex;flex-direction:column;gap:var(--sp-3);">
-      <div class="contract-section"><div class="contract-section-title">외부 시트 동기화</div>
-        <div class="contract-section-grid" style="grid-template-columns:1fr;">
+      <div class="form-section"><div class="form-section-title">외부 시트 동기화</div>
+        <div class="form-section-body" style="grid-template-columns:1fr;">
           <input class="input input-sm" id="syncUrl" placeholder="구글시트 공유 URL" >
           <button class="btn btn-primary btn-sm" id="syncBtn"><i class="ph ph-google-drive-logo"></i> 가져오기</button>
         </div>
@@ -1112,7 +1112,6 @@ function renderDataTab(el) {
   });
 }
 
-function fi(l,field,obj) { return `<div class="contract-field"><span class="contract-field-label">${l}</span><input class="contract-field-input" data-field="${field}" value="${obj[field]||''}" placeholder="-"></div>`; }
 
 export function unmount() {
   unsubs.forEach(u => u?.());

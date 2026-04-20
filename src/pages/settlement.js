@@ -5,6 +5,7 @@ import { store } from '../core/store.js';
 import { watchCollection, updateRecord, setRecord, softDelete } from '../firebase/db.js';
 import { showToast } from '../core/toast.js';
 import { fmtWon, fmtMoney, empty, cField } from '../core/format.js';
+import { fieldView as ffv } from '../core/form-fields.js';
 import { initWs4Resize } from '../core/resize.js';
 import { setBreadcrumbBrief } from '../core/breadcrumb.js';
 import {
@@ -249,20 +250,20 @@ function renderDetail(s) {
 
   el.innerHTML = `
     <div style="padding:var(--sp-3);display:flex;flex-direction:column;gap:var(--sp-3);">
-      <div class="contract-section"><div class="contract-section-title">정산정보</div>
-        <div class="contract-section-grid">
-          ${cField('계약코드',s.contract_code)}${cField('대여기간',s.rent_month?s.rent_month+'개월':'-')}
-          ${cField('월대여료',fmtWon(s.rent_amount))}${cField('보증금',fmtWon(s.deposit_amount))}
-          ${cField('영업자',s.agent_code)}${cField('공급사',s.partner_code)}
-          ${cField('정산일',s.settled_date||'-')}${cField('원수수료',fmtWon(s.origin_fee_amount))}
+      <div class="form-section"><div class="form-section-title">정산정보</div>
+        <div class="form-section-body">
+          ${ffv('계약코드',s.contract_code)}${ffv('대여기간',s.rent_month?s.rent_month+'개월':'-')}
+          ${ffv('월대여료',fmtWon(s.rent_amount))}${ffv('보증금',fmtWon(s.deposit_amount))}
+          ${ffv('영업자',s.agent_code)}${ffv('공급사',s.partner_code)}
+          ${ffv('정산일',s.settled_date||'-')}${ffv('원수수료',fmtWon(s.origin_fee_amount))}
         </div>
       </div>
 
       ${c ? `
-      <div class="contract-section"><div class="contract-section-title">연결 계약</div>
-        <div class="contract-section-grid">
-          ${cField('차량',c.vehicle_name_snapshot||c.car_number_snapshot)}${cField('고객',c.customer_name)}
-          ${cField('상태',c.contract_status)}${cField('계약일',c.contract_date)}
+      <div class="form-section"><div class="form-section-title">연결 계약</div>
+        <div class="form-section-body">
+          ${ffv('차량',c.vehicle_name_snapshot||c.car_number_snapshot)}${ffv('고객',c.customer_name)}
+          ${ffv('상태',c.contract_status)}${ffv('계약일',c.contract_date)}
         </div>
       </div>
       ` : ''}
@@ -281,18 +282,18 @@ function renderSub(s) {
   const el = document.getElementById('stSub');
   el.innerHTML = `
     <div style="padding:var(--sp-3);display:flex;flex-direction:column;gap:var(--sp-3);">
-      <div class="contract-section"><div class="contract-section-title">공급사 메모</div>
-        <div class="contract-section-grid">
+      <div class="form-section"><div class="form-section-title">공급사 메모</div>
+        <div class="form-section-body">
           <textarea class="input st-memo" data-memo="provider_memo" rows="3" style="resize:vertical;height:auto;" placeholder="공급사 메모...">${s.provider_memo||''}</textarea>
         </div>
       </div>
-      <div class="contract-section"><div class="contract-section-title">영업자 메모</div>
-        <div class="contract-section-grid">
+      <div class="form-section"><div class="form-section-title">영업자 메모</div>
+        <div class="form-section-body">
           <textarea class="input st-memo" data-memo="agent_memo" rows="3" style="resize:vertical;height:auto;" placeholder="영업자 메모...">${s.agent_memo||''}</textarea>
         </div>
       </div>
-      <div class="contract-section"><div class="contract-section-title">관리자 메모</div>
-        <div class="contract-section-grid">
+      <div class="form-section"><div class="form-section-title">관리자 메모</div>
+        <div class="form-section-body">
           <textarea class="input st-memo" data-memo="admin_memo" rows="3" style="resize:vertical;height:auto;" placeholder="관리자 메모...">${s.admin_memo||''}</textarea>
         </div>
       </div>
