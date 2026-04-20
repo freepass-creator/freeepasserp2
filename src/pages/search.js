@@ -10,7 +10,7 @@ import { openContextMenu } from '../core/context-menu.js';
 import { navigate } from '../core/router.js';
 import { downloadExcelWithFilter, PRODUCT_COLS, PRODUCT_FILTER_FIELDS } from '../core/excel-export.js';
 import { first, parsePol, findPolicy, enrichProductsWithPolicy } from '../core/policy-utils.js';
-import { topBadgesHtml, reviewOverlayHtml, needsReview } from '../core/product-badges.js';
+import { topBadgesHtml, reviewOverlayHtml, creditOverlayHtml, needsReview } from '../core/product-badges.js';
 import { productImages, productExternalImages, firstProductImage, supportedDriveSource } from '../core/product-photos.js';
 
 let unsubProducts = null;
@@ -97,7 +97,7 @@ const FILTERS = {
     ]
   },
   age_lowering:    { label: '운전연령하향', icon: 'ph ph-arrow-down', chips: [], dynamic: true, field: '_policy.driver_age_lowering' },
-  credit_grade:    { label: '신용등급', icon: 'ph ph-chart-bar', chips: [], dynamic: true, field: '_policy.credit_grade' },
+  credit_grade:    { label: '심사기준', icon: 'ph ph-chart-bar', chips: [], dynamic: true, field: '_policy.credit_grade' },
   annual_mileage:  { label: '연간약정주행거리', icon: 'ph ph-road-horizon', chips: [], dynamic: true, field: '_policy.annual_mileage' },
   provider: { label: '공급코드', icon: 'ph ph-buildings', chips: [], dynamic: true, field: 'provider_company_code' },
 };
@@ -650,6 +650,36 @@ function passesFiltersExcept(p, skipKey) {
   return true;
 }
 
+const COLOR_MAP = {
+  '흰':'#f0f0f0','백':'#f0f0f0','화이트':'#f0f0f0','white':'#f0f0f0','아이보리':'#fffff0',
+  '검':'#222','블랙':'#222','black':'#222',
+  '은':'#b0b0b0','실버':'#b0b0b0','silver':'#b0b0b0',
+  '회':'#808080','그레이':'#808080','grey':'#808080','gray':'#808080',
+  '빨':'#e03e3e','레드':'#e03e3e','red':'#e03e3e',
+  '파':'#3b82f6','블루':'#3b82f6','blue':'#3b82f6',
+  '남':'#1e3a5f','네이비':'#1e3a5f','navy':'#1e3a5f',
+  '초':'#22c55e','그린':'#22c55e','green':'#22c55e',
+  '노':'#eab308','옐로':'#eab308','yellow':'#eab308','골드':'#d4a017',
+  '갈':'#8b5e3c','브라운':'#8b5e3c','brown':'#8b5e3c',
+  '주':'#f97316','오렌지':'#f97316','orange':'#f97316',
+  '분':'#ec4899','핑크':'#ec4899','pink':'#ec4899',
+  '베':'#d2c6a5','베이지':'#d2c6a5','beige':'#d2c6a5',
+  '하늘':'#87ceeb','스카이':'#87ceeb','sky':'#87ceeb',
+  '보라':'#8b5cf6','퍼플':'#8b5cf6','purple':'#8b5cf6',
+  '청':'#2563eb','진주':'#e8e0d0','티탄':'#7a7a7a','카키':'#6b6b40',
+};
+function colorToHex(name) {
+  if (!name) return '#ddd';
+  const n = name.toLowerCase().replace(/색$/, '');
+  for (const [k, v] of Object.entries(COLOR_MAP)) { if (n.includes(k)) return v; }
+  return '#ccc';
+}
+function colorTextContrast(name) {
+  const hex = colorToHex(name);
+  const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+  return (r*0.299 + g*0.587 + b*0.114) > 150 ? '#222' : '#fff';
+}
+
 function matchesText(p, q) {
   const fields = [
     // 상품 기본
@@ -877,6 +907,7 @@ function renderList() {
     // 뱃지 — 공용 헬퍼
     const topBadges = topBadgesHtml(p);
     const reviewTag = reviewOverlayHtml(p);
+    const creditTag = creditOverlayHtml(p);
     // 이미지 — 공용 헬퍼
     const thumb = firstProductImage(p);
     const driveFolderUrl = !thumb ? supportedDriveSource(p) : '';
@@ -886,11 +917,12 @@ function renderList() {
     const sub = [
       p.car_number,
       p.maker,
-      p.year ? `${p.year}년식` : '',
+      p.year ? `${p.year}년` : '',
       p.mileage ? Number(p.mileage).toLocaleString()+'km' : '',
       p.fuel_type,
       color,
-    ].filter(Boolean).join(' > ');
+      p.drive_type,
+    ].filter(Boolean).join(' · ');
 
     // 기간별 대여료 (36/48/60) — rent + deposit
     const priceGrid = `<div class="srch-price-grid">${PERIODS.map(m => {
@@ -912,6 +944,7 @@ function renderList() {
               ? `<i class="ph ph-car-simple srch-thumb-placeholder"></i><img data-drive-folder="${driveFolderUrl}" data-drive-mode="thumb" alt="" loading="lazy" decoding="async" hidden onerror="this.remove()">`
               : `<i class="ph ph-car-simple"></i>`}
           ${reviewTag}
+          ${creditTag}
         </div>
         <div class="srch-item-body">
           <div class="srch-item-name">
@@ -1079,7 +1112,7 @@ function renderDetail(key) {
     ['무보험차상해', first(policy.uninsured_compensation_limit,       unins.limit),    first(policy.uninsured_deductible,       unins.deductible)],
     ['자기차량손해', first(policy.own_damage_compensation,            own.limit),      first(policy.own_damage_min_deductible,  own.deductible)],
     ['긴급출동',     first(policy.roadside_assistance, cond.emergency),                '-'],
-  ].filter(([, l, d]) => (l && l !== '-') || (d && d !== '-'));
+  ];
 
   const condRows = [
     ['1만Km추가비용',     first(policy.mileage_upcharge_per_10000km)],
@@ -1111,17 +1144,25 @@ function renderDetail(key) {
   // 심사/신용 (심사여부 + 신용등급)
   const reviewRows = [
     ['심사여부',  needsReview(p) ? '심사필요' : '무심사'],
-    ['신용등급',  first(policy.credit_grade, p.credit_grade)],
+    ['심사기준',  first(policy.credit_grade, policy.screening_criteria, p.credit_grade)],
   ].filter(([, v]) => v && v !== '-');
 
   const fmtDate = v => { const d = String(v ?? '').replace(/[^\d]/g,''); if (!d) return ''; if (d.length === 8) return `${d.slice(0,4)}.${d.slice(4,6)}.${d.slice(6,8)}`; if (d.length === 6) return `20${d.slice(0,2)}.${d.slice(2,4)}.${d.slice(4,6)}`; return String(v ?? '').trim() || ''; };
+
+  // 정책 상세
+  const policyDetailRows = [
+    ['정책코드',     policy.policy_code || p.policy_code],
+    ['정책명',       policy.policy_name || p.policy_name],
+    ['정책유형',     policy.policy_type],
+    ['심사기준',     first(policy.credit_grade, policy.screening_criteria, p.credit_grade)],
+    ['연간약정주행거리', first(policy.annual_mileage, p.annual_mileage)],
+    ['운전연령하향', first(policy.driver_age_lowering)],
+  ].filter(([, v]) => v && v !== '-');
 
   // 공급사·코드
   const providerRows = [
     ['공급사',   p.provider_company_code],
     ['파트너',   p.partner_code],
-    ['정책',     p.policy_code],
-    ['정책명',   p.policy_name],
     ['상품코드', p.product_code],
     ...(store.currentUser?.role === 'admin' ? [['상품UID', p._key]] : []),
   ].filter(([, v]) => v && v !== '-');
@@ -1129,6 +1170,10 @@ function renderDetail(key) {
   // 차량 메타
   const metaRows = [
     ['차종구분',   p.vehicle_class],
+    ['인승',       p.seats ? p.seats + '인승' : ''],
+    ['배기량',     p.engine_cc ? Number(p.engine_cc).toLocaleString() + 'cc' : ''],
+    ['용도',       p.usage],
+    ['차대번호',   p.vin],
     ['최초등록일', fmtDate(p.first_registration_date)],
     ['차령만료일', fmtDate(p.vehicle_age_expiry_date)],
     ['차량가격',   p.vehicle_price ? fmtMoney(p.vehicle_price) : ''],
@@ -1142,28 +1187,80 @@ function renderDetail(key) {
   const subText   = [p.sub_model, p.trim || p.trim_name].filter(v => v && v !== '-').join(' > ');
   const tags      = [p.fuel_type, p.year ? `${p.year}년식` : '', p.mileage ? Number(p.mileage).toLocaleString()+'km' : ''].filter(Boolean);
 
+  // 대여조건 — 정책에서 싹 다 가져오기
+  const allCondRows = [
+    ['심사여부',           needsReview(p) ? '심사필요' : '무심사'],
+    ['심사기준',           first(policy.credit_grade, policy.screening_criteria, p.credit_grade)],
+    ['정책코드',           policy.policy_code || p.policy_code],
+    ['정책명',             policy.policy_name || p.policy_name],
+    ['정책유형',           policy.policy_type],
+    ['기본 운전연령',      first(policy.basic_driver_age, p.base_age, p.min_age)],
+    ['운전연령상한',       first(policy.driver_age_upper_limit)],
+    ['운전연령하향',       first(policy.driver_age_lowering)],
+    ['운전연령하향비용',   first(policy.age_lowering_cost)],
+    ['연간약정주행거리',   first(policy.annual_mileage, p.annual_mileage)],
+    ['1만Km추가비용',      first(policy.mileage_upcharge_per_10000km)],
+    ['보험 포함 여부',     first(policy.insurance_included, p.insurance_included)],
+    ['보증금분납',         first(policy.deposit_installment)],
+    ['보증금카드결제',     first(policy.deposit_card_payment)],
+    ['결제방식',           first(policy.payment_method)],
+    ['위약금',             first(policy.penalty_condition)],
+    ['대여지역',           first(policy.rental_region)],
+    ['탁송비',             first(policy.delivery_fee)],
+    ['개인운전자범위',     first(policy.personal_driver_scope)],
+    ['사업자운전자범위',   first(policy.business_driver_scope)],
+    ['추가운전자수',       first(policy.additional_driver_allowance_count)],
+    ['추가운전자비용',     first(policy.additional_driver_cost)],
+    ['정비서비스',         first(policy.maintenance_service)],
+  ];
+
+  // 기타사항
+  const etcRows = [
+    ['차량상태',   p.vehicle_status],
+    ['상품구분',   p.product_type],
+    ['차종구분',   p.vehicle_class],
+    ['인승',       p.seats ? p.seats + '인승' : ''],
+    ['배기량',     p.engine_cc ? Number(p.engine_cc).toLocaleString() + 'cc' : ''],
+    ['용도',       p.usage],
+    ['차대번호',   p.vin],
+    ['최초등록일', fmtDate(p.first_registration_date)],
+    ['차령만료일', fmtDate(p.vehicle_age_expiry_date)],
+    ['차량가격',   p.vehicle_price ? fmtMoney(p.vehicle_price) : ''],
+    ['위치',       p.location],
+    ['공급사',     p.provider_company_code],
+    ['파트너',     p.partner_code],
+    ['상품코드',   p.product_code],
+    ...(store.currentUser?.role === 'admin' ? [['상품UID', p._key]] : []),
+  ].filter(([, v]) => v && v !== '-');
+
   el.innerHTML = `
     <div class="srch-detail-inner">
       ${renderGallery(imgList, { overlayBadges, reviewTag })}
 
+      <!-- 1. 차량정보 -->
       <div class="cat-hero">
-        <div class="cat-hero-top">
-          <div style="flex:1;min-width:0;">
-            <h2 class="cat-title">${modelText || '차량'}${p.car_number ? `<span class="cat-carno">${p.car_number}</span>` : ''}</h2>
-            ${subText ? `<p class="cat-subtitle">${subText}</p>` : ''}
-            ${p.options ? `<p class="cat-options">${p.options}</p>` : ''}
-          </div>
+        <div class="cat-section-title"><i class="ph ph-car-simple"></i> ${modelText || '차량'}${p.car_number ? `<span class="cat-carno">${p.car_number}</span>` : ''}</div>
+        <div class="cat-rows">
+          <div class="cat-row"><span class="cat-row-label">세부모델</span><span class="cat-row-value">${p.sub_model || '-'}</span></div>
+          <div class="cat-row"><span class="cat-row-label">세부트림</span><span class="cat-row-value">${((p.trim || p.trim_name || '') && p.sub_model) ? (p.trim || p.trim_name || '').replace(p.sub_model, '').trim() || '-' : (p.trim || p.trim_name || '-')}</span></div>
+          <div class="cat-row"><span class="cat-row-label">선택옵션</span><span class="cat-row-value">${p.options || '-'}</span></div>
         </div>
-        <div class="cat-meta">
-          <span class="cat-meta-text">${tags.join(' > ') || '-'}</span>
-          ${p.ext_color ? `<span class="cat-color-badge">외장 ${p.ext_color}</span>` : ''}
-          ${p.int_color ? `<span class="cat-color-badge">내장 ${p.int_color}</span>` : ''}
+        <div class="cat-spec">
+          <span class="cat-spec-item"><i class="ph ph-calendar"></i> ${p.year ? p.year + '년' : '-'}</span>
+          <span class="cat-spec-item"><i class="ph ph-gauge"></i> ${p.mileage ? Number(p.mileage).toLocaleString() + 'km' : '-'}</span>
+          <span class="cat-spec-item"><i class="ph ph-gas-pump"></i> ${p.fuel_type || '-'}</span>
+          <span class="cat-spec-item"><i class="ph ph-palette"></i>
+            ${p.ext_color ? `<span class="cat-color-badge" style="background:${colorToHex(p.ext_color)};color:${colorTextContrast(p.ext_color)};">외 ${p.ext_color}</span>` : ''}
+            ${p.int_color ? `<span class="cat-color-badge" style="background:${colorToHex(p.int_color)};color:${colorTextContrast(p.int_color)};">내 ${p.int_color}</span>` : ''}
+          </span>
+          <span class="cat-spec-item"><i class="ph ph-jeep"></i> ${p.drive_type || '-'}</span>
         </div>
       </div>
 
-      ${priceRows.length ? `
+      <!-- 2. 기간별 대여료, 보증금 -->
       <div class="cat-section">
-        <div class="cat-section-title"><i class="ph ph-currency-krw"></i> 기간별 대여료·보증금</div>
+        <div class="cat-section-title"><i class="ph ph-currency-krw"></i> 기간별 대여료, 보증금</div>
+        ${priceRows.length ? `
         <table class="cat-table">
           <thead><tr><th>기간</th><th>대여료</th><th>보증금</th></tr></thead>
           <tbody>${priceRows.map(r => `<tr>
@@ -1171,65 +1268,44 @@ function renderDetail(key) {
             <td class="cat-price-cell">${fmtMoney(r.rent)}</td>
             <td>${fmtMoney(r.dep)}</td>
           </tr>`).join('')}</tbody>
-        </table>
-      </div>` : `<div class="cat-section cat-inquiry"><i class="ph ph-phone"></i> 가격은 문의해 주세요</div>`}
+        </table>` : `<div style="font-size:var(--fs-xs);color:var(--c-text-muted);padding:var(--sp-2) 0;">가격 미입력</div>`}
+      </div>
 
-      ${basicRows.length ? `
+      <!-- 3. 보험한도 및 면책금 -->
       <div class="cat-section">
-        <div class="cat-section-title"><i class="ph ph-info"></i> 대여 기본</div>
-        <div class="cat-rows">${basicRows.map(([l, v]) => `<div class="cat-row"><span class="cat-row-label">${l}</span><span class="cat-row-value">${v}</span></div>`).join('')}</div>
-      </div>` : ''}
-
-      ${insRows.length ? `
-      <div class="cat-section">
-        <div class="cat-section-title"><i class="ph ph-shield-check"></i> 차량보험정보</div>
+        <div class="cat-section-title"><i class="ph ph-shield-check"></i> 보험한도 및 면책금</div>
         <table class="cat-table">
           <thead><tr><th>항목</th><th>한도</th><th>면책금</th></tr></thead>
           <tbody>${insRows.map(([l, lim, ded]) => `<tr><td>${l}</td><td>${lim || '-'}</td><td>${ded || '-'}</td></tr>`).join('')}</tbody>
         </table>
-      </div>` : ''}
+      </div>
 
-      ${condRows.length ? `
+      <!-- 4. 대여조건 -->
       <div class="cat-section">
         <div class="cat-section-title"><i class="ph ph-list-checks"></i> 대여조건</div>
-        <div class="cat-rows">${condRows.map(([l, v]) => `<div class="cat-row"><span class="cat-row-label">${l}</span><span class="cat-row-value">${v}</span></div>`).join('')}</div>
-      </div>` : ''}
+        <div class="cat-rows">${allCondRows.map(([l, v]) => `<div class="cat-row"><span class="cat-row-label">${l}</span><span class="cat-row-value">${v || '-'}</span></div>`).join('')}</div>
+      </div>
 
-      ${reviewRows.length ? `
+      <!-- 5. 기타사항 -->
       <div class="cat-section">
-        <div class="cat-section-title"><i class="ph ph-clipboard-text"></i> 심사/신용</div>
-        <div class="cat-rows">${reviewRows.map(([l, v]) => `<div class="cat-row"><span class="cat-row-label">${l}</span><span class="cat-row-value">${v}</span></div>`).join('')}</div>
-      </div>` : ''}
+        <div class="cat-section-title"><i class="ph ph-note"></i> 기타사항</div>
+        ${etcRows.length ? `<div class="cat-rows">${etcRows.map(([l, v]) => `<div class="cat-row"><span class="cat-row-label">${l}</span><span class="cat-row-value">${v}</span></div>`).join('')}</div>` : ''}
+        ${memoText ? `<div class="cat-memo" style="margin-top:var(--sp-2);">${memoText.replace(/</g, '&lt;').replace(/\n/g, '<br>')}</div>` : ''}
+        ${!etcRows.length && !memoText ? `<div style="font-size:var(--fs-xs);color:var(--c-text-muted);">-</div>` : ''}
+      </div>
 
-      ${providerRows.length ? `
-      <div class="cat-section">
-        <div class="cat-section-title"><i class="ph ph-buildings"></i> 공급사·코드</div>
-        <div class="cat-rows">${providerRows.map(([l, v]) => `<div class="cat-row"><span class="cat-row-label">${l}</span><span class="cat-row-value">${v}</span></div>`).join('')}</div>
-      </div>` : ''}
-
-      ${metaRows.length ? `
-      <div class="cat-section">
-        <div class="cat-section-title"><i class="ph ph-identification-card"></i> 차량 메타</div>
-        <div class="cat-rows">${metaRows.map(([l, v]) => `<div class="cat-row"><span class="cat-row-label">${l}</span><span class="cat-row-value">${v}</span></div>`).join('')}</div>
-      </div>` : ''}
-
-      ${memoText ? `
-      <div class="cat-section">
-        <div class="cat-section-title"><i class="ph ph-note"></i> 특이사항</div>
-        <div class="cat-memo">${memoText.replace(/</g, '&lt;').replace(/\n/g, '<br>')}</div>
-      </div>` : ''}
-
-      ${feeRows.length ? `
+      <!-- 6. 수수료 -->
       <div class="cat-section cat-section-fee">
-        <div class="cat-section-title"><i class="ph ph-percent"></i> 영업수수료 <span class="cat-section-hint">(내부용 · 카탈로그 배포 시 제외)</span></div>
+        <div class="cat-section-title"><i class="ph ph-percent"></i> 수수료 <span class="cat-section-hint">(내부용)</span></div>
+        ${feeRows.length ? `
         <table class="cat-table">
           <thead><tr><th>기간</th><th>수수료</th></tr></thead>
           <tbody>${feeRows.map(r => `<tr>
             <td>${r.m}개월</td>
             <td class="cat-price-cell">${fmtMoney(r.fee)}</td>
           </tr>`).join('')}</tbody>
-        </table>
-      </div>` : ''}
+        </table>` : `<div style="font-size:var(--fs-xs);color:var(--c-text-muted);padding:var(--sp-2) 0;">준비중</div>`}
+      </div>
 
     </div>
   `;

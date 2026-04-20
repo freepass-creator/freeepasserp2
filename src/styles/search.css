@@ -432,8 +432,9 @@
   /* ── Catalog-style detail sections ── */
   .cat-hero {
     padding: var(--sp-3) var(--sp-4);
-    border-bottom: 1px solid var(--c-border);
-    background: var(--c-surface);
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-2);
   }
   .cat-hero-top { display: flex; gap: var(--sp-2); align-items: flex-start; }
   .cat-badges { display: flex; gap: 4px; margin-bottom: 4px; flex-wrap: wrap; }
@@ -474,25 +475,32 @@
   }
   .cat-meta-text { font-size: var(--fs-xs); color: var(--c-text-sub); }
   .cat-color-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
     font-size: var(--fs-2xs);
-    padding: 2px 6px;
-    border: 1px solid var(--c-border);
-    border-radius: 3px;
-    color: var(--c-text-sub);
+    font-weight: var(--fw-medium);
+    padding: 2px 8px;
+    border-radius: var(--ctrl-r);
+    border: 1px solid rgba(0,0,0,.1);
+    line-height: 1.4;
   }
+  .cat-color-badge i { font-size: 11px; }
 
   .cat-section {
     padding: var(--sp-3) var(--sp-4);
-    border-bottom: 1px solid var(--c-border);
   }
   .cat-section-title {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: var(--sp-1);
     font-size: var(--fs-xs);
-    font-weight: var(--fw-medium);
+    font-weight: var(--fw-semibold);
     color: var(--c-text);
-    margin-bottom: var(--sp-2);
+    margin: 0 0 var(--sp-2);
+    padding: 0;
+    background: transparent;
+    letter-spacing: normal;
   }
   .cat-section-title i { color: var(--c-accent); font-size: 14px; }
   .cat-section-hint {
@@ -537,7 +545,7 @@
 
   .cat-rows {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
     gap: 0;
   }
   .cat-row {
@@ -547,8 +555,30 @@
     border-bottom: 1px solid var(--c-border);
     font-size: var(--fs-xs);
   }
-  .cat-row-label { color: var(--c-text-muted); }
-  .cat-row-value { color: var(--c-text); font-weight: var(--fw-medium); text-align: right; }
+  .cat-row-label { color: var(--c-text-muted); flex-shrink: 0; }
+
+  /* 차량 스펙 라인 (연식·주행·연료·색상) */
+  .cat-spec {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-2) var(--sp-3);
+    font-size: var(--fs-xs);
+    color: var(--c-text-sub);
+  }
+  .cat-spec-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .cat-spec-item i { font-size: 14px; color: var(--c-text-muted); }
+  .cat-color-dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 1px solid var(--c-border);
+  }
+  .cat-row-value { color: var(--c-text); font-weight: var(--fw-medium); text-align: right; word-break: break-word; }
   .cat-inquiry {
     display: flex;
     align-items: center;

@@ -447,6 +447,7 @@ function renderAsset(p, key) {
           ${fs('연료','fuel_type',p,FUEL_OPTS)}
           ${fi('외장색','ext_color',p,{ autocomplete: true })}
           ${fi('내장색','int_color',p,{ autocomplete: true })}
+          ${fs('구동방식','drive_type',p,['전륜(FF)','후륜(FR)','4륜(AWD)','4륜(4WD)'])}
           <textarea class="input pd-textarea" data-field="options" rows="2" placeholder="선택옵션 (선루프, HUD, 가죽시트 등)">${p.options||''}</textarea>
         </div>
       </div>

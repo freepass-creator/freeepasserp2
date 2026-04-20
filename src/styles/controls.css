@@ -133,6 +133,7 @@
   /* 심사여부 — 하단 풀폭 overlay (tokens.css --c-overlay-*) */
   .srch-thumb-tag.is-no-review     { background: var(--c-overlay-safe); }
   .srch-thumb-tag.is-review-needed { background: var(--c-overlay-caution); }
+  .srch-thumb-tag.is-credit        { background: var(--c-overlay-chip); top: 0; bottom: auto; font-size: 9px; }
   .list-row-thumb img,
   .srch-item-thumb img,
   .m-card-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
