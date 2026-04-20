@@ -156,7 +156,7 @@ function updateBrief() {
   const parts = [];
   if (unread) parts.push(`미읽음 ${unread}`);
   parts.push(`전체 대화 ${active}`);
-  setBreadcrumbBrief(parts.join(' · '));
+  setBreadcrumbBrief(parts.join(' > '));
 }
 
 /* ── Room List ── */

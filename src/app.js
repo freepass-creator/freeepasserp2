@@ -189,13 +189,19 @@ function renderShell() {
     store.theme = next;
     document.documentElement.dataset.theme = next;
     localStorage.setItem('fp.theme', next);
-    const icon = document.querySelector('#qmTheme i');
+    const btn = document.getElementById('qmTheme');
+    const icon = btn?.querySelector('i');
+    const label = btn?.querySelector('span');
     if (icon) icon.className = next === 'dark' ? 'ph ph-sun' : 'ph ph-moon';
+    if (label) label.textContent = next === 'dark' ? '라이트모드' : '다크모드';
     requestAnimationFrame(() => requestAnimationFrame(() => document.documentElement.classList.remove('theme-switching')));
   });
-  // Set initial icon
-  const themeIcon = document.querySelector('#qmTheme i');
-  if (themeIcon && store.theme === 'dark') themeIcon.className = 'ph ph-sun';
+  // Set initial icon + label
+  const themeBtn = document.getElementById('qmTheme');
+  if (themeBtn && store.theme === 'dark') {
+    const i = themeBtn.querySelector('i'); if (i) i.className = 'ph ph-sun';
+    const s = themeBtn.querySelector('span'); if (s) s.textContent = '라이트모드';
+  }
 
   // 상단바 사용자 메뉴
   renderTopbarUser();
@@ -611,6 +617,13 @@ async function init() {
       // renderShell 직후는 transition 스킵 (DOM 교체 직후 View Transition abort 방지)
       navigate(restorePath, { transition: false });
     }
+    // 전역 데이터 감시 — 사이드바 뱃지 등 앱 전체에서 필요
+    import('./firebase/db.js').then(({ watchCollection }) => {
+      watchCollection('rooms', d => { store.rooms = d; });
+      watchCollection('contracts', d => { store.contracts = d; });
+      watchCollection('settlements', d => { store.settlements = d; });
+      watchCollection('products', d => { store.products = d; });
+    });
     // Init background services
     import('./core/auto-status.js').then(m => m.initAutoStatus());
     import('./core/alerts.js').then(m => m.initAlerts());

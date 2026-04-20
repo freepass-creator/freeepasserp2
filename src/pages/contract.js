@@ -97,7 +97,7 @@ function updateBrief() {
   if (counts['계약대기']) parts.push(`대기 ${counts['계약대기']}`);
   if (counts['계약발송']) parts.push(`발송 ${counts['계약발송']}`);
   if (counts['계약완료']) parts.push(`완료 ${counts['계약완료']}`);
-  setBreadcrumbBrief(parts.length ? parts.join(' · ') : `총 ${allContracts.length}건`);
+  setBreadcrumbBrief(parts.length ? parts.join(' > ') : `총 ${allContracts.length}건`);
 }
 
 function renderList() {

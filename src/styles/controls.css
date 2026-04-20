@@ -495,6 +495,13 @@
     border-color: currentColor;
   }
   .badge.is-filled > * { color: var(--c-text-inv); }
+  .badge.is-filled.badge-ok    { color: var(--c-text-inv); background: var(--c-ok);         border-color: var(--c-ok); }
+  .badge.is-filled.badge-warn  { color: var(--c-text-inv); background: var(--c-warn);       border-color: var(--c-warn); }
+  .badge.is-filled.badge-err   { color: var(--c-text-inv); background: var(--c-err);        border-color: var(--c-err); }
+  .badge.is-filled.badge-info  { color: var(--c-text-inv); background: var(--c-info);       border-color: var(--c-info); }
+  .badge.is-filled.badge-accent{ color: var(--c-text-inv); background: var(--c-accent);     border-color: var(--c-accent); }
+  .badge.is-filled.badge-rose  { color: var(--c-text-inv); background: var(--c-rose);       border-color: var(--c-rose); }
+  .badge.is-filled.badge-cyan  { color: var(--c-text-inv); background: var(--c-cyan);       border-color: var(--c-cyan); }
   .badge.is-filled.badge-muted { color: var(--c-text-inv); background: var(--c-text-muted); border-color: var(--c-text-muted); }
   .badge.is-pill { border-radius: 999px; min-width: 18px; justify-content: center; font-variant-numeric: tabular-nums; }
 

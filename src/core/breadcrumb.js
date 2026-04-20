@@ -70,7 +70,7 @@ function paintBreadcrumb() {
         ${currentTail.sub ? `<span class="bc-sub">${currentTail.sub}</span>` : ''}
       </span>`;
   } else if (currentBrief) {
-    html += `<span class="bc-dot">·</span><span class="bc-brief">${currentBrief}</span>`;
+    html += `<i class="ph ph-caret-right bc-sep"></i><span class="bc-brief">${currentBrief}</span>`;
   }
 
   el.innerHTML = html;

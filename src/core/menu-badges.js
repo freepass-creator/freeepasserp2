@@ -57,4 +57,5 @@ export function initMenuBadges() {
   subscribe('contracts', recompute);
   subscribe('settlements', recompute);
   subscribe('currentUser', recompute);
+  recompute();
 }

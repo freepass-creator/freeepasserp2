@@ -194,7 +194,7 @@ function updateBrief() {
   if (counts['즉시출고']) parts.push(`즉시 ${counts['즉시출고']}`);
   if (counts['출고가능']) parts.push(`가능 ${counts['출고가능']}`);
   if (counts['출고불가']) parts.push(`불가 ${counts['출고불가']}`);
-  setBreadcrumbBrief(parts.join(' · '));
+  setBreadcrumbBrief(parts.join(' > '));
 }
 
 /** 차량상태 필터 칩 — allProducts의 unique vehicle_status 값 기반으로 동적 생성 */
@@ -239,7 +239,7 @@ function renderList() {
   el.innerHTML = list.map(p => {
     const thumb = firstProductImage(p);
     const driveFolderUrl = !thumb ? supportedDriveSource(p) : '';
-    const title = [p.sub_model, p.trim_name || p.trim].filter(v => v && v !== '-').join(' · ') || p.model || '-';
+    const title = [p.sub_model, p.trim_name || p.trim].filter(v => v && v !== '-').join(' > ') || p.model || '-';
     const color = [p.ext_color, p.int_color].filter(Boolean).join('/');
     const sub = [
       p.car_number,
@@ -248,7 +248,7 @@ function renderList() {
       p.mileage ? Number(p.mileage).toLocaleString() + 'km' : '',
       p.fuel_type,
       color,
-    ].filter(Boolean).join(' · ');
+    ].filter(Boolean).join(' > ');
     return `
     <div class="srch-item ${activeKey === p._key ? 'is-active' : ''}" data-key="${p._key}">
       <div class="srch-item-thumb">

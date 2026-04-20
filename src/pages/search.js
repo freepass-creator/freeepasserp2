@@ -20,6 +20,8 @@ let selected = new Set();
 let activeFilters = {};
 let selectedProductKey = null;
 const LIST_PERIODS = [36, 48, 60];
+let sortCol = null;  // '36' | '48' | '60' | null
+let sortDir = null;  // 'asc' | 'desc' | null
 
 const FILTERS = {
   rent: {
@@ -112,10 +114,10 @@ export function mount() {
     <div class="srch">
       <!-- 필터(좌) | 목록(중) | 상세(우) 가로 3패널 -->
       <div class="srch-filter-panel" id="srchFilterPanel">
-        <div class="srch-panel-head">조건</div>
+        <div class="srch-panel-head"><span>조건</span><span class="sb-badge" id="srchFilterCount"></span></div>
         <div class="srch-filter-search">
           <input class="input input-sm" id="srchText" placeholder="차량번호, 모델명, 금액, 무심사 등...">
-          <div class="srch-active" id="srchActive"></div>
+          <div class="srch-active" id="srchActive"><span style="font-size:var(--fs-2xs);color:var(--c-text-muted);">전체해제</span></div>
         </div>
         <div class="srch-filters" id="srchFilters"></div>
       </div>
@@ -130,7 +132,10 @@ export function mount() {
             <button class="btn btn-xs btn-outline" id="srchExcel" title="현재 목록 Excel 다운로드"><i class="ph ph-file-xls"></i> Excel</button>
             <button class="btn btn-xs btn-outline" id="srchPhotoZip" title="현재 목록 사진 ZIP 다운로드 (공급사/차량번호 폴더)"><i class="ph ph-file-zip"></i> 사진</button>
           </span>
-          <div class="srch-period-head"><span>36개월</span><span>48개월</span><span>60개월</span></div>
+          <div class="srch-period-head">
+            <span class="srch-sort-hint" id="srchSortHint">${localStorage.getItem('fp.sort.used') ? '' : '개월수 클릭하면 대여료 정렬'}</span>
+            <span class="srch-sort-col" data-sort="36" title="클릭: 낮은순 → 높은순 → 해제">36개월</span><span class="srch-sort-col" data-sort="48" title="클릭: 낮은순 → 높은순 → 해제">48개월</span><span class="srch-sort-col" data-sort="60" title="클릭: 낮은순 → 높은순 → 해제">60개월</span>
+          </div>
         </div>
         <div class="srch-list" id="srchList"></div>
         <div class="srch-list-foot" id="srchFoot" style="display:none;">
@@ -173,6 +178,7 @@ export function mount() {
       store.products = allProducts;
       buildDynamicFilters();
       renderFilters();
+      renderActiveChips();
       applyFilters();
       updateBrief();
     } catch (err) {
@@ -183,6 +189,33 @@ export function mount() {
 
   // Text search
   document.getElementById('srchText')?.addEventListener('input', () => { buildDynamicFilters(); renderFilters(); applyFilters(); });
+
+  // 기간별 정렬
+  document.querySelectorAll('.srch-sort-col').forEach(col => {
+    col.style.cursor = 'pointer';
+    col.addEventListener('click', () => {
+      const m = col.dataset.sort;
+      if (sortCol === m) {
+        if (sortDir === 'asc') sortDir = 'desc';
+        else if (sortDir === 'desc') { sortCol = null; sortDir = null; }
+      } else {
+        sortCol = m; sortDir = 'asc';
+      }
+      // 색상 + tooltip 업데이트
+      document.querySelectorAll('.srch-sort-col').forEach(c => {
+        c.classList.remove('is-sort-asc', 'is-sort-desc');
+        c.title = '클릭: 낮은순 → 높은순 → 해제';
+      });
+      if (sortCol === m && sortDir) {
+        col.classList.add(sortDir === 'asc' ? 'is-sort-asc' : 'is-sort-desc');
+        col.title = sortDir === 'asc' ? `${m}개월 낮은순 정렬 중 (클릭: 높은순)` : `${m}개월 높은순 정렬 중 (클릭: 해제)`;
+      }
+      // 힌트 한번 쓰면 영구 제거
+      const hint = document.getElementById('srchSortHint');
+      if (hint) { hint.textContent = ''; localStorage.setItem('fp.sort.used', '1'); }
+      applyFilters();
+    });
+  });
 
   // Share
   document.getElementById('srchShare')?.addEventListener('click', openShare);
@@ -584,7 +617,7 @@ function updateBrief() {
   if (counts['출고가능']) parts.push(`출고가능 ${counts['출고가능']}`);
   if (counts['출고협의']) parts.push(`출고협의 ${counts['출고협의']}`);
 
-  setBreadcrumbBrief(parts.join(' · '));
+  setBreadcrumbBrief(parts.join(' > '));
 }
 
 const TOP_N = { maker: 8, model: 12, submodel: 12, year: 10, color: 10, int_color: 10, vehicle_class: 11, provider: 10, policy: 10 };
@@ -710,7 +743,7 @@ function renderFilters() {
       <details class="srch-accordion ${activeCount ? 'has-active' : ''}" open>
         <summary class="srch-accordion-sum">
           <i class="${f.icon || 'ph ph-funnel'} srch-acc-icon"></i>
-          <span class="srch-acc-label">${f.label}${activeCount ? `<span class="badge is-filled is-pill badge-accent">${activeCount}</span>` : ''}</span>
+          <span class="srch-acc-label">${f.label}</span><span class="sb-badge ${activeCount ? 'is-visible' : ''}">${activeCount || ''}</span>
           <i class="ph ph-caret-down srch-acc-caret"></i>
         </summary>
         <div class="srch-accordion-body">${chipsHtml}</div>
@@ -718,16 +751,26 @@ function renderFilters() {
     `;
   }).join('');
 
-  // Chip clicks — toggle membership in set
-  el.querySelectorAll('.chip').forEach(chip => {
-    chip.addEventListener('click', () => {
-      const g = chip.dataset.g, c = chip.dataset.c;
+  // Chip clicks — toggle without full re-render
+  el.querySelectorAll('.chip').forEach(chipEl => {
+    chipEl.addEventListener('click', () => {
+      const g = chipEl.dataset.g, c = chipEl.dataset.c;
       if (!activeFilters[g]) activeFilters[g] = new Set();
       const s = activeFilters[g];
-      if (s.has(c)) s.delete(c); else s.add(c);
+      if (s.has(c)) { s.delete(c); chipEl.classList.remove('is-active'); }
+      else { s.add(c); chipEl.classList.add('is-active'); }
       if (!s.size) delete activeFilters[g];
-      buildDynamicFilters();
-      renderFilters();
+
+      // 해당 아코디언 뱃지만 업데이트
+      const accordion = chipEl.closest('.srch-accordion');
+      const badge = accordion?.querySelector('.sb-badge');
+      const cnt = s?.size || 0;
+      if (badge) {
+        if (cnt) { badge.textContent = cnt; badge.classList.add('is-visible'); }
+        else { badge.textContent = ''; badge.classList.remove('is-visible'); }
+      }
+      if (accordion) accordion.classList.toggle('has-active', cnt > 0);
+
       renderActiveChips();
       applyFilters();
     });
@@ -748,14 +791,25 @@ function renderActiveChips() {
   if (!el) return;
   const entries = Object.entries(activeFilters);
   const total = entries.reduce((n, [, s]) => n + (s?.size || 0), 0);
-  if (!total) { el.innerHTML = ''; return; }
+
+  // 조건 헤더 뱃지 업데이트
+  const countEl = document.getElementById('srchFilterCount');
+  if (countEl) {
+    if (total) { countEl.textContent = total; countEl.classList.add('is-visible'); }
+    else { countEl.textContent = ''; countEl.classList.remove('is-visible'); }
+  }
+
+  if (!total) {
+    el.innerHTML = `<span style="font-size:var(--fs-2xs);color:var(--c-text-muted);">전체해제</span>`;
+    return;
+  }
 
   el.innerHTML = entries.flatMap(([g, set]) =>
     [...set].map(cid => {
       const c = FILTERS[g].chips.find(x => x.id === cid);
       return `<span class="chip is-active">${c?.label || cid} <span class="chip-remove" data-g="${g}" data-c="${cid}">&times;</span></span>`;
     })
-  ).join('') + `<button class="btn btn-sm" style="color:var(--c-text-muted);font-size:var(--fs-2xs);" id="srchClear">전체 해제</button>`;
+  ).join('') + `<button class="btn btn-sm" style="color:var(--c-accent);font-size:var(--fs-2xs);" id="srchClear">전체해제</button>`;
 
   el.querySelectorAll('.chip-remove').forEach(x => {
     x.addEventListener('click', (e) => {
@@ -783,6 +837,18 @@ function applyFilters() {
     const chips = [...set].map(cid => FILTERS[g].chips.find(c => c.id === cid)).filter(Boolean);
     if (!chips.length) continue;
     results = results.filter(p => chips.some(chip => matchFilter(p, g, chip)));
+  }
+
+  // 기간별 정렬
+  if (sortCol && sortDir) {
+    const getRent = p => Number(p.price?.[sortCol]?.rent || 0);
+    results.sort((a, b) => {
+      const av = getRent(a), bv = getRent(b);
+      if (!av && !bv) return 0;
+      if (!av) return 1;
+      if (!bv) return -1;
+      return sortDir === 'asc' ? av - bv : bv - av;
+    });
   }
 
   filteredProducts = results;
@@ -824,7 +890,7 @@ function renderList() {
       p.mileage ? Number(p.mileage).toLocaleString()+'km' : '',
       p.fuel_type,
       color,
-    ].filter(Boolean).join(' · ');
+    ].filter(Boolean).join(' > ');
 
     // 기간별 대여료 (36/48/60) — rent + deposit
     const priceGrid = `<div class="srch-price-grid">${PERIODS.map(m => {
@@ -1073,7 +1139,7 @@ function renderDetail(key) {
   const memoText = (p.partner_memo || p.note || '').trim();
 
   const modelText = [p.maker, p.model].filter(v => v && v !== '-').join(' ');
-  const subText   = [p.sub_model, p.trim || p.trim_name].filter(v => v && v !== '-').join(' · ');
+  const subText   = [p.sub_model, p.trim || p.trim_name].filter(v => v && v !== '-').join(' > ');
   const tags      = [p.fuel_type, p.year ? `${p.year}년식` : '', p.mileage ? Number(p.mileage).toLocaleString()+'km' : ''].filter(Boolean);
 
   el.innerHTML = `
@@ -1089,7 +1155,7 @@ function renderDetail(key) {
           </div>
         </div>
         <div class="cat-meta">
-          <span class="cat-meta-text">${tags.join(' · ') || '-'}</span>
+          <span class="cat-meta-text">${tags.join(' > ') || '-'}</span>
           ${p.ext_color ? `<span class="cat-color-badge">외장 ${p.ext_color}</span>` : ''}
           ${p.int_color ? `<span class="cat-color-badge">내장 ${p.int_color}</span>` : ''}
         </div>

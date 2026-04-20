@@ -97,7 +97,7 @@ function updateBrief() {
   if (pending.length) parts.push(`미정산 ${pending.length}건${pendingSum ? ` · ${fmtMoney(pendingSum)}` : ''}`);
   const done = allSettlements.filter(s => getSettlementStatus(s) === SS.DONE).length;
   if (done) parts.push(`완료 ${done}`);
-  setBreadcrumbBrief(parts.length ? parts.join(' · ') : `총 ${allSettlements.length}건`);
+  setBreadcrumbBrief(parts.length ? parts.join(' > ') : `총 ${allSettlements.length}건`);
 }
 
 function renderList() {

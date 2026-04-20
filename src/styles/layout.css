@@ -690,7 +690,7 @@
     text-overflow: ellipsis;
   }
 
-  /* ── Login (full page, no shell) ── */
+  /* ── Login (full page, no shell) — jpkerp 규격 통일 ── */
   .login-page {
     min-height: 100vh;
     min-height: 100dvh;
@@ -702,7 +702,7 @@
     padding: 40px var(--sp-4);
     padding-top: max(40px, env(safe-area-inset-top));
     padding-bottom: max(32px, env(safe-area-inset-bottom));
-    background: var(--c-surface);
+    background: var(--c-bg);
     user-select: none;
   }
   .login-page input,
@@ -710,12 +710,13 @@
 
   .login-brand {
     font-family: 'Exo 2', 'Pretendard', -apple-system, system-ui, sans-serif;
-    font-size: 22px;
-    letter-spacing: 0.5px;
+    font-size: 20px;
+    letter-spacing: 0.18em;
     display: flex;
     align-items: baseline;
     justify-content: center;
-    gap: 1px;
+    gap: 2px;
+    text-transform: lowercase;
   }
   .login-brand-main { font-weight: 500; color: var(--c-accent); }
   .login-brand-base { font-weight: 300; color: var(--c-brand-base); }
@@ -725,11 +726,11 @@
     width: 100%;
     max-width: 400px;
     background: var(--c-surface);
-    border-radius: 4px;
+    border-radius: var(--ctrl-r);
     padding: 40px 32px;
-    border: 1px solid var(--c-border);
-    box-shadow: none;
-    display: grid;
+    box-shadow: 0 2px 10px rgba(0,0,0,.04), 0 10px 30px rgba(0,0,0,.06);
+    display: flex;
+    flex-direction: column;
     gap: var(--sp-6);
     overflow: hidden;
   }
@@ -758,69 +759,63 @@
   }
   @keyframes login-spin { to { transform: rotate(360deg); } }
 
-  .login-head { display: grid; gap: var(--sp-2); }
+  .login-head { display: flex; flex-direction: column; gap: 6px; }
   .login-title {
     margin: 0;
-    font-size: 22px;
-    font-weight: var(--fw-medium);
+    font-size: 18px;
+    font-weight: var(--fw-semibold);
     color: var(--c-text);
-    line-height: 1.3;
-    letter-spacing: -0.01em;
   }
   .login-sub {
     margin: 0;
-    font-size: var(--fs-sm);
+    font-size: 13px;
     color: var(--c-text-sub);
-    line-height: 1.5;
   }
 
-  .login-form { display: grid; gap: var(--sp-4); }
-  .login-field { display: grid; gap: var(--sp-1); }
+  .login-form { display: flex; flex-direction: column; gap: 14px; }
+  .login-field { display: flex; flex-direction: column; gap: 4px; }
   .login-field label {
-    font-size: var(--fs-xs);
+    font-size: 12px;
     font-weight: var(--fw-medium);
     color: var(--c-text-sub);
   }
   .login-field input,
   .login-field select {
     width: 100%;
-    height: 42px;
-    padding: 0 var(--sp-3);
-    border: 1px solid var(--c-border);
+    height: 40px;
+    padding: 0 12px;
+    border: 1px solid #dadce0;
     border-radius: var(--ctrl-r);
     background: var(--c-surface);
-    font-size: var(--fs-sm);
+    font-size: 14px;
     font-family: inherit;
     color: var(--c-text);
     outline: none;
     box-sizing: border-box;
-    transition: border-color var(--dur) var(--ease);
+    transition: border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
   }
   .login-field input::placeholder { color: var(--c-text-muted); }
   .login-field input:hover,
-  .login-field select:hover { border-color: var(--c-border-strong); }
+  .login-field select:hover { border-color: #c4c7cc; }
   .login-field input:focus,
-  .login-field select:focus { border-color: var(--c-accent); }
+  .login-field select:focus { border-color: var(--c-accent); box-shadow: 0 0 0 3px rgba(27,42,74,.08); }
 
   .login-submit {
     width: 100%;
     height: 42px;
-    margin-top: var(--sp-1);
     border: 0;
     border-radius: var(--ctrl-r);
-    background: #e9ecef;
-    color: var(--c-text);
-    font-size: var(--fs-sm);
-    font-weight: var(--fw-medium);
+    background: var(--c-accent);
+    color: var(--c-text-inv);
+    font-size: 14px;
+    font-weight: var(--fw-semibold);
     font-family: inherit;
     cursor: pointer;
-    transition: background var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+    transition: background var(--dur) var(--ease);
   }
-  .login-submit:hover {
-    background: #dee2e6;
-  }
-  .login-submit:active { background: #d5d8dc; }
-  .login-submit:disabled { background: #f1f3f5; color: var(--c-text-muted); cursor: default; }
+  .login-submit:hover { background: var(--c-accent-hover); }
+  .login-submit:active { background: var(--c-accent-hover); }
+  .login-submit:disabled { background: #c4c7cc; cursor: default; }
 
   .login-links {
     display: flex;
@@ -873,17 +868,17 @@
       gap: var(--sp-5);
       max-width: none;
     }
-    .login-title { font-size: 22px; }
-    .login-sub { font-size: var(--fs-md); }
+    .login-title { font-size: 20px; }
+    .login-sub { font-size: 14px; }
     .login-field input,
     .login-field select {
       height: 48px;
       font-size: 16px;
-      border-radius: 10px;
+      border-radius: var(--ctrl-r);
       padding: 0 var(--sp-4);
     }
-    .login-field label { font-size: var(--fs-sm); }
-    .login-submit { height: 52px; font-size: 15px; border-radius: 10px; margin-top: var(--sp-2); }
+    .login-field label { font-size: 13px; }
+    .login-submit { height: 48px; font-size: 15px; border-radius: var(--ctrl-r); }
     .login-links { font-size: var(--fs-sm); gap: var(--sp-3); }
     .login-copy { text-align: center; padding: 0 var(--sp-6); }
   }

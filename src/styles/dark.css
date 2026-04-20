@@ -76,6 +76,16 @@
     border-color: #45454c;
   }
 
+  /* ── Filled 뱃지 다크 보정 — 반투명 배경 + 밝은 텍스트 ── */
+  :root[data-theme="dark"] .badge.is-filled.badge-ok     { background: rgba(52, 211, 153, .18); color: var(--c-ok);     border-color: rgba(52, 211, 153, .3); }
+  :root[data-theme="dark"] .badge.is-filled.badge-warn   { background: rgba(251, 191, 36, .18); color: var(--c-warn);   border-color: rgba(251, 191, 36, .3); }
+  :root[data-theme="dark"] .badge.is-filled.badge-err    { background: rgba(248, 113, 113, .18); color: var(--c-err);   border-color: rgba(248, 113, 113, .3); }
+  :root[data-theme="dark"] .badge.is-filled.badge-info   { background: rgba(96, 165, 250, .18); color: var(--c-info);   border-color: rgba(96, 165, 250, .3); }
+  :root[data-theme="dark"] .badge.is-filled.badge-accent { background: rgba(138, 164, 200, .18); color: var(--c-accent); border-color: rgba(138, 164, 200, .3); }
+  :root[data-theme="dark"] .badge.is-filled.badge-rose   { background: rgba(251, 113, 133, .18); color: var(--c-rose);  border-color: rgba(251, 113, 133, .3); }
+  :root[data-theme="dark"] .badge.is-filled.badge-cyan   { background: rgba(34, 211, 238, .18); color: var(--c-cyan);   border-color: rgba(34, 211, 238, .3); }
+  :root[data-theme="dark"] .badge.is-filled.badge-muted  { background: rgba(99, 99, 107, .18); color: var(--c-text-muted); border-color: rgba(99, 99, 107, .3); }
+
   /* ── 로그인 카드 다크 보정 ── */
   :root[data-theme="dark"] .login-card {
     border-color: var(--c-border);

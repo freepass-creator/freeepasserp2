@@ -109,9 +109,9 @@
   .srch-active {
     display: flex;
     flex-wrap: wrap;
+    align-items: center;
     gap: var(--sp-1);
-  }
-  .srch-active:not(:empty) {
+    min-height: 28px;
     margin-top: var(--sp-2);
   }
 
@@ -198,17 +198,21 @@
   .srch-item-deposit { flex-shrink: 0; color: var(--c-text-muted); font-variant-numeric: tabular-nums; }
 
   /* 기간별 가격 매트릭스 (36 / 48 / 60) — head와 card의 column 폭 통일 */
-  .srch-period-head,
+  .srch-period-head {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 0;
+    font-variant-numeric: tabular-nums;
+    margin-right: 6px;
+  }
   .srch-price-grid {
     flex-shrink: 0;
     display: grid;
     grid-template-columns: repeat(3, 48px);
     font-variant-numeric: tabular-nums;
   }
-  /* 스크롤바 gutter(6px) 보정 → head와 card 우측선 일치 */
-  .srch-period-head { margin-right: 6px; }
 
-  .srch-period-head > span,
   .srch-price-col {
     display: block;
     box-sizing: border-box;
@@ -217,11 +221,27 @@
     text-align: right;
     min-width: 0;
   }
-  .srch-period-head > span {
+  .srch-period-head > .srch-sort-col {
+    display: block;
+    width: 48px;
+    padding: 2px 4px;
+    text-align: right;
     font-size: var(--fs-2xs);
     color: var(--c-text-muted);
     font-weight: var(--fw-medium);
+    box-sizing: border-box;
   }
+  .srch-sort-hint {
+    font-size: var(--fs-2xs);
+    color: var(--c-text-muted);
+    white-space: nowrap;
+    margin-right: var(--sp-1);
+  }
+  .srch-sort-hint:empty { display: none; }
+  .srch-sort-col { cursor: pointer; transition: color var(--dur), background var(--dur); user-select: none; padding: 2px 4px; border-radius: var(--ctrl-r); }
+  .srch-sort-col:hover { color: var(--c-text-sub); background: var(--c-bg-hover); }
+  .srch-sort-col.is-sort-asc { color: var(--c-info); background: var(--c-info-bg); }
+  .srch-sort-col.is-sort-desc { color: var(--c-err); background: var(--c-err-bg); }
   .srch-price-col { line-height: 1.2; }
   .srch-price-col > div { display: block; text-align: right; }
   .srch-price-rent {

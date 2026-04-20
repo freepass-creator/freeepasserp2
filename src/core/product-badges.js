@@ -20,7 +20,7 @@ const VS_MAP = {
 };
 
 function badgeHtml(label, tone) {
-  return `<span class="badge badge-${tone}">${label}</span>`;
+  return `<span class="badge is-filled badge-${tone}">${label}</span>`;
 }
 
 /* ── 차량상태 뱃지 (즉시/가능/협의/불가) ── */
@@ -34,15 +34,15 @@ function rentWayBadge(product) {
   const pt = product?.product_type || '';
   const way = /구독$/.test(pt) ? '구독' : (/렌트$/.test(pt) ? '렌트' : '');
   if (!way) return '';
-  return badgeHtml(way, 'muted');
+  return badgeHtml(way, way === '구독' ? 'cyan' : 'accent');
 }
 
-/* ── 신차/중고 뱃지 — 구분만 표시, 색은 muted ── */
+/* ── 신차/중고 뱃지 ── */
 function originBadge(product) {
   const pt = product?.product_type || '';
   const origin = /^신차/.test(pt) ? '신차' : (/^중고/.test(pt) ? '중고' : '');
   if (!origin) return '';
-  return badgeHtml(origin, 'muted');
+  return badgeHtml(origin, origin === '신차' ? 'info' : 'rose');
 }
 
 /* ── 심사여부 판정 (boolean) ── */
