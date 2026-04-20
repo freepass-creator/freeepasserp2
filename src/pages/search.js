@@ -2,7 +2,7 @@
  * 차량 검색 — 전체 목록 + 조건 필터로 추려짐 + 상세 + 복수 공유
  */
 import { store } from '../core/store.js';
-import { watchCollection } from '../firebase/db.js';
+import { watchCollection, fetchCollection } from '../firebase/db.js';
 import { showToast } from '../core/toast.js';
 import { fmtMoney } from '../core/format.js';
 import { setBreadcrumbTail, setBreadcrumbBrief } from '../core/breadcrumb.js';
@@ -60,7 +60,8 @@ const FILTERS = {
       { id: 'km3',  label: '1~3만',    match: v => v > 10000 && v <= 30000 },
       { id: 'km5',  label: '3~5만',    match: v => v > 30000 && v <= 50000 },
       { id: 'km10', label: '5~10만',   match: v => v > 50000 && v <= 100000 },
-      { id: 'km99', label: '10만↑',    match: v => v > 100000 },
+      { id: 'km15', label: '10~15만',  match: v => v > 100000 && v <= 150000 },
+      { id: 'km99', label: '15만↑',    match: v => v > 150000 },
     ]
   },
   fuel: {
@@ -71,7 +72,32 @@ const FILTERS = {
       { id: 'ev',     label: '전기',      match: v => v === '전기' || v === 'electric' },
     ]
   },
-  color:    { label: '색상', icon: 'ph ph-palette', chips: [], dynamic: true, field: 'ext_color' },
+  color:    { label: '외부색상', icon: 'ph ph-palette', chips: [], dynamic: true, field: 'ext_color' },
+  int_color: { label: '내부색상', icon: 'ph ph-palette', chips: [], dynamic: true, field: 'int_color' },
+  vehicle_status: {
+    label: '출고상태', icon: 'ph ph-truck',
+    chips: ['즉시출고','출고가능','상품화중','출고협의','출고불가'].map(s => ({
+      id: `vs_${s}`, label: s, match: v => v === s
+    }))
+  },
+  product_type: {
+    label: '상품구분', icon: 'ph ph-tag',
+    chips: ['중고렌트','신차렌트','중고구독','신차구독'].map(s => ({
+      id: `pt_${s}`, label: s, match: v => v === s
+    }))
+  },
+  vehicle_class: { label: '차종구분', icon: 'ph ph-car', chips: [], dynamic: true, field: 'vehicle_class' },
+  review: {
+    label: '심사여부', icon: 'ph ph-clipboard-text',
+    chips: [
+      { id: 'rv_no',  label: '무심사',   match: (_, p) => !needsReview(p) },
+      { id: 'rv_yes', label: '심사필요', match: (_, p) => needsReview(p) },
+    ]
+  },
+  age_lowering:    { label: '운전연령하향', icon: 'ph ph-arrow-down', chips: [], dynamic: true, field: '_policy.driver_age_lowering' },
+  credit_grade:    { label: '신용등급', icon: 'ph ph-chart-bar', chips: [], dynamic: true, field: '_policy.credit_grade' },
+  annual_mileage:  { label: '연간약정주행거리', icon: 'ph ph-road-horizon', chips: [], dynamic: true, field: '_policy.annual_mileage' },
+  provider: { label: '공급코드', icon: 'ph ph-buildings', chips: [], dynamic: true, field: 'provider_company_code' },
 };
 
 export function mount() {
@@ -88,7 +114,7 @@ export function mount() {
       <div class="srch-filter-panel" id="srchFilterPanel">
         <div class="srch-panel-head">조건</div>
         <div class="srch-filter-search">
-          <input class="input input-sm" id="srchText" placeholder="차량번호, 모델명 검색...">
+          <input class="input input-sm" id="srchText" placeholder="차량번호, 모델명, 금액, 무심사 등...">
           <div class="srch-active" id="srchActive"></div>
         </div>
         <div class="srch-filters" id="srchFilters"></div>
@@ -129,9 +155,21 @@ export function mount() {
   initResize();
 
   // Load — 콜백 내 오류가 전체 페이지를 깨뜨리지 않도록 보호
+  // 정책 미리 로드
+  if (!store.policies) {
+    fetchCollection('policies').then(p => { store.policies = p; }).catch(() => { store.policies = []; });
+  }
+
   unsubProducts = watchCollection('products', (data) => {
     try {
-      allProducts = data.filter(p => !p._deleted && p.status !== 'deleted');
+      const policies = store.policies || [];
+      allProducts = enrichProductsWithPolicy(
+        data.filter(p => !p._deleted && p.status !== 'deleted').map(p => {
+          if (!p.model && p.model_name) p.model = p.model_name;
+          return p;
+        }),
+        policies
+      );
       store.products = allProducts;
       buildDynamicFilters();
       renderFilters();
@@ -549,7 +587,7 @@ function updateBrief() {
   setBreadcrumbBrief(parts.join(' · '));
 }
 
-const TOP_N = { maker: 8, model: 12, submodel: 12, year: 10, color: 10 };
+const TOP_N = { maker: 8, model: 12, submodel: 12, year: 10, color: 10, int_color: 10, vehicle_class: 11, provider: 10, policy: 10 };
 
 function matchFilter(p, g, chip) {
   const f = FILTERS[g];
@@ -558,18 +596,16 @@ function matchFilter(p, g, chip) {
   if (g === 'period') return chip.match(null, p.price);
   if (g === 'mileage') return chip.match(Number(p.mileage)||0);
   if (g === 'fuel') return chip.match(p.fuel_type);
-  if (f.dynamic && f.field) return chip.match(p[f.field]);
+  if (g === 'vehicle_status') return chip.match(p.vehicle_status);
+  if (g === 'product_type') return chip.match(p.product_type);
+  if (g === 'review') return chip.match(null, p);
+  if (f.dynamic && f.field) return chip.match(getField(p, f.field));
   return true;
 }
 
 function passesFiltersExcept(p, skipKey) {
   const q = (document.getElementById('srchText')?.value || '').toLowerCase();
-  if (q && !(
-    (p.car_number||'').toLowerCase().includes(q) ||
-    (p.model||'').toLowerCase().includes(q) ||
-    (p.maker||'').toLowerCase().includes(q) ||
-    (p.sub_model||'').toLowerCase().includes(q)
-  )) return false;
+  if (q && !matchesText(p, q)) return false;
   for (const [g, set] of Object.entries(activeFilters)) {
     if (g === skipKey) continue;
     if (!set || !set.size) continue;
@@ -581,14 +617,52 @@ function passesFiltersExcept(p, skipKey) {
   return true;
 }
 
+function matchesText(p, q) {
+  const fields = [
+    // 상품 기본
+    p.car_number, p.maker, p.model, p.sub_model, p.trim_name,
+    p.vehicle_status, p.product_type, p.vehicle_class,
+    p.fuel_type, p.ext_color, p.int_color, p.year,
+    p.location, p.provider_company_code, p.policy_code,
+    p.partner_code, p.vin, p.usage, p.product_code, p._key,
+    p.partner_memo, p.options,
+  ];
+  // 정책
+  const pol = p._policy || {};
+  fields.push(
+    pol.policy_name, pol.policy_code, pol.credit_grade, pol.annual_mileage,
+    pol.basic_driver_age, pol.driver_age_lowering,
+    pol.screening_criteria, pol.payment_method, pol.provider_company_code,
+  );
+  // 파트너/사용자 이름·회사명 매칭
+  const partner = (store.partners || []).find(pt => pt.partner_code === p.partner_code || pt.partner_code === p.provider_company_code);
+  if (partner) fields.push(partner.partner_name, partner.manager_name, partner.manager_phone);
+  const user = (store.users || []).find(u => u.company_code === p.provider_company_code || u.partner_code === p.partner_code);
+  if (user) fields.push(user.name, user.company_name, user.phone, user.email);
+  // 심사여부
+  fields.push(needsReview(p) ? '심사필요' : '무심사');
+  // 금액
+  if (p.price) {
+    Object.values(p.price).forEach(pr => {
+      if (pr.rent) fields.push(String(pr.rent), String(Math.round(pr.rent / 10000)) + '만');
+      if (pr.deposit) fields.push(String(pr.deposit), String(Math.round(pr.deposit / 10000)) + '만');
+    });
+  }
+  if (p.mileage) fields.push(String(p.mileage), String(Math.round(p.mileage / 10000)) + '만km', String(Math.round(p.mileage / 10000)) + '만');
+  return fields.some(v => v && String(v).toLowerCase().includes(q));
+}
+
+function getField(obj, path) {
+  return path.split('.').reduce((o, k) => o?.[k], obj);
+}
+
 function buildDynamicFilters() {
   Object.entries(FILTERS).forEach(([key, f]) => {
     if (!f.dynamic) return;
-    // 다른 필터를 통과한 상품들만 범위로 삼아 카운트 — 현대 선택 시 현대 모델만 노출
     const scope = allProducts.filter(p => passesFiltersExcept(p, key));
     const counts = {};
     scope.forEach(p => {
-      const v = p[f.field];
+      const v = getField(p, f.field);
       if (v !== undefined && v !== null && v !== '') counts[String(v)] = (counts[String(v)]||0) + 1;
     });
     let sorted;
@@ -700,11 +774,7 @@ function applyFilters() {
   let results = [...allProducts];
 
   // Text
-  if (q) results = results.filter(p =>
-    (p.car_number||'').toLowerCase().includes(q) ||
-    (p.model||'').toLowerCase().includes(q) ||
-    (p.maker||'').toLowerCase().includes(q) ||
-    (p.sub_model||'').toLowerCase().includes(q)
+  if (q) results = results.filter(p => matchesText(p, q)
   );
 
   // Chips (OR within group, AND across groups)

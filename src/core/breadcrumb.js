@@ -6,16 +6,16 @@
  */
 
 const ROUTE_MAP = {
-  '/':         [{ icon: 'ph ph-desktop', label: '작업' }],
-  '/search':   [{ icon: 'ph ph-magnifying-glass', label: '찾기' }],
-  '/contract': [{ icon: 'ph ph-list-magnifying-glass', label: '조회' }, { icon: 'ph ph-file-text', label: '계약' }],
-  '/settle':   [{ icon: 'ph ph-list-magnifying-glass', label: '조회' }, { icon: 'ph ph-coins', label: '정산' }],
-  '/product':  [{ icon: 'ph ph-plus-circle', label: '등록' }, { icon: 'ph ph-car-simple', label: '상품' }],
-  '/policy':   [{ icon: 'ph ph-plus-circle', label: '등록' }, { icon: 'ph ph-scroll', label: '정책' }],
-  '/admin/sign':     [{ icon: 'ph ph-crown', label: '관리자' }, { icon: 'ph ph-paper-plane-tilt', label: '계약발송' }],
-  '/admin/users':    [{ icon: 'ph ph-crown', label: '관리자' }, { icon: 'ph ph-users', label: '사용자' }],
-  '/admin/partners': [{ icon: 'ph ph-crown', label: '관리자' }, { icon: 'ph ph-buildings', label: '파트너' }],
-  '/admin/dev':      [{ icon: 'ph ph-crown', label: '관리자' }, { icon: 'ph ph-code', label: '개발' }],
+  '/':         [{ icon: 'ph ph-chat-circle', label: '업무 소통' }],
+  '/search':   [{ icon: 'ph ph-magnifying-glass', label: '상품 찾기' }],
+  '/contract': [{ icon: 'ph ph-file-text', label: '계약 관리' }],
+  '/settle':   [{ icon: 'ph ph-coins', label: '정산 관리' }],
+  '/product':  [{ icon: 'ph ph-car-simple', label: '재고 관리' }],
+  '/policy':   [{ icon: 'ph ph-scroll', label: '정책 관리' }],
+  '/admin/users':    [{ icon: 'ph ph-crown', label: '관리자' }, { icon: 'ph ph-users', label: '사용자 관리' }],
+  '/admin/partners': [{ icon: 'ph ph-crown', label: '관리자' }, { icon: 'ph ph-buildings', label: '파트너 관리' }],
+  '/admin/sign':     [{ icon: 'ph ph-crown', label: '관리자' }, { icon: 'ph ph-paper-plane-tilt', label: '계약서 관리' }],
+  '/admin/dev':      [{ icon: 'ph ph-crown', label: '관리자' }, { icon: 'ph ph-code', label: '개발 도구' }],
   '/settings': [{ icon: 'ph ph-gear', label: '설정' }],
   '/account':  [{ icon: 'ph ph-user', label: '계정 정보' }],
 };

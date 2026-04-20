@@ -172,10 +172,10 @@ function renderRoomList() {
   const role = store.currentUser?.role;
 
   // Text search
-  if (q) rooms = rooms.filter(r =>
-    (r.agent_name||'').toLowerCase().includes(q) || (r.provider_name||'').toLowerCase().includes(q) ||
-    (r.vehicle_number||'').toLowerCase().includes(q) || (r.model||'').toLowerCase().includes(q)
-  );
+  if (q) rooms = rooms.filter(r => [
+    r.agent_name, r.provider_name, r.vehicle_number, r.model,
+    r.contract_status, r.agent_code, r.provider_code, r._key,
+  ].some(v => v && String(v).toLowerCase().includes(q)));
 
   // Filter
   if (rf === 'unread') {
@@ -203,7 +203,7 @@ function renderRoomList() {
 
     return `
       <div class="room-item ${active ? 'is-active' : ''}" data-id="${room._key}">
-        <div class="room-item-avatar ${unread > 0 ? 'is-info' : ''}">${initial}</div>
+        <div class="room-item-avatar ${unread > 0 ? 'is-accent' : 'is-muted'}"><i class="ph ${unread > 0 ? 'ph-chat-circle-dots' : 'ph-chat-circle'}"></i></div>
         <div class="room-item-body">
           <div class="room-item-top">
             <span class="room-item-name">${name}</span>

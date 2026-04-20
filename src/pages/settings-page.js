@@ -78,10 +78,11 @@ export function mount() {
   // Theme
   document.getElementById('stTheme')?.addEventListener('click', () => {
     const next = store.theme === 'dark' ? 'light' : 'dark';
+    document.documentElement.classList.add('theme-switching');
     store.theme = next;
     document.documentElement.dataset.theme = next;
     localStorage.setItem('fp.theme', next);
-    mount();
+    requestAnimationFrame(() => requestAnimationFrame(() => { document.documentElement.classList.remove('theme-switching'); mount(); }));
   });
 
   // Landing

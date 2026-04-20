@@ -108,8 +108,8 @@ function renderList() {
   }
 
   if (q) {
-    if (mode === 'users') list = list.filter(u => (u.name||'').toLowerCase().includes(q) || (u.email||'').toLowerCase().includes(q));
-    else list = list.filter(p => (p.partner_name||'').toLowerCase().includes(q) || (p.partner_code||'').toLowerCase().includes(q));
+    if (mode === 'users') list = list.filter(u => [u.name, u.email, u.role, u.company_name, u.phone, u.uid, u.status].some(v => v && String(v).toLowerCase().includes(q)));
+    else list = list.filter(p => [p.partner_name, p.partner_code, p.partner_type, p.manager_name, p.manager_phone].some(v => v && String(v).toLowerCase().includes(q)));
   }
 
   list.sort((a,b) => (b.created_at||0) - (a.created_at||0));
@@ -362,11 +362,10 @@ function renderSignList() {
   else if (f === 'sent')    list = list.filter(c => c.sign_token && !c.signed_at);
   // all: 전체 요청 (발송대기 + 발송됨 + 완료)
 
-  if (q) list = list.filter(c =>
-    (c.car_number_snapshot||'').toLowerCase().includes(q) ||
-    (c.customer_name||'').toLowerCase().includes(q) ||
-    (c.contract_code||'').toLowerCase().includes(q)
-  );
+  if (q) list = list.filter(c => [
+    c.car_number_snapshot, c.customer_name, c.contract_code,
+    c.vehicle_name_snapshot, c.agent_code, c.provider_company_code,
+  ].some(v => v && String(v).toLowerCase().includes(q)));
   list.sort((a, b) => (b.sign_requested_at||0) - (a.sign_requested_at||0));
 
   const pendCount = contracts.filter(c => c.sign_requested && !c.sign_token).length;
@@ -718,7 +717,7 @@ function renderStockTab(el) {
       if (m && x.maker !== m) return false;
       if (s && x.vehicle_status !== s) return false;
       if (p && (x.provider_company_code || x.partner_code) !== p) return false;
-      if (q && !(x.car_number||'').toLowerCase().includes(q) && !(x.model||'').toLowerCase().includes(q)) return false;
+      if (q && ![x.car_number, x.model, x.maker, x.sub_model, x.provider_company_code, x.partner_code, x.policy_code, x.vehicle_status].some(v => v && String(v).toLowerCase().includes(q))) return false;
       return true;
     });
   };

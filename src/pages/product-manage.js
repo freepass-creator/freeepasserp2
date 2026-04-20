@@ -225,11 +225,13 @@ function renderList() {
   let list = [...allProducts];
   if (f !== 'all') list = list.filter(p => p.vehicle_status === f);
 
-  if (q) list = list.filter(p =>
-    (p.car_number||'').toLowerCase().includes(q) ||
-    (p.model||'').toLowerCase().includes(q) ||
-    (p.maker||'').toLowerCase().includes(q)
-  );
+  if (q) list = list.filter(p => [
+    p.car_number, p.maker, p.model, p.sub_model, p.trim_name,
+    p.vehicle_status, p.product_type, p.vehicle_class,
+    p.fuel_type, p.ext_color, p.int_color, p.year,
+    p.provider_company_code, p.partner_code, p.policy_code,
+    p.vin, p.location, p.product_code, p._key,
+  ].some(v => v && String(v).toLowerCase().includes(q)));
   list.sort((a,b) => (b.created_at||0) - (a.created_at||0));
 
   const tone = s => s === '즉시출고' ? 'info' : s === '출고가능' ? 'green' : s === '상품화중' ? 'muted' : s === '출고협의' ? 'purple' : s === '출고불가' ? 'err' : 'muted';

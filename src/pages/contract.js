@@ -110,12 +110,12 @@ function renderList() {
   if (f === 'active') list = list.filter(c => c.contract_status !== '계약완료' && c.contract_status !== '계약취소');
   else if (f === 'done') list = list.filter(c => c.contract_status === '계약완료');
 
-  if (q) list = list.filter(c =>
-    (c.car_number_snapshot||'').toLowerCase().includes(q) ||
-    (c.vehicle_name_snapshot||'').toLowerCase().includes(q) ||
-    (c.customer_name||'').toLowerCase().includes(q) ||
-    (c.contract_code||'').toLowerCase().includes(q)
-  );
+  if (q) list = list.filter(c => [
+    c.car_number_snapshot, c.vehicle_name_snapshot, c.customer_name,
+    c.contract_code, c.contract_status, c.agent_code,
+    c.provider_company_code, c.customer_phone, c.model_snapshot,
+    c.sub_model_snapshot, c.policy_code, c._key,
+  ].some(v => v && String(v).toLowerCase().includes(q)));
   list.sort((a,b) => (b.created_at||0) - (a.created_at||0));
 
   const STATUS_TONE = { '계약대기':'warn', '계약요청':'info', '계약발송':'info', '계약완료':'ok', '계약취소':'err' };

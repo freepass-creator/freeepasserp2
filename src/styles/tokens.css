@@ -1,7 +1,7 @@
 @layer tokens {
   :root {
     /* ── Colors — B2B 톤 (짙고 단단하게) ── */
-    --c-bg:           #f8f9fa;
+    --c-bg:           #ffffff;
     --c-bg-sub:       #f1f3f5;
     --c-bg-hover:     #e9ecef;
     --c-bg-active:    #dee2e6;

@@ -114,10 +114,11 @@ function renderList() {
     return st === SS.HOLD || st.includes('환수');
   });
 
-  if (q) list = list.filter(s =>
-    (s.vehicle_name_snapshot||s.car_number||'').toLowerCase().includes(q) ||
-    (s.customer_name||'').toLowerCase().includes(q)
-  );
+  if (q) list = list.filter(s => [
+    s.vehicle_name_snapshot, s.car_number, s.customer_name,
+    s.contract_code, s.settlement_status, s.agent_code,
+    s.partner_code, s.provider_company_code, s._key,
+  ].some(v => v && String(v).toLowerCase().includes(q)));
   list.sort((a,b) => (b.created_at||0) - (a.created_at||0));
 
   el.innerHTML = list.map(s => `

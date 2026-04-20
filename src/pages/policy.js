@@ -92,11 +92,11 @@ function renderList() {
 
   let list = [...allPolicies];
   if (f === 'active') list = list.filter(p => p.status !== 'deleted' && p.status !== 'inactive');
-  if (q) list = list.filter(p =>
-    (p.policy_name||'').toLowerCase().includes(q) ||
-    (p.policy_code||'').toLowerCase().includes(q) ||
-    (p.provider_company_code||'').toLowerCase().includes(q)
-  );
+  if (q) list = list.filter(p => [
+    p.policy_name, p.policy_code, p.provider_company_code,
+    p.policy_type, p.status, p.credit_grade, p.annual_mileage,
+    p.basic_driver_age, p.screening_criteria, p._key,
+  ].some(v => v && String(v).toLowerCase().includes(q)));
   list.sort((a,b) => (b.created_at||0) - (a.created_at||0));
 
   el.innerHTML = list.map(p => {

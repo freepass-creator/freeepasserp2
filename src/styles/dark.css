@@ -1,30 +1,111 @@
 @layer dark {
+  /* ── 테마 전환 시 번쩍임 방지: JS에서 .theme-switching 추가 → 즉시 전환 ── */
+  :root.theme-switching,
+  :root.theme-switching *,
+  :root.theme-switching *::before,
+  :root.theme-switching *::after {
+    transition: none !important;
+  }
+
   :root[data-theme="dark"] {
-    --c-bg:           #09090b;
-    --c-bg-sub:       #111113;
-    --c-bg-hover:     #1a1a1e;
-    --c-bg-active:    #222226;
-    --c-surface:      #0f0f11;
-    --c-border:       #27272a;
-    --c-border-strong:#3f3f46;
+    /* ── Background & Surface ── */
+    --c-bg:           #111114;
+    --c-bg-sub:       #18181b;
+    --c-bg-hover:     #1f1f23;
+    --c-bg-active:    #28282d;
+    --c-surface:      #141416;
+    --c-border-soft:  #1f1f23;
+    --c-border:       #2a2a2e;
+    --c-border-strong:#3f3f45;
 
-    --c-text:         #e4e4e7;
-    --c-text-sub:     #a1a1aa;
-    --c-text-muted:   #52525b;
-    --c-text-inv:     #09090b;
+    /* ── Text ── */
+    --c-text:         #b8b8be;
+    --c-text-sub:     #8a8a92;
+    --c-text-muted:   #55555d;
+    --c-text-inv:     #0d0d0f;
 
-    --c-accent:       #6366f1;
-    --c-accent-hover: #818cf8;
-    --c-accent-soft:  rgba(99, 102, 241, .12);
+    /* ── Brand — CI 유지, 다크 배경용 밝기 보정 ── */
+    --c-accent:       #8aa4c8;
+    --c-accent-hover: #9db4d4;
+    --c-accent-soft:  rgba(138, 164, 200, .12);
+    --c-brand-base:   #7f8ea8;
+    --c-brand-sky:    #9ec5f3;
 
-    --c-ok-bg:        rgba(13, 148, 136, .1);
-    --c-warn-bg:      rgba(217, 119, 6, .1);
-    --c-err-bg:       rgba(220, 38, 38, .1);
-    --c-info-bg:      rgba(37, 99, 235, .1);
+    /* ── Status ── */
+    --c-ok:           #34d399;
+    --c-ok-bg:        rgba(52, 211, 153, .08);
+    --c-warn:         #fbbf24;
+    --c-warn-bg:      rgba(251, 191, 36, .08);
+    --c-err:          #f87171;
+    --c-err-bg:       rgba(248, 113, 113, .08);
+    --c-info:         #60a5fa;
+    --c-info-bg:      rgba(96, 165, 250, .08);
+    --c-rose:         #fb7185;
+    --c-rose-bg:      rgba(251, 113, 133, .08);
+    --c-cyan:         #22d3ee;
+    --c-cyan-bg:      rgba(34, 211, 238, .08);
+    --c-lime:         #a3e635;
+    --c-lime-bg:      rgba(163, 230, 53, .08);
+    --c-emerald:      #34d399;
 
+    /* ── Overlay ── */
+    --c-overlay-xdark:   rgba(0, 0, 0, 0.95);
+    --c-overlay-dark:    rgba(0, 0, 0, 0.70);
+    --c-overlay-med:     rgba(0, 0, 0, 0.60);
+    --c-overlay-soft:    rgba(0, 0, 0, 0.50);
+    --c-overlay-chip:    rgba(0, 0, 0, 0.65);
+    --c-overlay-thin:    rgba(0, 0, 0, 0.45);
+    --c-overlay-safe:    rgba(96, 165, 250, 0.30);
+    --c-overlay-caution: rgba(244, 114, 182, 0.30);
+
+    /* ── Shadow (다크에서는 미묘하게) ── */
     --shadow-sm:      none;
-    --shadow-md:      0 1px 3px rgba(0,0,0,.4);
-    --shadow-lg:      0 2px 8px rgba(0,0,0,.5);
-    --shadow-popup:   0 4px 16px rgba(0,0,0,.6);
+    --shadow-md:      0 1px 3px rgba(0, 0, 0, .5);
+    --shadow-lg:      0 2px 8px rgba(0, 0, 0, .6);
+    --shadow-popup:   0 4px 20px rgba(0, 0, 0, .7);
+  }
+
+  /* ── 버튼 다크 보정 ── */
+  :root[data-theme="dark"] .login-submit {
+    background: #28282d;
+    border: 1px solid #38383e;
+    color: #c0c0c6;
+  }
+  :root[data-theme="dark"] .login-submit:hover {
+    background: #303035;
+    border-color: #45454c;
+  }
+
+  /* ── 로그인 카드 다크 보정 ── */
+  :root[data-theme="dark"] .login-card {
+    border-color: var(--c-border);
+  }
+  :root[data-theme="dark"] .login-card.is-loading::after {
+    background: rgba(13, 13, 15, .85);
+  }
+
+  /* ── 입력칸 placeholder 다크 보정 ── */
+  :root[data-theme="dark"] input::placeholder,
+  :root[data-theme="dark"] textarea::placeholder {
+    color: var(--c-text-muted);
+  }
+
+  /* ── 이미지/썸네일 배경 ── */
+  :root[data-theme="dark"] .list-row-thumb,
+  :root[data-theme="dark"] .srch-item-thumb,
+  :root[data-theme="dark"] .room-item-avatar,
+  :root[data-theme="dark"] .pd-photo-item {
+    background: var(--c-bg-active);
+  }
+
+  /* ── 스크롤바 다크 ── */
+  :root[data-theme="dark"] ::-webkit-scrollbar-thumb {
+    background: var(--c-border);
+  }
+  :root[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+    background: var(--c-border-strong);
+  }
+  :root[data-theme="dark"] ::-webkit-scrollbar-track {
+    background: var(--c-bg);
   }
 }

@@ -20,13 +20,13 @@ function recompute() {
   const user = store.currentUser;
   if (!user) return;
 
-  // 작업 (home): 내 대화방 중 unread 있는 것 + 진행 중 계약
+  // 업무 소통: 안읽은 메시지 총 수
   const rooms = filterByRole(store.rooms || [], 'rooms');
-  const unreadRooms = rooms.filter(r => {
+  const totalUnread = rooms.reduce((sum, r) => {
     const unread = r.unread?.[user.uid] || 0;
-    return unread > 0;
-  }).length;
-  setBadge('home', unreadRooms);
+    return sum + unread;
+  }, 0);
+  setBadge('home', totalUnread);
 
   // 계약: 진행 중
   const contracts = filterByRole(store.contracts || [], 'contracts');

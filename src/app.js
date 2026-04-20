@@ -22,23 +22,18 @@ import './core/drive-photos.js';
 
 /* ── Quick Menu Definition (role-based) ── */
 const MENU_ALL = [
-  // 공통
-  { id: 'search',   icon: 'ph ph-magnifying-glass',  label: '찾기',   path: '/search',   roles: ['admin','provider','agent'] },
-  { id: 'home',     icon: 'ph ph-desktop',           label: '작업',   path: '/',         roles: ['admin','provider','agent'] },
-  // 조회
-  { id: 'lookup',   icon: 'ph ph-list-magnifying-glass', label: '조회', group: true,    roles: ['admin','provider','agent'] },
-  { id: 'contract', icon: 'ph ph-file-text',         label: '계약',   path: '/contract', parent: 'lookup', roles: ['admin','provider','agent'] },
-  { id: 'settle',   icon: 'ph ph-coins',             label: '정산',   path: '/settle',   parent: 'lookup', roles: ['admin','provider','agent'] },
-  // 등록
-  { id: 'register', icon: 'ph ph-plus-circle',       label: '등록',   group: true,      roles: ['admin','provider'] },
-  { id: 'product',  icon: 'ph ph-car-simple',        label: '상품',   path: '/product',  parent: 'register', roles: ['admin','provider'] },
-  { id: 'policy',   icon: 'ph ph-scroll',            label: '정책',   path: '/policy',   parent: 'register', roles: ['admin','provider'] },
+  { id: 'search',   icon: 'ph ph-magnifying-glass',  label: '상품 찾기',   path: '/search',   roles: ['admin','provider','agent'] },
+  { id: 'home',     icon: 'ph ph-chat-circle',       label: '업무 소통',   path: '/',         roles: ['admin','provider','agent'] },
+  { id: 'contract', icon: 'ph ph-file-text',         label: '계약 관리',   path: '/contract', roles: ['admin','provider','agent'] },
+  { id: 'settle',   icon: 'ph ph-coins',             label: '정산 관리',   path: '/settle',   roles: ['admin','provider','agent'] },
+  { id: 'product',  icon: 'ph ph-car-simple',        label: '재고 관리',   path: '/product',  roles: ['admin','provider'] },
+  { id: 'policy',   icon: 'ph ph-scroll',            label: '정책 관리',   path: '/policy',   roles: ['admin','provider'] },
   // 관리자
   { id: 'mgmt',     icon: 'ph ph-crown',             label: '관리자', group: true,       roles: ['admin'] },
-  { id: 'sign',     icon: 'ph ph-paper-plane-tilt',  label: '계약발송', path: '/admin/sign',    parent: 'mgmt', roles: ['admin'] },
-  { id: 'users',    icon: 'ph ph-users',             label: '사용자', path: '/admin/users',   parent: 'mgmt', roles: ['admin'] },
-  { id: 'partners', icon: 'ph ph-buildings',          label: '파트너', path: '/admin/partners', parent: 'mgmt', roles: ['admin'] },
-  { id: 'dev',      icon: 'ph ph-code',              label: '개발',   path: '/admin/dev',     parent: 'mgmt', roles: ['admin'] },
+  { id: 'users',    icon: 'ph ph-users',             label: '사용자 관리', path: '/admin/users',   parent: 'mgmt', roles: ['admin'] },
+  { id: 'partners', icon: 'ph ph-buildings',          label: '파트너 관리', path: '/admin/partners', parent: 'mgmt', roles: ['admin'] },
+  { id: 'sign',     icon: 'ph ph-paper-plane-tilt',  label: '계약서 관리', path: '/admin/sign',    parent: 'mgmt', roles: ['admin'] },
+  { id: 'dev',      icon: 'ph ph-code',              label: '개발 도구',   path: '/admin/dev',     parent: 'mgmt', roles: ['admin'] },
 ];
 
 function getMenu(role) {
@@ -190,11 +185,13 @@ function renderShell() {
   // Dark mode toggle
   document.getElementById('qmTheme')?.addEventListener('click', () => {
     const next = store.theme === 'dark' ? 'light' : 'dark';
+    document.documentElement.classList.add('theme-switching');
     store.theme = next;
     document.documentElement.dataset.theme = next;
     localStorage.setItem('fp.theme', next);
     const icon = document.querySelector('#qmTheme i');
     if (icon) icon.className = next === 'dark' ? 'ph ph-sun' : 'ph ph-moon';
+    requestAnimationFrame(() => requestAnimationFrame(() => document.documentElement.classList.remove('theme-switching')));
   });
   // Set initial icon
   const themeIcon = document.querySelector('#qmTheme i');
@@ -275,7 +272,7 @@ function renderLogin() {
   const app = document.getElementById('app');
   app.innerHTML = `
     <div class="login-page">
-      <div class="login-brand">FREEPASS ERP</div>
+      <div class="login-brand"><span class="login-brand-main">freepass</span> <span class="login-brand-base">erp</span></div>
       <section class="login-card">
         <header class="login-head">
           <h2 class="login-title">로그인</h2>
@@ -340,7 +337,7 @@ function renderSignup() {
   const app = document.getElementById('app');
   app.innerHTML = `
     <div class="login-page">
-      <div class="login-brand">FREEPASS ERP</div>
+      <div class="login-brand"><span class="login-brand-main">freepass</span> <span class="login-brand-base">erp</span></div>
       <section class="login-card">
         <header class="login-head">
           <h2 class="login-title">계정 만들기</h2>
@@ -420,7 +417,7 @@ function renderResetPassword() {
   const app = document.getElementById('app');
   app.innerHTML = `
     <div class="login-page">
-      <div class="login-brand">FREEPASS ERP</div>
+      <div class="login-brand"><span class="login-brand-main">freepass</span> <span class="login-brand-base">erp</span></div>
       <section class="login-card">
         <header class="login-head">
           <h2 class="login-title">비밀번호 재설정</h2>
