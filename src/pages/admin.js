@@ -45,8 +45,8 @@ export function mount(subPath) {
           <input class="input input-sm" id="admSearch" placeholder="검색..." >
           <div style="display:flex;gap:3px;">
             ${mode === 'users'
-              ? '<button class="chip is-active" data-f="active">승인</button><button class="chip" data-f="pending">대기</button><button class="chip" data-f="all">전체</button>'
-              : '<button class="chip is-active" data-f="active">활성</button><button class="chip" data-f="all">전체</button>'
+              ? '<button class="chip is-active" data-f="pending">대기</button><button class="chip" data-f="active">승인</button><button class="chip" data-f="hold">보류</button><button class="chip" data-f="all">전체</button>'
+              : '<button class="chip is-active" data-f="active">활성</button><button class="chip" data-f="inactive">비활성</button><button class="chip" data-f="pending">대기</button><button class="chip" data-f="all">전체</button>'
             }
           </div>
         </div>
@@ -134,15 +134,14 @@ function renderList() {
   const el = document.getElementById('admList');
   if (!el) return;
   const q = (document.getElementById('admSearch')?.value || '').toLowerCase();
-  const f = document.querySelector('.chip[data-f].is-active')?.dataset.f || 'active';
+  const f = document.querySelector('.chip[data-f].is-active')?.dataset.f || (mode === 'users' ? 'pending' : 'active');
   const data = mode === 'users' ? (store.users || []) : (store.partners || []);
 
   let list = [...data];
-  if (mode === 'users') {
-    if (f === 'active') list = list.filter(u => u.status === 'active');
-    else if (f === 'pending') list = list.filter(u => u.status === 'pending');
-  } else {
-    if (f === 'active') list = list.filter(p => p.status === 'active');
+  if (f !== 'all') {
+    const statusMap = { active: 'active', pending: 'pending', hold: 'rejected', inactive: 'inactive' };
+    const target = statusMap[f] || f;
+    list = list.filter(item => item.status === target);
   }
 
   if (q) {
