@@ -5,7 +5,7 @@ import { store } from '../core/store.js';
 import { watchCollection, updateRecord, setRecord, softDelete } from '../firebase/db.js';
 import { showToast } from '../core/toast.js';
 import { cField, fmtWon, empty } from '../core/format.js';
-import { fieldInput as fi, fieldSelect as fs, fieldView, fieldNew as finew, bindAutoSave as bindFormAutoSave } from '../core/form-fields.js';
+import { fieldInput as fi, fieldSelect as fs, fieldView, bindAutoSave as bindFormAutoSave } from '../core/form-fields.js';
 import { initWs4Resize } from '../core/resize.js';
 import { setBreadcrumbBrief } from '../core/breadcrumb.js';
 
@@ -259,43 +259,39 @@ function renderForm(p, key) {
 
 function renderNewForm() {
   const el = document.getElementById('plForm');
+  const empty = {};
   el.innerHTML = `
-    <div style="padding:var(--sp-3);display:flex;flex-direction:column;gap:var(--sp-3);overflow-y:auto;height:100%;">
-      <div class="cat-section-title"><i class="ph ph-plus-circle"></i> 정책 등록</div>
-
-      <div class="cat-section">
-        <div class="cat-section-title"><i class="ph ph-info"></i> 기본정보</div>
-        <div class="cat-rows">
-          ${finew('정책명','policy_name')}
-          ${finew('공급사코드','provider_company_code')}
-          ${finew('정책유형','policy_type')}
-          ${finew('정책설명','term_description')}
-          ${finew('심사기준','screening_criteria',OPTS.screening_criteria)}
-          ${finew('신용등급','credit_grade',OPTS.credit_grade)}
+    <div style="padding:var(--sp-3);display:flex;flex-direction:column;gap:var(--sp-4);overflow-y:auto;height:100%;">
+      <div class="form-section">
+        <div class="form-section-title"><i class="ph ph-info"></i> 기본정보</div>
+        <div class="form-section-body">
+          ${fi('정책명','policy_name',empty)}
+          ${fi('공급사코드','provider_company_code',empty)}
+          ${fi('정책유형','policy_type',empty)}
+          ${fi('정책설명','term_description',empty)}
+          ${fs('심사기준','screening_criteria',empty,OPTS.screening_criteria)}
+          ${fs('신용등급','credit_grade',empty,OPTS.credit_grade)}
         </div>
       </div>
-
-      <div class="cat-section">
-        <div class="cat-section-title"><i class="ph ph-user"></i> 운전자 조건</div>
-        <div class="cat-rows">
-          ${finew('기본운전자연령','basic_driver_age',OPTS.basic_driver_age)}
-          ${finew('운전연령상한','driver_age_upper_limit',OPTS.driver_age_upper_limit)}
-          ${finew('운전연령하향','driver_age_lowering',OPTS.driver_age_lowering)}
-          ${finew('약정주행거리','annual_mileage',OPTS.annual_mileage)}
+      <div class="form-section">
+        <div class="form-section-title"><i class="ph ph-user"></i> 운전자 조건</div>
+        <div class="form-section-body">
+          ${fs('기본운전자연령','basic_driver_age',empty,OPTS.basic_driver_age)}
+          ${fs('운전연령상한','driver_age_upper_limit',empty,OPTS.driver_age_upper_limit)}
+          ${fs('운전연령하향','driver_age_lowering',empty,OPTS.driver_age_lowering)}
+          ${fs('약정주행거리','annual_mileage',empty,OPTS.annual_mileage)}
         </div>
       </div>
-
-      <div class="cat-section">
-        <div class="cat-section-title"><i class="ph ph-shield-check"></i> 보험조건</div>
-        <div class="cat-rows">
-          ${finew('대물배상','property_compensation_limit',OPTS.property_compensation_limit)}
-          ${finew('자기신체사고','self_body_accident',OPTS.self_body_accident)}
-          ${finew('무보험차상해','uninsured_damage',OPTS.uninsured_damage)}
-          ${finew('자기차량손해','own_damage_compensation',OPTS.own_damage_compensation)}
-          ${finew('보험료','insurance_included',OPTS.insurance_included)}
+      <div class="form-section">
+        <div class="form-section-title"><i class="ph ph-shield-check"></i> 보험조건</div>
+        <div class="form-section-body">
+          ${fs('대물배상','property_compensation_limit',empty,OPTS.property_compensation_limit)}
+          ${fs('자기신체사고','self_body_accident',empty,OPTS.self_body_accident)}
+          ${fs('무보험차상해','uninsured_damage',empty,OPTS.uninsured_damage)}
+          ${fs('자기차량손해','own_damage_compensation',empty,OPTS.own_damage_compensation)}
+          ${fs('보험료','insurance_included',empty,OPTS.insurance_included)}
         </div>
       </div>
-
     </div>
   `;
 
