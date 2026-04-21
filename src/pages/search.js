@@ -233,10 +233,12 @@ export function mount() {
     if (fo) fo.style.display = filterCollapsed ? '' : 'none';
     if (do2) do2.style.display = detailCollapsed ? '' : 'none';
   };
-  document.getElementById('srchFilterToggle')?.addEventListener('click', () => {
+  document.getElementById('srchFilterToggle')?.addEventListener('click', (e) => {
+    e.stopPropagation();
     document.getElementById('srchFilterPanel')?.classList.add('is-collapsed');
   });
-  document.getElementById('srchDetailToggle')?.addEventListener('click', () => {
+  document.getElementById('srchDetailToggle')?.addEventListener('click', (e) => {
+    e.stopPropagation();
     document.getElementById('srchDetail')?.classList.add('is-collapsed');
   });
   // 접힌 패널 클릭 시 열기
