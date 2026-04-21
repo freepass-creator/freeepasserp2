@@ -58,25 +58,46 @@
   }
   .srch-excel-cols:last-child { border-right: none; }
 
-  /* 패널 접기 — 접힌만큼 목록이 넓어짐 */
+  /* 패널 접기 — 얇은 바로 축소, 클릭하면 열기 */
   .srch-filter-panel.is-collapsed,
   .srch-detail.is-collapsed {
     flex: none !important;
-    width: 0 !important;
-    min-width: 0 !important;
+    width: 24px !important;
+    min-width: 24px !important;
     overflow: hidden !important;
-    padding: 0 !important;
-    border: 0 !important;
+    cursor: pointer;
+    background: var(--c-bg-sub);
+    border-right: 1px solid var(--c-border);
+    position: relative;
   }
+  .srch-detail.is-collapsed { border-right: none; border-left: 1px solid var(--c-border); }
   .srch-filter-panel.is-collapsed > *,
   .srch-detail.is-collapsed > * { display: none !important; }
+  /* 접힌 바에 세로 텍스트 */
+  .srch-filter-panel.is-collapsed::after,
+  .srch-detail.is-collapsed::after {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    writing-mode: vertical-lr;
+    text-orientation: mixed;
+    width: 100%;
+    height: 100%;
+    font-size: var(--fs-2xs);
+    color: var(--c-text-muted);
+    letter-spacing: 2px;
+  }
+  .srch-filter-panel.is-collapsed::after { content: '조 건'; }
+  .srch-detail.is-collapsed::after { content: '상 세'; }
+  .srch-filter-panel.is-collapsed:hover,
+  .srch-detail.is-collapsed:hover { background: var(--c-bg-hover); }
   .srch-filter-panel.is-collapsed + .srch-resize { display: none; }
 
   /* .srch-panel-head — base styles unified in controls.css .panel-head group */
 
   /* ── Filter Panel (좌측) — 1/4 ── */
   .srch-filter-panel {
-    flex: 1 1 25%;
+    flex: 0 0 25%;
     min-width: 160px;
     display: flex;
     flex-direction: column;
@@ -328,7 +349,7 @@
 
   /* ── Detail (우측) — 1/4 ── */
   .srch-detail {
-    flex: 1 1 25%;
+    flex: 0 0 25%;
     min-width: 200px;
     display: flex;
     flex-direction: column;
