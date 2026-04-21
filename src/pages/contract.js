@@ -173,6 +173,7 @@ function renderWork(c) {
   `;
   const el = document.getElementById('ctWork');
   const role = store.currentUser?.role || 'agent';
+  const isAdmin = role === 'admin';
   const states = getStepStates(c);
   const prog = getProgress(c);
 
@@ -191,7 +192,6 @@ function renderWork(c) {
 
     // 영업자 쪽
     const agentClass = locked ? 'is-locked' : agentDone ? 'is-done' : 'is-pending';
-    const isAdmin = role === 'admin';
     const canClickAgent = isAdmin || (!locked && role === 'agent' && !agentDone);
     // 공급사/관리자 쪽
     const respClass = !agentDone && !isAdmin ? 'is-locked' : rejected ? 'is-rejected' : respDone ? 'is-done' : 'is-pending';
