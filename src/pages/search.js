@@ -213,7 +213,7 @@ export function mount() {
         listHead.className = 'srch-excel-head-bar';
         listHead.style.display = '';
         listHead.innerHTML = `<table class="srch-excel-table" style="margin:0;"><tr>
-          <th>공급사</th><th>차량번호</th><th>제조사</th><th>세부모델</th><th>연식</th><th>연료</th><th>주행</th><th>색상</th><th>상태</th><th>36개월</th><th>48개월</th><th>60개월</th>
+          <th>차량번호</th><th>상태</th><th>구분</th><th>제조사</th><th>모델명</th><th>세부모델</th><th>세부트림</th><th>연식</th><th>주행</th><th>연료</th><th>색상</th><th>심사</th><th>연령</th><th>24</th><th>36</th><th>48</th><th>60</th>
         </tr></table>`;
       } else {
         listHead.className = 'srch-panel-head';
@@ -1015,17 +1015,25 @@ function renderList() {
             const dep = Number(v.deposit) || 0;
             return `<td class="srch-excel-price">${rent ? fmtMoney(rent) : '-'}${dep ? `<div class="srch-excel-dep">${fmtMoney(dep)}</div>` : ''}</td>`;
           };
+          const pol = p._policy || {};
+          const color = [p.ext_color, p.int_color].filter(Boolean).join('/');
+          const credit = pol.credit_grade || pol.screening_criteria || p.credit_grade || '';
+          const minAge = pol.basic_driver_age || '';
           return `<tr class="srch-excel-row ${selectedProductKey === p._key ? 'is-active' : ''}" data-key="${p._key}">
-            <td>${p.provider_company_code || ''}</td>
             <td>${p.car_number || ''}</td>
-            <td>${p.maker || ''}</td>
-            <td>${p.sub_model || p.model || ''}</td>
-            <td>${p.year || ''}</td>
-            <td>${p.fuel_type || ''}</td>
-            <td>${p.mileage ? Number(p.mileage).toLocaleString() : ''}</td>
-            <td>${p.ext_color || ''}</td>
             <td>${p.vehicle_status || ''}</td>
-            ${priceCell('36')}${priceCell('48')}${priceCell('60')}
+            <td>${p.product_type || ''}</td>
+            <td>${p.maker || ''}</td>
+            <td>${p.model || ''}</td>
+            <td>${p.sub_model || ''}</td>
+            <td>${p.trim_name || p.trim || ''}</td>
+            <td>${p.year || ''}</td>
+            <td>${p.mileage ? Number(p.mileage).toLocaleString() : ''}</td>
+            <td>${p.fuel_type || ''}</td>
+            <td>${color}</td>
+            <td>${credit}</td>
+            <td>${minAge}</td>
+            ${priceCell('24')}${priceCell('36')}${priceCell('48')}${priceCell('60')}
           </tr>`;
         }).join('')}</tbody>
       </table>` || `<div class="srch-empty"><i class="ph ph-magnifying-glass"></i><p>조건에 맞는 차량이 없습니다</p></div>`;
@@ -1033,18 +1041,23 @@ function renderList() {
 
     // 패널헤드 th 클릭 → 드롭다운 필터
     const colDefs = [
-      { key: 'provider_company_code', label: '공급사', type: 'check' },
       { key: 'car_number', label: '차량번호', type: 'search' },
-      { key: 'maker', label: '제조사', type: 'check' },
-      { key: 'sub_model', label: '세부모델', type: 'search' },
-      { key: 'year', label: '연식', type: 'check' },
-      { key: 'fuel_type', label: '연료', type: 'check' },
-      { key: 'mileage', label: '주행', type: 'sort' },
-      { key: 'ext_color', label: '색상', type: 'check' },
       { key: 'vehicle_status', label: '상태', type: 'check' },
-      { key: 'rent_36', label: '36개월', type: 'sort' },
-      { key: 'rent_48', label: '48개월', type: 'sort' },
-      { key: 'rent_60', label: '60개월', type: 'sort' },
+      { key: 'product_type', label: '구분', type: 'check' },
+      { key: 'maker', label: '제조사', type: 'check' },
+      { key: 'model', label: '모델명', type: 'check' },
+      { key: 'sub_model', label: '세부모델', type: 'search' },
+      { key: 'trim_name', label: '세부트림', type: 'search' },
+      { key: 'year', label: '연식', type: 'check' },
+      { key: 'mileage', label: '주행', type: 'sort' },
+      { key: 'fuel_type', label: '연료', type: 'check' },
+      { key: 'color', label: '색상', type: 'check', getter: p => [p.ext_color, p.int_color].filter(Boolean).join('/') },
+      { key: 'credit', label: '심사', type: 'check', getter: p => p._policy?.credit_grade || p._policy?.screening_criteria || p.credit_grade || '' },
+      { key: 'age', label: '연령', type: 'check', getter: p => p._policy?.basic_driver_age || '' },
+      { key: 'rent_24', label: '24', type: 'sort' },
+      { key: 'rent_36', label: '36', type: 'sort' },
+      { key: 'rent_48', label: '48', type: 'sort' },
+      { key: 'rent_60', label: '60', type: 'sort' },
     ];
     document.querySelectorAll('.srch-excel-head-bar th').forEach((th, i) => {
       const def = colDefs[i];
@@ -1084,7 +1097,7 @@ function renderList() {
           // 체크박스: 고유값 목록
           const vals = {};
           filteredProducts.forEach(p => {
-            const v = String(p[def.key] || '').trim();
+            const v = String(def.getter ? def.getter(p) : (p[def.key] || '')).trim();
             if (v) vals[v] = (vals[v] || 0) + 1;
           });
           const sorted = Object.entries(vals).sort((a, b) => b[1] - a[1]);
