@@ -1018,18 +1018,19 @@ function renderList() {
           const color = [p.ext_color, p.int_color].filter(Boolean).join('/');
           const credit = pol.credit_grade || pol.screening_criteria || p.credit_grade || '';
           const minAge = pol.basic_driver_age || '';
+          const t = v => v ? `title="${String(v).replace(/"/g,'&quot;')}"` : '';
           return `<tr class="srch-excel-row ${selectedProductKey === p._key ? 'is-active' : ''}" data-key="${p._key}">
-            <td>${p.car_number || ''}</td>
-            <td>${p.vehicle_status || ''}</td>
-            <td>${p.product_type || ''}</td>
-            <td>${p.maker || ''}</td>
-            <td>${p.model || ''}</td>
-            <td>${p.sub_model || ''}</td>
-            <td>${p.trim_name || p.trim || ''}</td>
-            <td>${p.year || ''}</td>
-            <td>${p.mileage ? Number(p.mileage).toLocaleString() : ''}</td>
-            <td>${p.fuel_type || ''}</td>
-            <td>${color}</td>
+            <td ${t(p.car_number)}>${p.car_number || ''}</td>
+            <td ${t(p.vehicle_status)}>${p.vehicle_status || ''}</td>
+            <td ${t(p.product_type)}>${p.product_type || ''}</td>
+            <td ${t(p.maker)}>${p.maker || ''}</td>
+            <td ${t(p.model)}>${p.model || ''}</td>
+            <td ${t(p.sub_model)}>${p.sub_model || ''}</td>
+            <td ${t(p.trim_name || p.trim)}>${p.trim_name || p.trim || ''}</td>
+            <td ${t(p.year)}>${p.year || ''}</td>
+            <td ${t(p.mileage ? Number(p.mileage).toLocaleString() : '')}>${p.mileage ? Number(p.mileage).toLocaleString() : ''}</td>
+            <td ${t(p.fuel_type)}>${p.fuel_type || ''}</td>
+            <td ${t(color)}>${color}</td>
             <td>${credit}</td>
             <td>${minAge}</td>
             ${priceCell('24')}${priceCell('36')}${priceCell('48')}${priceCell('60')}
