@@ -9,7 +9,7 @@
   .srch-excel-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: var(--fs-2xs);
+    font-size: 12px;
     font-variant-numeric: tabular-nums;
   }
   .srch-excel-table th {
@@ -56,11 +56,31 @@
   }
   .srch-excel-head > span:last-of-type { border-right: none; }
 
-  /* 패널 접기 */
+  /* 패널 접기 — 업무소통 스타일 */
   .srch-filter-panel.is-collapsed,
-  .srch-detail.is-collapsed { display: none !important; }
-  .srch-filter-panel.is-collapsed + .srch-resize,
-  .srch-detail.is-collapsed { display: none !important; }
+  .srch-detail.is-collapsed {
+    flex: none !important;
+    width: 32px !important;
+    min-width: 32px !important;
+    cursor: pointer;
+    overflow: hidden;
+  }
+  .srch-filter-panel.is-collapsed .srch-filter-search,
+  .srch-filter-panel.is-collapsed .srch-filters,
+  .srch-detail.is-collapsed .srch-detail-content,
+  .srch-detail.is-collapsed .srch-detail-actions { display: none; }
+  .srch-filter-panel.is-collapsed .srch-panel-head,
+  .srch-detail.is-collapsed .srch-panel-head {
+    writing-mode: vertical-lr;
+    text-orientation: mixed;
+    padding: var(--sp-3) var(--sp-1);
+    justify-content: flex-start;
+    height: 100%;
+  }
+  .srch-filter-panel.is-collapsed .srch-panel-head span,
+  .srch-detail.is-collapsed .srch-panel-head span { display: none; }
+  .srch-filter-panel.is-collapsed .srch-panel-head::after { content: '조건'; }
+  .srch-detail.is-collapsed .srch-panel-head::after { content: '상세'; }
 
   /* .srch-panel-head — base styles unified in controls.css .panel-head group */
 

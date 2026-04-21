@@ -210,10 +210,6 @@ export function mount() {
     if (listHead) {
       if (viewMode === 'excel') {
         listHead.innerHTML = `
-          <span style="display:flex;align-items:center;gap:var(--sp-2);">
-            <button class="btn btn-xs btn-outline" id="srchFilterOpen" style="${document.getElementById('srchFilterPanel')?.classList.contains('is-collapsed') ? '' : 'display:none;'}" title="조건 열기"><i class="ph ph-funnel"></i></button>
-            <span class="srch-count" id="srchCount">${filteredProducts.length}대</span>
-          </span>
           <div class="srch-excel-head">
             <span>공급사</span><span>차량번호</span><span>제조사</span><span>세부모델</span><span>연식</span><span>연료</span><span>주행</span><span>색상</span><span>상태</span>
             <span>36개월</span><span>48개월</span><span>60개월</span>
@@ -261,21 +257,19 @@ export function mount() {
   };
   document.getElementById('srchFilterToggle')?.addEventListener('click', () => {
     document.getElementById('srchFilterPanel')?.classList.add('is-collapsed');
-    updatePanelBtns();
   });
   document.getElementById('srchDetailToggle')?.addEventListener('click', () => {
     document.getElementById('srchDetail')?.classList.add('is-collapsed');
-    updatePanelBtns();
   });
-  document.getElementById('srchFilterOpen')?.addEventListener('click', () => {
-    document.getElementById('srchFilterPanel')?.classList.remove('is-collapsed');
-    updatePanelBtns();
+  // 접힌 패널 클릭 시 열기
+  document.getElementById('srchFilterPanel')?.addEventListener('click', (e) => {
+    const panel = document.getElementById('srchFilterPanel');
+    if (panel?.classList.contains('is-collapsed')) { panel.classList.remove('is-collapsed'); }
   });
-  document.getElementById('srchDetailOpen')?.addEventListener('click', () => {
-    document.getElementById('srchDetail')?.classList.remove('is-collapsed');
-    updatePanelBtns();
+  document.getElementById('srchDetail')?.addEventListener('click', (e) => {
+    const panel = document.getElementById('srchDetail');
+    if (panel?.classList.contains('is-collapsed')) { panel.classList.remove('is-collapsed'); }
   });
-  updatePanelBtns();
 
   // Text search
   document.getElementById('srchText')?.addEventListener('input', () => { buildDynamicFilters(); renderFilters(); applyFilters(); });
