@@ -243,8 +243,8 @@
   .ct-steps { display: flex; flex-direction: column; gap: var(--sp-1); }
   .ct-step-row { display: grid; grid-template-columns: 1fr 20px 1fr; gap: var(--sp-1); align-items: center; }
   .ct-step-cell {
-    display: flex; align-items: center; justify-content: center; gap: var(--sp-1);
-    padding: var(--sp-2) var(--sp-2); border-radius: var(--ctrl-r);
+    display: flex; align-items: center; justify-content: flex-start; gap: var(--sp-1);
+    padding: var(--sp-2) var(--sp-3); border-radius: var(--ctrl-r);
     font-size: var(--fs-xs); font-weight: var(--fw-medium);
     border: 1px solid var(--c-border); background: var(--c-surface);
     cursor: default; transition: all var(--dur); height: 36px;
