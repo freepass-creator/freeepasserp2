@@ -40,22 +40,26 @@
   .srch-excel-table td:last-child { border-right: none; }
   .srch-excel-price { text-align: right; font-weight: var(--fw-medium); color: var(--c-accent); }
   .srch-excel-dep { font-size: 10px; color: var(--c-text-muted); font-weight: var(--fw-normal); }
-  .srch-excel-head {
+  .srch-excel-head-bar {
     display: flex;
     align-items: center;
-    gap: 0;
-    font-size: var(--fs-2xs);
-    color: var(--c-text-muted);
+    height: var(--panel-head-h);
+    background: var(--c-bg-sub);
+    border-bottom: 1px solid var(--c-border);
+    font-size: 12px;
     font-weight: var(--fw-medium);
+    color: var(--c-text-muted);
+    flex-shrink: 0;
+    overflow: hidden;
   }
-  .srch-excel-head > span {
+  .srch-excel-head-bar > span {
     flex: 1;
-    padding: 0 4px;
+    padding: 0 6px;
     white-space: nowrap;
-    border-right: 1px solid var(--c-border-soft);
     text-align: center;
+    border-right: 1px solid var(--c-border-soft);
   }
-  .srch-excel-head > span:last-of-type { border-right: none; }
+  .srch-excel-head-bar > span:last-child { border-right: none; }
 
   /* 패널 접기 — 업무소통 스타일 */
   .srch-filter-panel.is-collapsed,

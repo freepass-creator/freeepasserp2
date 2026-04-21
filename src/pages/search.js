@@ -118,6 +118,8 @@ export function mount() {
         <div class="srch-panel-head">
           <span style="display:flex;align-items:center;gap:var(--sp-1);"><span>조건</span><span class="sb-badge" id="srchFilterCount"></span></span>
           <span style="display:flex;gap:var(--sp-1);">
+            <button class="btn btn-xs btn-outline" id="srchExcel" title="Excel 다운로드"><i class="ph ph-file-xls"></i></button>
+            <button class="btn btn-xs btn-outline" id="srchPhotoZip" title="사진 ZIP"><i class="ph ph-file-zip"></i></button>
             <button class="btn btn-xs btn-outline" id="srchViewToggle2" title="엑셀형식 보기"><i class="ph ph-table"></i></button>
             <button class="btn btn-xs btn-outline" id="srchFilterToggle" title="조건 접기"><i class="ph ph-caret-left"></i></button>
           </span>
@@ -134,11 +136,8 @@ export function mount() {
       <div class="srch-list-wrap">
         <div class="srch-panel-head" id="srchListHead">
           <span style="display:flex;align-items:center;gap:var(--sp-2);">
-            <button class="btn btn-xs btn-outline" id="srchFilterOpen" style="display:none;" title="조건 열기"><i class="ph ph-funnel"></i></button>
             <span>목록</span>
             <span class="srch-count" id="srchCount">0대</span>
-            <button class="btn btn-xs btn-outline" id="srchExcel" title="현재 목록 Excel 다운로드"><i class="ph ph-file-xls"></i> Excel</button>
-            <button class="btn btn-xs btn-outline" id="srchPhotoZip" title="현재 목록 사진 ZIP 다운로드 (공급사/차량번호 폴더)"><i class="ph ph-file-zip"></i> 사진</button>
           </span>
           <span style="display:flex;align-items:center;gap:var(--sp-1);">
             <div class="srch-period-head" id="srchPeriodHead">
@@ -209,33 +208,19 @@ export function mount() {
     const listHead = document.getElementById('srchListHead');
     if (listHead) {
       if (viewMode === 'excel') {
-        listHead.innerHTML = `
-          <span style="display:flex;gap:var(--sp-1);">
-            <button class="btn btn-xs btn-outline" id="srchExcelDl2" title="Excel 다운로드"><i class="ph ph-file-xls"></i></button>
-            <button class="btn btn-xs btn-outline" id="srchPhotoZipDl2" title="사진 ZIP"><i class="ph ph-file-zip"></i></button>
-          </span>`;
-        // 열기 버튼 재바인딩
-        document.getElementById('srchFilterOpen')?.addEventListener('click', () => { document.getElementById('srchFilterPanel')?.classList.remove('is-collapsed'); updatePanelBtns(); });
-        document.getElementById('srchDetailOpen')?.addEventListener('click', () => { document.getElementById('srchDetail')?.classList.remove('is-collapsed'); updatePanelBtns(); });
+        listHead.className = 'srch-excel-head-bar';
+        listHead.innerHTML = `<span>공급사</span><span>차량번호</span><span>제조사</span><span>세부모델</span><span>연식</span><span>연료</span><span>주행</span><span>색상</span><span>상태</span><span>36개월</span><span>48개월</span><span>60개월</span>`;
       } else {
-        // 카드뷰 헤드 복원
+        listHead.className = 'srch-panel-head';
         listHead.innerHTML = `
           <span style="display:flex;align-items:center;gap:var(--sp-2);">
-            <button class="btn btn-xs btn-outline" id="srchFilterOpen" style="${document.getElementById('srchFilterPanel')?.classList.contains('is-collapsed') ? '' : 'display:none;'}" title="조건 열기"><i class="ph ph-funnel"></i></button>
             <span>목록</span>
             <span class="srch-count" id="srchCount">${filteredProducts.length}대</span>
-            <button class="btn btn-xs btn-outline" id="srchExcelDl" title="Excel 다운로드"><i class="ph ph-file-xls"></i> Excel</button>
-            <button class="btn btn-xs btn-outline" id="srchPhotoZipDl" title="사진 ZIP"><i class="ph ph-file-zip"></i> 사진</button>
           </span>
-          <span style="display:flex;align-items:center;gap:var(--sp-1);">
-            <div class="srch-period-head" id="srchPeriodHead">
-              <span class="srch-sort-hint" id="srchSortHint"></span>
-              <span class="srch-sort-col" data-sort="36" title="클릭: 낮은순 → 높은순 → 해제">36개월</span><span class="srch-sort-col" data-sort="48" title="클릭: 낮은순 → 높은순 → 해제">48개월</span><span class="srch-sort-col" data-sort="60" title="클릭: 낮은순 → 높은순 → 해제">60개월</span>
-            </div>
-            <button class="btn btn-xs btn-outline" id="srchDetailOpen" style="${document.getElementById('srchDetail')?.classList.contains('is-collapsed') ? '' : 'display:none;'}" title="상세 열기"><i class="ph ph-sidebar-simple"></i></button>
-          </span>`;
-        document.getElementById('srchFilterOpen')?.addEventListener('click', () => { document.getElementById('srchFilterPanel')?.classList.remove('is-collapsed'); updatePanelBtns(); });
-        document.getElementById('srchDetailOpen')?.addEventListener('click', () => { document.getElementById('srchDetail')?.classList.remove('is-collapsed'); updatePanelBtns(); });
+          <div class="srch-period-head" id="srchPeriodHead">
+            <span class="srch-sort-hint" id="srchSortHint"></span>
+            <span class="srch-sort-col" data-sort="36" title="클릭: 낮은순 → 높은순 → 해제">36개월</span><span class="srch-sort-col" data-sort="48" title="클릭: 낮은순 → 높은순 → 해제">48개월</span><span class="srch-sort-col" data-sort="60" title="클릭: 낮은순 → 높은순 → 해제">60개월</span>
+          </div>`;
       }
     }
     renderList();
@@ -979,10 +964,6 @@ function renderList() {
   if (viewMode === 'excel') {
     el.innerHTML = `
       <table class="srch-excel-table">
-        <thead><tr>
-          <th>공급사</th><th>차량번호</th><th>제조사</th><th>세부모델</th><th>연식</th><th>연료</th><th>주행</th><th>색상</th><th>상태</th>
-          <th>36개월</th><th>48개월</th><th>60개월</th>
-        </tr></thead>
         <tbody>${filteredProducts.map(p => {
           const price = p.price || {};
           const priceCell = m => {
