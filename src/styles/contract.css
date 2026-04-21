@@ -259,6 +259,12 @@
   .ct-step-cell i { font-size: 14px; flex-shrink: 0; }
   .ct-step-arrow { color: var(--c-text-muted); font-size: 10px; text-align: center; }
   .ct-step-admin { font-size: var(--fs-2xs); color: var(--c-accent); margin-left: auto; opacity: 0.7; }
+  .ct-step-select {
+    flex: 1; border: none; background: transparent; font-size: var(--fs-xs);
+    font-weight: var(--fw-medium); color: inherit; font-family: inherit;
+    cursor: pointer; outline: none; appearance: none;
+    padding: 0 2px;
+  }
 
   /* ── Contract Info Section (flat-stacked, canonical) ── */
   .contract-section {

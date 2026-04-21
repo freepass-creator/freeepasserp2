@@ -16,7 +16,7 @@ export const STEPS = [
     id: 'delivery_inquiry',
     phase: 1,
     agent: { key: 'agent_delivery_inquiry', label: '출고 문의' },
-    provider: { key: 'provider_delivery_response', label: '출고 응답', choices: ['가능', '불가'] },
+    provider: { key: 'provider_delivery_response', label: '출고 응답', choices: ['출고 가능', '출고 협의', '출고 불가'] },
   },
   {
     id: 'deposit',
@@ -30,7 +30,7 @@ export const STEPS = [
     phase: 2,
     parallel: true,
     agent: { key: 'agent_docs_submitted', label: '서류 제출' },
-    provider: { key: 'provider_docs_review', label: '서류 심사', choices: ['승인', '부결'] },
+    provider: { key: 'provider_docs_review', label: '서류 심사', choices: ['서류 승인', '서류 부결'] },
   },
   {
     id: 'contract_request',
@@ -69,11 +69,11 @@ export function getStepStates(checks = {}) {
   const states = {};
   const isDone = key => {
     const v = checks[key];
-    return v === true || v === 'yes' || v === '가능' || v === '승인';
+    return v === true || v === 'yes' || v === '가능' || v === '승인' || v === '출고 가능' || v === '출고 협의' || v === '서류 승인';
   };
   const isRejected = key => {
     const v = checks[key];
-    return v === '불가' || v === '부결';
+    return v === '불가' || v === '부결' || v === '출고 불가' || v === '서류 부결';
   };
   const getChoice = key => checks[key] || null;
 

@@ -185,8 +185,8 @@ function renderWork(c) {
     const choices = step.provider?.choices || step.admin?.choices || null;
     const agentDone = agentKey ? (c[agentKey] === true || c[agentKey] === 'yes') : false;
     const respVal = respKey ? c[respKey] : null;
-    const respDone = respVal === true || respVal === 'yes' || respVal === '가능' || respVal === '승인';
-    const rejected = respVal === '불가' || respVal === '부결';
+    const respDone = respVal === true || respVal === 'yes' || respVal === '가능' || respVal === '승인' || respVal === '출고 가능' || respVal === '출고 협의' || respVal === '서류 승인';
+    const rejected = respVal === '불가' || respVal === '부결' || respVal === '출고 불가' || respVal === '서류 부결';
     const locked = st?.locked;
 
     // 영업자 쪽
@@ -210,9 +210,12 @@ function renderWork(c) {
           <span>${step.agent?.label || ''}</span>${agentAdmin}
         </div>
         <div class="ct-step-arrow"><i class="ph ph-arrow-right"></i></div>
-        <div class="ct-step-cell ${respClass}" data-key="${respKey || ''}" ${canClickResp && respKey ? 'data-clickable' : ''} ${choices ? `data-choices="${choices.join(',')}"` : ''}>
+        <div class="ct-step-cell ${respClass}" data-key="${respKey || ''}" ${!choices && canClickResp && respKey ? 'data-clickable' : ''}>
           <i class="ph ${rejected ? 'ph-x-circle' : respDone ? 'ph-check-circle' : 'ph-circle'}"></i>
-          <span>${respLabel}${rejected ? ` (${respVal})` : respDone && respVal && respVal !== 'yes' && respVal !== true ? ` (${respVal})` : ''}</span>${respAdmin}
+          ${choices && canClickResp ? `<select class="ct-step-select" data-key="${respKey}" data-choices="${choices.join(',')}">
+            <option value="">${respLabel}</option>
+            ${choices.map(ch => `<option value="${ch}" ${respVal === ch ? 'selected' : ''}>${ch}</option>`).join('')}
+          </select>` : `<span>${respDone && respVal && respVal !== 'yes' && respVal !== true ? respVal : rejected ? respVal : respLabel}</span>`}${respAdmin}
         </div>
       </div>`;
   };
@@ -251,37 +254,30 @@ function renderWork(c) {
     </div>
   `;
 
-  // 단계 클릭 이벤트
+  // 단순 체크 클릭
   el.querySelectorAll('.ct-step-cell[data-clickable]').forEach(cell => {
     cell.addEventListener('click', async () => {
       const key = cell.dataset.key;
       if (!key) return;
-      // 즉시 시각 반영
-      cell.classList.add('is-done');
-      cell.classList.remove('is-pending', 'is-locked');
-      const choices = cell.dataset.choices;
-      if (choices) {
-        const opts = choices.split(',');
-        const cur = c[key];
-        let next;
-        if (!cur || cur === 'no' || cur === false) next = opts[0];
-        else if (cur === opts[0]) next = opts[1];
-        else { next = null; cell.classList.remove('is-done'); cell.classList.add('is-pending'); }
-        if (next === opts[1]) { cell.classList.remove('is-done'); cell.classList.add('is-rejected'); }
-        c[key] = next || '';
-        const byField = isAdmin ? { [key + '_by']: next ? 'admin' : '' } : {};
-        await updateRecord(`contracts/${c.contract_code}`, { [key]: next || '', ...byField });
-        showToast(next || '해제');
-        renderWork(c);
-      } else {
-        const cur = c[key] === true || c[key] === 'yes';
-        if (cur) { cell.classList.remove('is-done'); cell.classList.add('is-pending'); }
-        c[key] = !cur;
-        const byField = isAdmin ? { [key + '_by']: !cur ? 'admin' : '' } : {};
-        await updateRecord(`contracts/${c.contract_code}`, { [key]: !cur, ...byField });
-        showToast(cur ? '해제' : '완료');
-        renderWork(c);
-      }
+      const cur = c[key] === true || c[key] === 'yes';
+      c[key] = !cur;
+      const byField = isAdmin ? { [key + '_by']: !cur ? 'admin' : '' } : {};
+      await updateRecord(`contracts/${c.contract_code}`, { [key]: !cur, ...byField });
+      showToast(cur ? '해제' : '완료');
+      renderWork(c);
+    });
+  });
+
+  // 드롭다운 선택 (출고 가능/불가, 서류 승인/부결)
+  el.querySelectorAll('.ct-step-select').forEach(sel => {
+    sel.addEventListener('change', async () => {
+      const key = sel.dataset.key;
+      const val = sel.value;
+      c[key] = val;
+      const byField = isAdmin ? { [key + '_by']: val ? 'admin' : '' } : {};
+      await updateRecord(`contracts/${c.contract_code}`, { [key]: val, ...byField });
+      showToast(val || '해제');
+      renderWork(c);
     });
   });
 
