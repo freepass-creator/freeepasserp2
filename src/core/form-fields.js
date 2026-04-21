@@ -27,7 +27,7 @@ export function fieldInput(label, field, data, opts = {}) {
   return `<div class="form-row${fullClass}">
     <span class="form-row-label">${label}</span>
     <div class="form-row-control">
-      <input class="contract-field-input" data-field="${field}" value="${v}" placeholder="-"${numAttr}${roAttr}${listAttr}>${dlEl}
+      <input class="contract-field-input" data-field="${field}" value="${v}" placeholder="${opts.placeholder || '-'}"${numAttr}${roAttr}${listAttr}>${dlEl}
       <span class="form-state" data-state="${field}"></span>
     </div>
   </div>`;

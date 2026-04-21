@@ -151,7 +151,7 @@ function renderList() {
       const c = list.find(x => x.contract_code === item.dataset.code);
       if (c) {
         const { setBreadcrumbTail } = await import('../core/breadcrumb.js');
-        setBreadcrumbTail({ icon: 'ph ph-file-text', label: c.vehicle_name_snapshot || c.contract_code, sub: c.customer_name || '' });
+        setBreadcrumbTail({ icon: 'ph ph-file-text', label: `${c.car_number_snapshot || ''} ${c.sub_model_snapshot || c.model_snapshot || ''}`.trim() || c.contract_code, sub: c.customer_name || '' });
       }
     });
   });
@@ -411,9 +411,9 @@ function renderDetail(c) {
       <div class="form-section">
         <div class="form-section-title"><i class="ph ph-user"></i> 고객정보</div>
         <div class="form-section-body">
-          ${ffi('고객명','customer_name',c)}
-          ${ffi('연락처','customer_phone',c)}
-          ${ffi('생년월일','customer_birth',c)}
+          ${ffi('고객명','customer_name',c,{ placeholder: '홍길동' })}
+          ${ffi('연락처','customer_phone',c,{ placeholder: '010-0000-0000' })}
+          ${ffi('생년월일','customer_birth',c,{ placeholder: '830926' })}
         </div>
       </div>
       <div class="form-section">
