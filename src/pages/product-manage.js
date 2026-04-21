@@ -485,7 +485,12 @@ function renderAsset(p, key) {
       const newCarNo = el.querySelector('[data-field="car_number"]').value.trim();
       const newCode = newCarNo && partnerCode ? `${newCarNo}_${partnerCode}` : '';
       if (newCode && newCode !== p.product_code) {
+        p.product_code = newCode;
         updateRecord(`products/${key}`, { product_code: newCode });
+        // 화면 상품코드 갱신
+        const codeInput = el.querySelector('input[readonly][value]');
+        const inputs = el.querySelectorAll('input[readonly]');
+        inputs.forEach(inp => { if (inp.value.includes('_')) inp.value = newCode; });
       }
     });
   }
