@@ -155,6 +155,25 @@
   .srch-excel-table td:last-child { border-right: none; }
   .srch-excel-price { text-align: right; font-weight: var(--fw-medium); color: var(--c-accent); }
   .srch-excel-dep { font-size: 10px; color: var(--c-text-muted); font-weight: var(--fw-normal); }
+
+  /* 상세 팝업 */
+  .srch-excel-popup {
+    position: absolute;
+    z-index: 30;
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--ctrl-r);
+    box-shadow: 0 4px 12px rgba(0,0,0,.12);
+    padding: var(--sp-2) var(--sp-3);
+    font-size: var(--fs-xs);
+    white-space: nowrap;
+    pointer-events: none;
+  }
+  .srch-excel-popup > div { padding: 1px 0; }
+
+  /* 행 높이 고정 (대여료 유무 상관없이) */
+  .srch-excel-row td { height: 36px; }
+  .srch-excel-row:hover td { background: var(--c-bg-hover); }
   .srch-excel-cols {
     font-size: var(--fs-2xs);
     color: var(--c-text-muted);
