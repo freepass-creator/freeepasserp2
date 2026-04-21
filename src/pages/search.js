@@ -1039,6 +1039,10 @@ function renderList() {
       </table>` || `<div class="srch-empty"><i class="ph ph-magnifying-glass"></i><p>조건에 맞는 차량이 없습니다</p></div>`;
     bindListDelegation(el);
 
+    // 헤드-바디 가로 스크롤 동기화
+    const listHead = document.getElementById('srchListHead');
+    el.addEventListener('scroll', () => { if (listHead) listHead.scrollLeft = el.scrollLeft; });
+
     // 패널헤드 th 클릭 → 드롭다운 필터
     const colDefs = [
       { key: 'car_number', label: '차량번호', type: 'search' },
