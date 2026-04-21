@@ -252,12 +252,42 @@ function renderWork(c) {
         </div>
       </div>
 
+      <div class="form-section">
+        <div class="form-section-title"><i class="ph ph-note"></i> 진행 메모</div>
+        <div class="form-section-body" style="grid-template-columns:1fr;">
+          <div class="form-row">
+            <span class="form-row-label">영업자</span>
+            <div class="form-row-control">
+              <textarea class="contract-field-input" data-field="agent_memo" rows="2" placeholder="영업자 메모...">${c.agent_memo || ''}</textarea>
+              <span class="form-state" data-state="agent_memo"></span>
+            </div>
+          </div>
+          <div class="form-row">
+            <span class="form-row-label">공급사</span>
+            <div class="form-row-control">
+              <textarea class="contract-field-input" data-field="provider_memo" rows="2" placeholder="공급사 메모...">${c.provider_memo || ''}</textarea>
+              <span class="form-state" data-state="provider_memo"></span>
+            </div>
+          </div>
+          <div class="form-row">
+            <span class="form-row-label">관리자</span>
+            <div class="form-row-control">
+              <textarea class="contract-field-input" data-field="admin_memo" rows="2" placeholder="관리자 메모...">${c.admin_memo || ''}</textarea>
+              <span class="form-state" data-state="admin_memo"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
       ${prog.done === prog.total
         ? `<button class="btn btn-primary btn-full" id="ctCompleteBtn" style="height:44px;font-size:var(--fs-sm);"><i class="ph ph-check-circle"></i> 계약 완료</button>`
         : `<button class="btn btn-outline btn-full" id="ctCancelBtn" style="height:44px;font-size:var(--fs-sm);color:var(--c-err);border-color:var(--c-err);"><i class="ph ph-prohibit"></i> 계약 취소</button>`
       }
     </div>
   `;
+
+  // 메모 자동저장
+  bindFormAutoSave(el, (field, value) => updateRecord(`contracts/${c.contract_code}`, { [field]: value }));
 
   // 단순 체크 클릭
   el.querySelectorAll('.ct-step-cell[data-clickable]').forEach(cell => {

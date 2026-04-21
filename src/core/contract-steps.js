@@ -37,13 +37,13 @@ export const STEPS = [
     phase: 3,
     requires: ['deposit', 'documents'], // 2a + 2b 둘 다 완료 필요
     agent: { key: 'agent_contract_requested', label: '계약서 요청' },
-    admin: { key: 'admin_contract_sent', label: '계약서 발송' },
+    admin: { key: 'admin_contract_sent', label: '계약서 완료' },
   },
   {
     id: 'balance',
     phase: 4,
-    agent: { key: 'agent_contract_completed', label: '계약서 완료' },
-    provider: { key: 'provider_balance_confirmed', label: '잔금 완료' },
+    agent: { key: 'agent_balance_paid', label: '잔금 입금' },
+    provider: { key: 'provider_balance_confirmed', label: '잔금 확인' },
   },
   {
     id: 'release',
