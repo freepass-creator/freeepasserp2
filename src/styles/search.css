@@ -7,12 +7,39 @@
 
   /* ── Excel View ── */
   .srch-excel-table {
-    width: 100%;
+    width: max-content;
+    min-width: 100%;
     border-collapse: collapse;
     font-size: 12px;
     font-variant-numeric: tabular-nums;
-    table-layout: fixed;
   }
+  /* 컬럼 폭 지정 */
+  .srch-excel-table th:nth-child(1),
+  .srch-excel-table td:nth-child(1) { width: 80px; }  /* 차량번호 */
+  .srch-excel-table th:nth-child(2),
+  .srch-excel-table td:nth-child(2) { width: 55px; }  /* 상태 */
+  .srch-excel-table th:nth-child(3),
+  .srch-excel-table td:nth-child(3) { width: 55px; }  /* 구분 */
+  .srch-excel-table th:nth-child(4),
+  .srch-excel-table td:nth-child(4) { width: 50px; }  /* 제조사 */
+  .srch-excel-table th:nth-child(5),
+  .srch-excel-table td:nth-child(5) { width: 65px; }  /* 모델명 */
+  .srch-excel-table th:nth-child(6),
+  .srch-excel-table td:nth-child(6) { width: 140px; } /* 세부모델 */
+  .srch-excel-table th:nth-child(7),
+  .srch-excel-table td:nth-child(7) { width: 120px; } /* 세부트림 */
+  .srch-excel-table th:nth-child(8),
+  .srch-excel-table td:nth-child(8) { width: 40px; }  /* 연식 */
+  .srch-excel-table th:nth-child(9),
+  .srch-excel-table td:nth-child(9) { width: 60px; }  /* 주행 */
+  .srch-excel-table th:nth-child(10),
+  .srch-excel-table td:nth-child(10) { width: 45px; } /* 연료 */
+  .srch-excel-table th:nth-child(11),
+  .srch-excel-table td:nth-child(11) { width: 70px; } /* 색상 */
+  .srch-excel-table th:nth-child(12),
+  .srch-excel-table td:nth-child(12) { width: 55px; } /* 심사 */
+  .srch-excel-table th:nth-child(13),
+  .srch-excel-table td:nth-child(13) { width: 70px; } /* 연령 */
   .srch-excel-table th {
     position: sticky;
     top: 0;
@@ -32,9 +59,6 @@
     padding: 4px 6px;
     border-bottom: 1px solid var(--c-border-soft);
     white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 120px;
   }
   .srch-excel-row { cursor: pointer; transition: background var(--dur); }
   .srch-excel-row:hover { background: var(--c-bg-hover); }
@@ -48,7 +72,8 @@
   /* 엑셀 헤드바 — 패널헤드가 컬럼 헤더 역할 */
   .srch-excel-head-bar {
     flex-shrink: 0;
-    overflow: hidden;
+    overflow-x: auto;
+    overflow-y: hidden;
     height: var(--panel-head-h);
     box-sizing: border-box;
   }
@@ -289,8 +314,8 @@
 
   .srch-list {
     flex: 1;
-    overflow-y: auto;
-    scrollbar-gutter: stable;   /* head/card 열 정렬 유지 — 스크롤바 폭(6px) 항상 예약 */
+    overflow: auto;
+    scrollbar-gutter: stable;
   }
 
   .srch-list-foot {

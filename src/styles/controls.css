@@ -808,6 +808,66 @@
   .form-row-control:has(.form-state.is-saved)   .contract-field-input { border-color: var(--c-ok); }
   .form-row-control:has(.form-state.is-error)    .contract-field-input { border-color: var(--c-err); }
 
+  /* ── 공용 그리드 (grid-view.js) ── */
+  .grid-table {
+    width: max-content;
+    min-width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+  }
+  .grid-table th {
+    background: var(--c-bg-sub);
+    padding: 0 6px;
+    font-weight: var(--fw-medium);
+    color: var(--c-text-muted);
+    text-align: left;
+    white-space: nowrap;
+    border-bottom: 1px solid var(--c-border);
+    border-right: 1px solid var(--c-border-soft);
+    cursor: pointer;
+    user-select: none;
+    height: var(--panel-head-h);
+  }
+  .grid-table th:last-child { border-right: none; }
+  .grid-table th:hover { background: var(--c-bg-hover); }
+  .grid-table th.is-sort-asc { color: var(--c-info); background: var(--c-info-bg); }
+  .grid-table th.is-sort-desc { color: var(--c-err); background: var(--c-err-bg); }
+  .grid-table th.is-sort-asc::after { content: ' ↑'; }
+  .grid-table th.is-sort-desc::after { content: ' ↓'; }
+  .grid-table td {
+    padding: 4px 6px;
+    border-bottom: 1px solid var(--c-border-soft);
+    border-right: 1px solid var(--c-border-soft);
+    white-space: nowrap;
+  }
+  .grid-table td:last-child { border-right: none; }
+  .grid-row { cursor: pointer; transition: background var(--dur); }
+  .grid-row:hover { background: var(--c-bg-hover); }
+  .grid-row.is-active { background: var(--c-bg-hover); }
+  .grid-price { text-align: right; font-weight: var(--fw-medium); color: var(--c-accent); }
+  .grid-dep { font-size: 10px; color: var(--c-text-muted); font-weight: var(--fw-normal); }
+  .grid-filter-popup {
+    position: absolute;
+    z-index: 20;
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--ctrl-r);
+    box-shadow: 0 4px 12px rgba(0,0,0,.1);
+    padding: var(--sp-2);
+    min-width: 140px;
+    font-size: var(--fs-xs);
+  }
+  .grid-filter-check {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-1);
+    padding: 2px 0;
+    cursor: pointer;
+    font-size: var(--fs-xs);
+  }
+  .grid-filter-check input { accent-color: var(--c-accent); }
+
   /* 공용 섹션 구조 — 페이지별 prefix 대신 이것 재사용 권장
    * .section > .section-title + .section-body(grid/flex) */
   .section {
