@@ -1004,10 +1004,11 @@ function bindListDelegation(el) {
 function getActionsFor(product) {
   const role = store.currentUser?.role;
   const acts = [];
-  if (role === 'agent') {
-    acts.push({ icon: 'ph ph-chat-circle', label: '문의·계약', primary: true, action: () => startInquiryContract(product) });
-  } else if (role === 'admin') {
-    acts.push({ icon: 'ph ph-pencil-simple', label: '수정', primary: true, action: () => editProduct(product) });
+  if (role === 'agent' || role === 'admin') {
+    acts.push({ icon: 'ph ph-chat-circle', label: '소통', primary: true, action: () => startInquiryContract(product) });
+  }
+  if (role === 'admin') {
+    acts.push({ icon: 'ph ph-pencil-simple', label: '수정', action: () => editProduct(product) });
   }
   acts.push({ icon: 'ph ph-share-network', label: '공유', action: () => shareProduct(product) });
   return acts;
