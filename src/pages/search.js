@@ -118,7 +118,7 @@ export function mount() {
         <div class="srch-panel-head">
           <span style="display:flex;align-items:center;gap:var(--sp-1);"><span>조건</span><span class="sb-badge" id="srchFilterCount"></span></span>
           <span style="display:flex;gap:var(--sp-1);">
-            <button class="btn btn-xs btn-outline" id="srchViewToggle2" title="카드/엑셀 전환"><i class="ph ph-table"></i></button>
+            <button class="btn btn-xs btn-outline" id="srchViewToggle2" title="엑셀형식 보기"><i class="ph ph-table"></i></button>
             <button class="btn btn-xs btn-outline" id="srchFilterToggle" title="조건 접기"><i class="ph ph-caret-left"></i></button>
           </span>
         </div>
@@ -132,17 +132,21 @@ export function mount() {
       <div class="srch-resize" id="srchResize1"></div>
 
       <div class="srch-list-wrap">
-        <div class="srch-panel-head">
+        <div class="srch-panel-head" id="srchListHead">
           <span style="display:flex;align-items:center;gap:var(--sp-2);">
+            <button class="btn btn-xs btn-outline" id="srchFilterOpen" style="display:none;" title="조건 열기"><i class="ph ph-funnel"></i></button>
             <span>목록</span>
             <span class="srch-count" id="srchCount">0대</span>
             <button class="btn btn-xs btn-outline" id="srchExcel" title="현재 목록 Excel 다운로드"><i class="ph ph-file-xls"></i> Excel</button>
             <button class="btn btn-xs btn-outline" id="srchPhotoZip" title="현재 목록 사진 ZIP 다운로드 (공급사/차량번호 폴더)"><i class="ph ph-file-zip"></i> 사진</button>
           </span>
-          <div class="srch-period-head">
-            <span class="srch-sort-hint" id="srchSortHint">${localStorage.getItem('fp.sort.used') ? '' : '개월수 클릭하면 대여료 정렬'}</span>
-            <span class="srch-sort-col" data-sort="36" title="클릭: 낮은순 → 높은순 → 해제">36개월</span><span class="srch-sort-col" data-sort="48" title="클릭: 낮은순 → 높은순 → 해제">48개월</span><span class="srch-sort-col" data-sort="60" title="클릭: 낮은순 → 높은순 → 해제">60개월</span>
-          </div>
+          <span style="display:flex;align-items:center;gap:var(--sp-1);">
+            <div class="srch-period-head" id="srchPeriodHead">
+              <span class="srch-sort-hint" id="srchSortHint">${localStorage.getItem('fp.sort.used') ? '' : '개월수 클릭하면 대여료 정렬'}</span>
+              <span class="srch-sort-col" data-sort="36" title="클릭: 낮은순 → 높은순 → 해제">36개월</span><span class="srch-sort-col" data-sort="48" title="클릭: 낮은순 → 높은순 → 해제">48개월</span><span class="srch-sort-col" data-sort="60" title="클릭: 낮은순 → 높은순 → 해제">60개월</span>
+            </div>
+            <button class="btn btn-xs btn-outline" id="srchDetailOpen" style="display:none;" title="상세 열기"><i class="ph ph-sidebar-simple"></i></button>
+          </span>
         </div>
         <div class="srch-list" id="srchList"></div>
         <div class="srch-list-foot" id="srchFoot" style="display:none;">
@@ -202,22 +206,42 @@ export function mount() {
     const toggleBtn = document.getElementById('srchViewToggle2');
     toggleBtn.innerHTML = viewMode === 'excel' ? '<i class="ph ph-cards"></i>' : '<i class="ph ph-table"></i>';
     toggleBtn.title = viewMode === 'excel' ? '카드뷰로 전환' : '엑셀뷰로 전환';
+    // 엑셀모드에서 기간별 헤드 숨기기 (테이블 안에 포함됨)
+    const periodHead = document.getElementById('srchPeriodHead');
+    if (periodHead) periodHead.style.display = viewMode === 'excel' ? 'none' : '';
     renderList();
   });
 
-  // 조건/상세 패널 접기
+  // 조건/상세 패널 접기/열기
+  const updatePanelBtns = () => {
+    const filterCollapsed = document.getElementById('srchFilterPanel')?.classList.contains('is-collapsed');
+    const detailCollapsed = document.getElementById('srchDetail')?.classList.contains('is-collapsed');
+    const fb = document.getElementById('srchFilterToggle');
+    const db = document.getElementById('srchDetailToggle');
+    const fo = document.getElementById('srchFilterOpen');
+    const do2 = document.getElementById('srchDetailOpen');
+    if (fb) fb.innerHTML = `<i class="ph ph-caret-left"></i>`;
+    if (db) db.innerHTML = `<i class="ph ph-caret-right"></i>`;
+    if (fo) fo.style.display = filterCollapsed ? '' : 'none';
+    if (do2) do2.style.display = detailCollapsed ? '' : 'none';
+  };
   document.getElementById('srchFilterToggle')?.addEventListener('click', () => {
-    const panel = document.getElementById('srchFilterPanel');
-    const btn = document.getElementById('srchFilterToggle');
-    panel?.classList.toggle('is-collapsed');
-    btn.innerHTML = panel?.classList.contains('is-collapsed') ? '<i class="ph ph-funnel"></i>' : '<i class="ph ph-x"></i>';
+    document.getElementById('srchFilterPanel')?.classList.add('is-collapsed');
+    updatePanelBtns();
   });
   document.getElementById('srchDetailToggle')?.addEventListener('click', () => {
-    const panel = document.getElementById('srchDetail');
-    const btn = document.getElementById('srchDetailToggle');
-    panel?.classList.toggle('is-collapsed');
-    btn.innerHTML = panel?.classList.contains('is-collapsed') ? '<i class="ph ph-sidebar"></i>' : '<i class="ph ph-x"></i>';
+    document.getElementById('srchDetail')?.classList.add('is-collapsed');
+    updatePanelBtns();
   });
+  document.getElementById('srchFilterOpen')?.addEventListener('click', () => {
+    document.getElementById('srchFilterPanel')?.classList.remove('is-collapsed');
+    updatePanelBtns();
+  });
+  document.getElementById('srchDetailOpen')?.addEventListener('click', () => {
+    document.getElementById('srchDetail')?.classList.remove('is-collapsed');
+    updatePanelBtns();
+  });
+  updatePanelBtns();
 
   // Text search
   document.getElementById('srchText')?.addEventListener('input', () => { buildDynamicFilters(); renderFilters(); applyFilters(); });
