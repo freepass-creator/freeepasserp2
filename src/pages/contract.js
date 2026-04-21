@@ -192,10 +192,10 @@ function renderWork(c) {
     // 영업자 쪽
     const agentClass = locked ? 'is-locked' : agentDone ? 'is-done' : 'is-pending';
     const isAdmin = role === 'admin';
-    const canClickAgent = isAdmin || (!locked && role === 'agent');
+    const canClickAgent = isAdmin || (!locked && role === 'agent' && !agentDone);
     // 공급사/관리자 쪽
     const respClass = !agentDone && !isAdmin ? 'is-locked' : rejected ? 'is-rejected' : respDone ? 'is-done' : 'is-pending';
-    const canClickResp = isAdmin || (agentDone && !locked && role === respRole);
+    const canClickResp = isAdmin || (agentDone && !locked && role === respRole && !respDone && !rejected);
 
     // 관리자가 대신 처리한 경우 표시
     const agentBy = c[agentKey + '_by'];
@@ -232,21 +232,20 @@ function renderWork(c) {
       </div>
 
       <div class="form-section">
-        <div class="form-section-title"><i class="ph ph-toggle-right"></i> 계약 상태</div>
-        <div style="display:flex;gap:3px;flex-wrap:wrap;">
-          ${['계약대기','계약요청','계약발송','계약완료','계약취소'].map(s => {
-            const active = c.contract_status === s;
-            const colors = { '계약대기':'var(--c-warn)','계약요청':'var(--c-info)','계약발송':'var(--c-accent)','계약완료':'var(--c-ok)','계약취소':'var(--c-err)' };
-            return `<div class="status-toggle" data-status="${s}" style="font-size:var(--fs-2xs);padding:3px 8px;${active ? `background:${colors[s]}20;color:${colors[s]};` : ''}">${s.replace('계약','')}</div>`;
-          }).join('')}
-        </div>
-      </div>
-
-      <div class="form-section">
-        <div class="form-section-title"><i class="ph ph-paper-plane-tilt"></i> 서류 처리</div>
-        <div style="display:flex;flex-direction:column;gap:var(--sp-2);">
-          <button class="btn btn-primary btn-sm" id="ctDocBtn" style="width:100%;"><i class="ph ph-pencil-line"></i> 계약서 작성</button>
-          ${renderSignReqButton(c)}
+        <div class="form-section-title"><i class="ph ph-file-text"></i> 첨부 서류</div>
+        <div class="form-section-body" style="grid-template-columns:1fr;">
+          <label class="pd-dropzone" id="ctDocDropzone" for="ctDocFile">
+            <i class="ph ph-upload-simple" aria-hidden="true"></i>
+            <div class="pd-dropzone-text">서류를 끌어놓거나 클릭해서 업로드</div>
+            <div class="pd-dropzone-hint">고객 신분증 · 면허증 · 재직증명서 등</div>
+            <input type="file" id="ctDocFile" multiple hidden accept="image/*,.pdf">
+          </label>
+          ${(c.doc_urls || []).length ? `
+            <div style="display:flex;flex-wrap:wrap;gap:var(--sp-1);margin-top:var(--sp-1);">
+              ${(c.doc_urls || []).map((url, i) => `
+                <a href="${url}" target="_blank" class="btn btn-xs btn-outline"><i class="ph ph-file"></i> 서류${i+1}</a>
+              `).join('')}
+            </div>` : ''}
         </div>
       </div>
     </div>
@@ -286,12 +285,28 @@ function renderWork(c) {
     });
   });
 
-  el.querySelectorAll('.status-toggle').forEach(tog => {
-    tog.addEventListener('click', async () => {
-      await updateRecord(`contracts/${c.contract_code}`, { contract_status: tog.dataset.status });
-      showToast(`→ ${tog.dataset.status}`);
-    });
-  });
+  // 서류 업로드
+  const docInput = el.querySelector('#ctDocFile');
+  const docZone = el.querySelector('#ctDocDropzone');
+  if (docInput && docZone) {
+    const uploadDocs = async (files) => {
+      const { uploadFile } = await import('../firebase/storage-helper.js');
+      const urls = [...(c.doc_urls || [])];
+      for (const file of files) {
+        const path = `contract-docs/${c.contract_code}/${Date.now()}_${file.name}`;
+        const { url } = await uploadFile(path, file);
+        urls.push(url);
+      }
+      c.doc_urls = urls;
+      await updateRecord(`contracts/${c.contract_code}`, { doc_urls: urls });
+      showToast(`${files.length}건 업로드 완료`);
+      renderWork(c);
+    };
+    docInput.addEventListener('change', () => { if (docInput.files.length) uploadDocs([...docInput.files]); });
+    docZone.addEventListener('dragover', e => { e.preventDefault(); docZone.classList.add('is-dragover'); });
+    docZone.addEventListener('dragleave', () => docZone.classList.remove('is-dragover'));
+    docZone.addEventListener('drop', e => { e.preventDefault(); docZone.classList.remove('is-dragover'); if (e.dataTransfer.files.length) uploadDocs([...e.dataTransfer.files]); });
+  }
 
   el.querySelector('#ctDocBtn')?.addEventListener('click', async () => {
     const { mount: m } = await import('./contract-send.js');
