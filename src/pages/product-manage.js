@@ -563,7 +563,7 @@ function renderTerms(p, key) {
       </div>
 
       <div class="form-section">
-        <div class="form-section-title">기간별 가격</div>
+        <div class="form-section-title">기간별 가격 <span class="form-section-hint">빈 값/0은 상세 미노출</span></div>
         <div class="form-section-body">
           <table class="pd-price-table">
             <thead><tr><th>기간</th><th>대여료</th><th>보증금</th></tr></thead>
@@ -580,7 +580,6 @@ function renderTerms(p, key) {
               }).join('')}
             </tbody>
           </table>
-          <div class="pd-hint">빈 값/0은 상세에 노출되지 않음</div>
         </div>
       </div>
 
