@@ -36,9 +36,9 @@ export function mount() {
         <div class="ws4-search">
           <input class="input input-sm" id="wsRoomSearch" placeholder="검색..." >
           <div style="display:flex;gap:3px;">
-            <button class="chip is-active" data-rf="unread">안읽음</button>
+            <button class="chip is-active" data-rf="all">전체</button>
+            <button class="chip" data-rf="unread">안읽음</button>
             <button class="chip" data-rf="read">읽음</button>
-            <button class="chip" data-rf="all">전체</button>
           </div>
         </div>
         <div class="ws4-body" id="wsRoomList"></div>

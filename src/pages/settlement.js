@@ -37,9 +37,9 @@ export function mount() {
         <div class="ws4-search">
           <input class="input input-sm" id="stSearch" placeholder="검색..." >
           <div style="display:flex;gap:3px;">
-            <button class="chip is-active" data-f="pending">미완료</button>
+            <button class="chip is-active" data-f="all">전체</button>
+            <button class="chip" data-f="pending">미완료</button>
             <button class="chip" data-f="done">완료</button>
-            <button class="chip" data-f="all">전체</button>
           </div>
         </div>
         <div class="ws4-body" id="stList"></div>
@@ -104,7 +104,7 @@ function renderList() {
   const el = document.getElementById('stList');
   if (!el) return;
   const q = (document.getElementById('stSearch')?.value || '').toLowerCase();
-  const f = document.querySelector('.chip[data-f].is-active')?.dataset.f || 'pending';
+  const f = document.querySelector('.chip[data-f].is-active')?.dataset.f || 'all';
 
   let list = [...allSettlements];
   if (f === 'pending') list = list.filter(s => getSettlementStatus(s) !== SS.DONE);

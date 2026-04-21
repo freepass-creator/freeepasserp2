@@ -30,9 +30,9 @@ export function mount() {
         <div class="ws4-search">
           <input class="input input-sm" id="ctSearch" placeholder="검색..." >
           <div style="display:flex;gap:3px;">
-            <button class="chip is-active" data-f="active">미완료</button>
+            <button class="chip is-active" data-f="all">전체</button>
+            <button class="chip" data-f="active">미완료</button>
             <button class="chip" data-f="done">완료</button>
-            <button class="chip" data-f="all">전체</button>
           </div>
         </div>
         <div class="ws4-body" id="ctList"></div>
@@ -98,7 +98,7 @@ function renderList() {
   const el = document.getElementById('ctList');
   if (!el) return;
   const q = (document.getElementById('ctSearch')?.value || '').toLowerCase();
-  const f = document.querySelector('.chip[data-f].is-active')?.dataset.f || 'active';
+  const f = document.querySelector('.chip[data-f].is-active')?.dataset.f || 'all';
 
   let list = [...allContracts];
   if (f === 'active') list = list.filter(c => c.contract_status !== '계약완료' && c.contract_status !== '계약취소');
