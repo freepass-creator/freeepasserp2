@@ -208,10 +208,11 @@ export function mount() {
     const listHead = document.getElementById('srchListHead');
     if (listHead) {
       if (viewMode === 'excel') {
-        listHead.className = 'srch-excel-head-bar';
-        listHead.innerHTML = `<span>공급사</span><span>차량번호</span><span>제조사</span><span>세부모델</span><span>연식</span><span>연료</span><span>주행</span><span>색상</span><span>상태</span><span>36개월</span><span>48개월</span><span>60개월</span>`;
+        listHead.className = 'srch-panel-head';
+        listHead.style.display = 'none';
       } else {
         listHead.className = 'srch-panel-head';
+        listHead.style.display = '';
         listHead.innerHTML = `
           <span style="display:flex;align-items:center;gap:var(--sp-2);">
             <span>목록</span>
@@ -964,6 +965,7 @@ function renderList() {
   if (viewMode === 'excel') {
     el.innerHTML = `
       <table class="srch-excel-table">
+        <thead><tr><th>공급사</th><th>차량번호</th><th>제조사</th><th>세부모델</th><th>연식</th><th>연료</th><th>주행</th><th>색상</th><th>상태</th><th>36개월</th><th>48개월</th><th>60개월</th></tr></thead>
         <tbody>${filteredProducts.map(p => {
           const price = p.price || {};
           const priceCell = m => {
