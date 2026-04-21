@@ -1026,7 +1026,7 @@ function renderList() {
             <td ${t(p.maker)}>${p.maker || ''}</td>
             <td ${t(p.model)}>${p.model || ''}</td>
             <td ${t(p.sub_model)}>${p.sub_model || ''}</td>
-            <td ${t(p.trim_name || p.trim)}>${p.trim_name || p.trim || ''}</td>
+            <td ${t([p.trim_name || p.trim, p.options].filter(Boolean).join('\n'))}>${p.trim_name || p.trim || ''}</td>
             <td ${t(p.year)}>${p.year || ''}</td>
             <td ${t(p.mileage ? Number(p.mileage).toLocaleString() : '')}>${p.mileage ? Number(p.mileage).toLocaleString() : ''}</td>
             <td ${t(p.fuel_type)}>${p.fuel_type || ''}</td>
