@@ -22,7 +22,7 @@ let selectedProductKey = null;
 const LIST_PERIODS = [36, 48, 60];
 let sortCol = null;
 let sortDir = null;
-let viewMode = 'card';
+let viewMode = 'excel';
 let excelSortField = null;
 let excelSortDir = null; // 'asc' | 'desc' | null
 
@@ -211,8 +211,10 @@ export function mount() {
     if (listHead) {
       if (viewMode === 'excel') {
         listHead.style.display = '';
-        listHead.className = 'srch-panel-head';
-        listHead.innerHTML = `<span style="font-size:var(--fs-xs);color:var(--c-text-muted);">${filteredProducts.length}대</span>`;
+        listHead.className = 'srch-excel-head-bar';
+        listHead.innerHTML = `<table class="srch-excel-table"><colgroup>${'<col>'.repeat(17)}</colgroup><tr>
+          <th>차량번호</th><th>상태</th><th>구분</th><th>제조사</th><th>모델명</th><th>세부모델</th><th>세부트림</th><th>연식</th><th>주행</th><th>연료</th><th>색상</th><th>심사</th><th>연령</th><th>24</th><th>36</th><th>48</th><th>60</th>
+        </tr></table>`;
       } else {
         listHead.className = 'srch-panel-head';
         listHead.style.display = '';
@@ -1004,10 +1006,7 @@ function renderList() {
 
   if (viewMode === 'excel') {
     el.innerHTML = `
-      <table class="srch-excel-table">
-        <thead><tr>
-          <th>차량번호</th><th>상태</th><th>구분</th><th>제조사</th><th>모델명</th><th>세부모델</th><th>세부트림</th><th>연식</th><th>주행</th><th>연료</th><th>색상</th><th>심사</th><th>연령</th><th>24</th><th>36</th><th>48</th><th>60</th>
-        </tr></thead>
+      <table class="srch-excel-table"><colgroup>${'<col>'.repeat(17)}</colgroup>
         <tbody>${filteredProducts.map(p => {
           const price = p.price || {};
           const priceCell = m => {
@@ -1077,7 +1076,11 @@ function renderList() {
       });
     });
 
-    // thead th 클릭 → 드롭다운 필터
+    // 헤드-바디 가로스크롤 동기화
+    const headBar = document.getElementById('srchListHead');
+    el.addEventListener('scroll', () => { if (headBar) headBar.scrollLeft = el.scrollLeft; });
+
+    // 패널헤드 th 클릭 → 드롭다운 필터
     const colDefs = [
       { key: 'car_number', label: '차량번호', type: 'search' },
       { key: 'vehicle_status', label: '상태', type: 'check' },
@@ -1097,7 +1100,7 @@ function renderList() {
       { key: 'rent_48', label: '48', type: 'sort' },
       { key: 'rent_60', label: '60', type: 'sort' },
     ];
-    el.querySelectorAll('.srch-excel-table thead th').forEach((th, i) => {
+    document.querySelectorAll('#srchListHead th').forEach((th, i) => {
       const def = colDefs[i];
       th.addEventListener('click', (e) => {
         // 기존 드롭다운 닫기
