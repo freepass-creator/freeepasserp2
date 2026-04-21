@@ -40,26 +40,15 @@
   .srch-excel-table td:last-child { border-right: none; }
   .srch-excel-price { text-align: right; font-weight: var(--fw-medium); color: var(--c-accent); }
   .srch-excel-dep { font-size: 10px; color: var(--c-text-muted); font-weight: var(--fw-normal); }
-  .srch-excel-head-bar {
-    display: flex;
-    align-items: center;
-    height: var(--panel-head-h);
-    background: var(--c-bg-sub);
-    border-bottom: 1px solid var(--c-border);
-    font-size: 12px;
-    font-weight: var(--fw-medium);
+  .srch-excel-cols {
+    font-size: var(--fs-2xs);
     color: var(--c-text-muted);
-    flex-shrink: 0;
-    overflow: hidden;
-  }
-  .srch-excel-head-bar > span {
-    flex: 1;
-    padding: 0 6px;
-    white-space: nowrap;
-    text-align: center;
+    font-weight: var(--fw-medium);
+    padding: 0 4px;
     border-right: 1px solid var(--c-border-soft);
+    white-space: nowrap;
   }
-  .srch-excel-head-bar > span:last-child { border-right: none; }
+  .srch-excel-cols:last-child { border-right: none; }
 
   /* 패널 접기 — 업무소통 스타일 */
   .srch-filter-panel.is-collapsed,
@@ -85,6 +74,7 @@
   .srch-filter-panel.is-collapsed .srch-panel-head span,
   .srch-detail.is-collapsed .srch-panel-head span { display: none; }
   .srch-filter-panel.is-collapsed .srch-panel-head::after { content: '조건'; }
+  .srch-filter-panel.is-collapsed .srch-btn-label { display: none; }
   .srch-detail.is-collapsed .srch-panel-head::after { content: '상세'; }
 
   /* .srch-panel-head — base styles unified in controls.css .panel-head group */

@@ -118,9 +118,9 @@ export function mount() {
         <div class="srch-panel-head">
           <span style="display:flex;align-items:center;gap:var(--sp-1);"><span>조건</span><span class="sb-badge" id="srchFilterCount"></span></span>
           <span style="display:flex;gap:var(--sp-1);">
-            <button class="btn btn-xs btn-outline" id="srchExcel" title="Excel 다운로드"><i class="ph ph-file-xls"></i></button>
-            <button class="btn btn-xs btn-outline" id="srchPhotoZip" title="사진 ZIP"><i class="ph ph-file-zip"></i></button>
-            <button class="btn btn-xs btn-outline" id="srchViewToggle2" title="엑셀형식 보기"><i class="ph ph-table"></i></button>
+            <button class="btn btn-xs btn-outline" id="srchExcel" title="Excel 다운로드"><i class="ph ph-file-xls"></i> <span class="srch-btn-label">Excel</span></button>
+            <button class="btn btn-xs btn-outline" id="srchPhotoZip" title="사진 ZIP"><i class="ph ph-file-zip"></i> <span class="srch-btn-label">사진</span></button>
+            <button class="btn btn-xs btn-outline" id="srchViewToggle2" title="엑셀형식 보기"><i class="ph ph-table"></i> <span class="srch-btn-label">엑셀보기</span></button>
             <button class="btn btn-xs btn-outline" id="srchFilterToggle" title="조건 접기"><i class="ph ph-caret-left"></i></button>
           </span>
         </div>
@@ -135,7 +135,7 @@ export function mount() {
 
       <div class="srch-list-wrap">
         <div class="srch-panel-head" id="srchListHead">
-          <span style="display:flex;align-items:center;gap:var(--sp-2);">
+          <span style="display:flex;align-items:center;gap:var(--sp-2);flex:1;min-width:0;" id="srchListLeft">
             <span>목록</span>
             <span class="srch-count" id="srchCount">0대</span>
           </span>
@@ -207,21 +207,13 @@ export function mount() {
     toggleBtn.title = viewMode === 'excel' ? '카드뷰로 전환' : '엑셀뷰로 전환';
     const listHead = document.getElementById('srchListHead');
     if (listHead) {
-      if (viewMode === 'excel') {
-        listHead.className = 'srch-panel-head';
-        listHead.style.display = 'none';
-      } else {
-        listHead.className = 'srch-panel-head';
-        listHead.style.display = '';
-        listHead.innerHTML = `
-          <span style="display:flex;align-items:center;gap:var(--sp-2);">
-            <span>목록</span>
-            <span class="srch-count" id="srchCount">${filteredProducts.length}대</span>
-          </span>
-          <div class="srch-period-head" id="srchPeriodHead">
-            <span class="srch-sort-hint" id="srchSortHint"></span>
-            <span class="srch-sort-col" data-sort="36" title="클릭: 낮은순 → 높은순 → 해제">36개월</span><span class="srch-sort-col" data-sort="48" title="클릭: 낮은순 → 높은순 → 해제">48개월</span><span class="srch-sort-col" data-sort="60" title="클릭: 낮은순 → 높은순 → 해제">60개월</span>
-          </div>`;
+      const leftInfo = document.getElementById('srchListLeft');
+      if (leftInfo) {
+        if (viewMode === 'excel') {
+          leftInfo.innerHTML = `<span class="srch-excel-cols">공급사</span><span class="srch-excel-cols">차량번호</span><span class="srch-excel-cols">제조사</span><span class="srch-excel-cols">세부모델</span><span class="srch-excel-cols">연식</span><span class="srch-excel-cols">연료</span><span class="srch-excel-cols">주행</span><span class="srch-excel-cols">색상</span><span class="srch-excel-cols">상태</span>`;
+        } else {
+          leftInfo.innerHTML = `<span>목록</span><span class="srch-count" id="srchCount">${filteredProducts.length}대</span>`;
+        }
       }
     }
     renderList();
@@ -965,7 +957,6 @@ function renderList() {
   if (viewMode === 'excel') {
     el.innerHTML = `
       <table class="srch-excel-table">
-        <thead><tr><th>공급사</th><th>차량번호</th><th>제조사</th><th>세부모델</th><th>연식</th><th>연료</th><th>주행</th><th>색상</th><th>상태</th><th>36개월</th><th>48개월</th><th>60개월</th></tr></thead>
         <tbody>${filteredProducts.map(p => {
           const price = p.price || {};
           const priceCell = m => {
