@@ -1031,24 +1031,100 @@ function renderList() {
       </table>` || `<div class="srch-empty"><i class="ph ph-magnifying-glass"></i><p>조건에 맞는 차량이 없습니다</p></div>`;
     bindListDelegation(el);
 
-    // 패널헤드 th 정렬 클릭
-    const cols = ['provider_company_code','car_number','maker','sub_model','year','fuel_type','mileage','ext_color','vehicle_status','rent_36','rent_48','rent_60'];
-    document.querySelectorAll('.srch-excel-head-bar th').forEach((span, i) => {
-      span.addEventListener('click', () => {
-        const col = cols[i];
-        if (excelSortField === col) {
-          if (excelSortDir === 'asc') excelSortDir = 'desc';
-          else { excelSortField = null; excelSortDir = null; }
-        } else {
-          excelSortField = col; excelSortDir = 'asc';
+    // 패널헤드 th 클릭 → 드롭다운 필터
+    const colDefs = [
+      { key: 'provider_company_code', label: '공급사', type: 'check' },
+      { key: 'car_number', label: '차량번호', type: 'search' },
+      { key: 'maker', label: '제조사', type: 'check' },
+      { key: 'sub_model', label: '세부모델', type: 'search' },
+      { key: 'year', label: '연식', type: 'check' },
+      { key: 'fuel_type', label: '연료', type: 'check' },
+      { key: 'mileage', label: '주행', type: 'sort' },
+      { key: 'ext_color', label: '색상', type: 'check' },
+      { key: 'vehicle_status', label: '상태', type: 'check' },
+      { key: 'rent_36', label: '36개월', type: 'sort' },
+      { key: 'rent_48', label: '48개월', type: 'sort' },
+      { key: 'rent_60', label: '60개월', type: 'sort' },
+    ];
+    document.querySelectorAll('.srch-excel-head-bar th').forEach((th, i) => {
+      const def = colDefs[i];
+      th.addEventListener('click', (e) => {
+        // 기존 드롭다운 닫기
+        document.querySelector('.srch-col-filter')?.remove();
+
+        if (def.type === 'sort') {
+          // 숫자 컬럼: 정렬 토글
+          if (excelSortField === def.key) {
+            if (excelSortDir === 'asc') excelSortDir = 'desc';
+            else { excelSortField = null; excelSortDir = null; }
+          } else { excelSortField = def.key; excelSortDir = 'asc'; }
+          applyFilters();
+          return;
         }
-        applyFilters();
+
+        // 체크박스/검색 드롭다운
+        const rect = th.getBoundingClientRect();
+        const listRect = document.querySelector('.srch-list-wrap')?.getBoundingClientRect();
+        const dropdown = document.createElement('div');
+        dropdown.className = 'srch-col-filter';
+        dropdown.style.left = `${rect.left - (listRect?.left || 0)}px`;
+        dropdown.style.top = `${rect.bottom - (listRect?.top || 0)}px`;
+
+        if (def.type === 'search') {
+          dropdown.innerHTML = `<input class="input input-sm" placeholder="${def.label} 검색..." id="srchColSearch" autofocus>`;
+          document.querySelector('.srch-list-wrap')?.appendChild(dropdown);
+          dropdown.querySelector('#srchColSearch')?.addEventListener('input', (ev) => {
+            const q = ev.target.value.toLowerCase();
+            document.querySelectorAll('.srch-excel-row').forEach(row => {
+              const cell = row.children[i]?.textContent?.toLowerCase() || '';
+              row.style.display = !q || cell.includes(q) ? '' : 'none';
+            });
+          });
+        } else {
+          // 체크박스: 고유값 목록
+          const vals = {};
+          filteredProducts.forEach(p => {
+            const v = String(p[def.key] || '').trim();
+            if (v) vals[v] = (vals[v] || 0) + 1;
+          });
+          const sorted = Object.entries(vals).sort((a, b) => b[1] - a[1]);
+          dropdown.innerHTML = `
+            <div style="max-height:200px;overflow-y:auto;">
+              ${sorted.map(([v, cnt]) => `<label class="srch-col-check"><input type="checkbox" value="${v}" checked> ${v} (${cnt})</label>`).join('')}
+            </div>
+            <div style="display:flex;gap:var(--sp-1);padding-top:var(--sp-1);">
+              <button class="btn btn-xs btn-outline" id="srchColAll">전체</button>
+              <button class="btn btn-xs btn-outline" id="srchColNone">해제</button>
+              <button class="btn btn-xs btn-outline" id="srchColClose">닫기</button>
+            </div>`;
+          document.querySelector('.srch-list-wrap')?.appendChild(dropdown);
+          const updateFilter = () => {
+            const checked = new Set([...dropdown.querySelectorAll('input:checked')].map(c => c.value));
+            document.querySelectorAll('.srch-excel-row').forEach(row => {
+              const cell = row.children[i]?.textContent?.trim() || '';
+              row.style.display = checked.has(cell) || checked.size === sorted.length ? '' : 'none';
+            });
+          };
+          dropdown.querySelectorAll('input[type=checkbox]').forEach(cb => cb.addEventListener('change', updateFilter));
+          dropdown.querySelector('#srchColAll')?.addEventListener('click', () => { dropdown.querySelectorAll('input').forEach(c => c.checked = true); updateFilter(); });
+          dropdown.querySelector('#srchColNone')?.addEventListener('click', () => { dropdown.querySelectorAll('input').forEach(c => c.checked = false); updateFilter(); });
+          dropdown.querySelector('#srchColClose')?.addEventListener('click', () => dropdown.remove());
+        }
+
+        // 바깥 클릭 닫기
+        setTimeout(() => {
+          const close = (ev) => { if (!dropdown.contains(ev.target) && ev.target !== th) { dropdown.remove(); document.removeEventListener('click', close); } };
+          document.addEventListener('click', close);
+        });
       });
-      // 정렬 표시
-      span.classList.remove('is-sort-asc', 'is-sort-desc');
-      if (excelSortField === cols[i] && excelSortDir) {
-        span.classList.add(excelSortDir === 'asc' ? 'is-sort-asc' : 'is-sort-desc');
+
+      // 정렬 표시 (숫자 컬럼)
+      th.classList.remove('is-sort-asc', 'is-sort-desc');
+      if (def.type === 'sort' && excelSortField === def.key && excelSortDir) {
+        th.classList.add(excelSortDir === 'asc' ? 'is-sort-asc' : 'is-sort-desc');
       }
+      // 필터 활성 표시
+      if (def.type === 'check') th.style.cursor = 'pointer';
     });
     return;
   }
