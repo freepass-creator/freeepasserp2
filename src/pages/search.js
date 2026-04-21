@@ -22,7 +22,9 @@ let selectedProductKey = null;
 const LIST_PERIODS = [36, 48, 60];
 let sortCol = null;
 let sortDir = null;
-let viewMode = 'card'; // 'card' | 'excel'
+let viewMode = 'card';
+let excelSortField = null;
+let excelSortDir = null; // 'asc' | 'desc' | null
 
 const FILTERS = {
   rent: {
@@ -929,7 +931,7 @@ function applyFilters() {
     results = results.filter(p => chips.some(chip => matchFilter(p, g, chip)));
   }
 
-  // 기간별 정렬
+  // 기간별 정렬 (카드뷰)
   if (sortCol && sortDir) {
     const getRent = p => Number(p.price?.[sortCol]?.rent || 0);
     results.sort((a, b) => {
@@ -938,6 +940,24 @@ function applyFilters() {
       if (!av) return 1;
       if (!bv) return -1;
       return sortDir === 'asc' ? av - bv : bv - av;
+    });
+  }
+
+  // 엑셀뷰 정렬
+  if (excelSortField && excelSortDir) {
+    const getVal = p => {
+      if (excelSortField.startsWith('rent_')) {
+        const m = excelSortField.replace('rent_', '');
+        return Number(p.price?.[m]?.rent || 0);
+      }
+      if (excelSortField === 'mileage' || excelSortField === 'year') return Number(p[excelSortField] || 0);
+      return String(p[excelSortField] || '').toLowerCase();
+    };
+    results.sort((a, b) => {
+      const av = getVal(a), bv = getVal(b);
+      if (av === bv) return 0;
+      const cmp = typeof av === 'number' ? av - bv : av < bv ? -1 : 1;
+      return excelSortDir === 'asc' ? cmp : -cmp;
     });
   }
 
@@ -956,7 +976,20 @@ function renderList() {
   if (viewMode === 'excel') {
     el.innerHTML = `
       <table class="srch-excel-table">
-        <thead><tr><th>공급사</th><th>차량번호</th><th>제조사</th><th>세부모델</th><th>연식</th><th>연료</th><th>주행</th><th>색상</th><th>상태</th><th>36개월</th><th>48개월</th><th>60개월</th></tr></thead>
+        <thead><tr>
+          <th class="srch-excel-th" data-col="provider_company_code">공급사</th>
+          <th class="srch-excel-th" data-col="car_number">차량번호</th>
+          <th class="srch-excel-th" data-col="maker">제조사</th>
+          <th class="srch-excel-th" data-col="sub_model">세부모델</th>
+          <th class="srch-excel-th" data-col="year">연식</th>
+          <th class="srch-excel-th" data-col="fuel_type">연료</th>
+          <th class="srch-excel-th" data-col="mileage">주행</th>
+          <th class="srch-excel-th" data-col="ext_color">색상</th>
+          <th class="srch-excel-th" data-col="vehicle_status">상태</th>
+          <th class="srch-excel-th" data-col="rent_36">36개월</th>
+          <th class="srch-excel-th" data-col="rent_48">48개월</th>
+          <th class="srch-excel-th" data-col="rent_60">60개월</th>
+        </tr></thead>
         <tbody>${filteredProducts.map(p => {
           const price = p.price || {};
           const priceCell = m => {
@@ -980,6 +1013,26 @@ function renderList() {
         }).join('')}</tbody>
       </table>` || `<div class="srch-empty"><i class="ph ph-magnifying-glass"></i><p>조건에 맞는 차량이 없습니다</p></div>`;
     bindListDelegation(el);
+    // thead 정렬 클릭
+    el.querySelectorAll('.srch-excel-th').forEach(th => {
+      th.addEventListener('click', () => {
+        const col = th.dataset.col;
+        if (excelSortField === col) {
+          if (excelSortDir === 'asc') excelSortDir = 'desc';
+          else { excelSortField = null; excelSortDir = null; }
+        } else {
+          excelSortField = col; excelSortDir = 'asc';
+        }
+        applyFilters();
+      });
+    });
+    // 정렬 표시
+    el.querySelectorAll('.srch-excel-th').forEach(th => {
+      th.classList.remove('is-sort-asc', 'is-sort-desc');
+      if (excelSortField === th.dataset.col && excelSortDir) {
+        th.classList.add(excelSortDir === 'asc' ? 'is-sort-asc' : 'is-sort-desc');
+      }
+    });
     return;
   }
 

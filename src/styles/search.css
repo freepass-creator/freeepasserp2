@@ -38,6 +38,12 @@
   .srch-excel-row { cursor: pointer; transition: background var(--dur); }
   .srch-excel-row:hover { background: var(--c-bg-hover); }
   .srch-excel-row.is-active { background: var(--c-bg-hover); }
+  .srch-excel-th { cursor: pointer; user-select: none; transition: background var(--dur); }
+  .srch-excel-th:hover { background: var(--c-bg-hover); }
+  .srch-excel-th.is-sort-asc { color: var(--c-info); background: var(--c-info-bg); }
+  .srch-excel-th.is-sort-desc { color: var(--c-err); background: var(--c-err-bg); }
+  .srch-excel-th.is-sort-asc::after { content: ' ↑'; }
+  .srch-excel-th.is-sort-desc::after { content: ' ↓'; }
   .srch-excel-table td { border-right: 1px solid var(--c-border-soft); }
   .srch-excel-table td:last-child { border-right: none; }
   .srch-excel-price { text-align: right; font-weight: var(--fw-medium); color: var(--c-accent); }
