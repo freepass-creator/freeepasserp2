@@ -212,7 +212,9 @@ export function mount() {
       if (viewMode === 'excel') {
         listHead.className = 'srch-excel-head-bar';
         listHead.style.display = '';
-        listHead.innerHTML = `<span>공급사</span><span>차량번호</span><span>제조사</span><span>세부모델</span><span>연식</span><span>연료</span><span>주행</span><span>색상</span><span>상태</span><span>36개월</span><span>48개월</span><span>60개월</span>`;
+        listHead.innerHTML = `<table class="srch-excel-table" style="margin:0;"><tr>
+          <th>공급사</th><th>차량번호</th><th>제조사</th><th>세부모델</th><th>연식</th><th>연료</th><th>주행</th><th>색상</th><th>상태</th><th>36개월</th><th>48개월</th><th>60개월</th>
+        </tr></table>`;
       } else {
         listHead.className = 'srch-panel-head';
         listHead.style.display = '';
@@ -1029,10 +1031,9 @@ function renderList() {
       </table>` || `<div class="srch-empty"><i class="ph ph-magnifying-glass"></i><p>조건에 맞는 차량이 없습니다</p></div>`;
     bindListDelegation(el);
 
-    // 패널헤드 span 정렬 클릭
+    // 패널헤드 th 정렬 클릭
     const cols = ['provider_company_code','car_number','maker','sub_model','year','fuel_type','mileage','ext_color','vehicle_status','rent_36','rent_48','rent_60'];
-    document.querySelectorAll('.srch-excel-head-bar > span').forEach((span, i) => {
-      span.style.cursor = 'pointer';
+    document.querySelectorAll('.srch-excel-head-bar th').forEach((span, i) => {
       span.addEventListener('click', () => {
         const col = cols[i];
         if (excelSortField === col) {
