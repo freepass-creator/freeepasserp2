@@ -17,7 +17,7 @@ import { store, subscribe } from './core/store.js';
 import { navigate, defineRoutes, setNavigateCallback, resetRoute } from './core/router.js';
 import { initAuth } from './firebase/auth.js';
 import { renderBreadcrumb } from './core/breadcrumb.js';
-import { isMobile, onMobileChange } from './core/mobile-shell.js';
+import { isMobile, onMobileChange, bindGlobalHaptic } from './core/mobile-shell.js';
 // Drive 썸네일 자동 하이드레이션 옵저버 — 최초 로드부터 상시 활성화
 import './core/drive-photos.js';
 /* mobile.css 는 항상 로드 — .m-* 규격은 앱 어디서나 재사용 */
@@ -612,6 +612,8 @@ async function init() {
 
   if (user) {
     renderShell();
+    // 모바일에서 전역 버튼 햅틱 활성화
+    if (isMobile()) bindGlobalHaptic();
     const pendingCar = sessionStorage.getItem('fp.pendingCar');
     if (pendingCar) {
       sessionStorage.removeItem('fp.pendingCar');

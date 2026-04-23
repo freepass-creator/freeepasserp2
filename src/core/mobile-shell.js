@@ -22,19 +22,40 @@ export function isMobile() {
   return UA_PHONE.test(navigator.userAgent || '');
 }
 
-/** 햅틱 피드백 — 사용자 설정 존중 (localStorage fp.haptic === 'off' 면 비활성) */
+/** 햅틱 피드백 — 사용자 설정 존중 (localStorage fp.haptic === 'off' 면 비활성)
+ *  ⚠️ iOS Safari 는 navigator.vibrate 미지원 — iPhone 에선 전혀 울리지 않음 (브라우저 제약) */
 export function haptic(type = 'light') {
   if (localStorage.getItem('fp.haptic') === 'off') return;
   if (!navigator.vibrate) return;
   const patterns = {
-    light:   5,            // 일반 탭 (버튼/칩/탭바)
-    medium:  12,           // 중요 액션 (시트 열기/카드 진입)
-    heavy:   20,           // 강한 확인 (계약 완료/삭제)
-    toggle:  [4, 40, 4],   // 토글 on/off
-    success: [10, 60, 10], // 성공 피드백
-    error:   [30, 40, 30], // 오류
+    light:   12,           // 일반 탭 (버튼/칩/탭바) — 타격감 있게
+    medium:  25,           // 중요 액션 (시트 열기/카드 진입)
+    heavy:   45,           // 강한 확인 (계약 완료/삭제)
+    toggle:  [8, 40, 8],   // 토글 on/off
+    success: [15, 50, 20], // 성공 피드백
+    error:   [40, 40, 40], // 오류 — 뚜렷하게
   };
-  try { navigator.vibrate(patterns[type] ?? 5); } catch {}
+  try { navigator.vibrate(patterns[type] ?? 12); } catch {}
+}
+
+/** 전역 버튼 탭 햅틱 — 앱 부팅 시 한 번 호출하면 모든 버튼/칩/m-탭에 자동 적용 */
+let _globalHapticBound = false;
+export function bindGlobalHaptic() {
+  if (_globalHapticBound) return;
+  _globalHapticBound = true;
+  document.addEventListener('pointerdown', (e) => {
+    const el = e.target.closest(
+      'button, .btn, .chip, [role="button"], .m-tab-item, .m-info-row, .m-card, .m-sheet-close, .m-topbar-back, .m-topbar-action, .m-fab'
+    );
+    if (!el) return;
+    if (el.disabled) return;
+    // 강한 액션(danger·primary 대형)은 medium, 나머지 light
+    if (el.classList.contains('btn-danger') || el.classList.contains('btn-primary')) {
+      haptic('medium');
+    } else {
+      haptic('light');
+    }
+  }, { passive: true, capture: true });
 }
 
 /** 모바일 뷰포트 변경 감지 (debounced) */
