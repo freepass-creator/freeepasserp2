@@ -10,6 +10,7 @@ import { markRoomRead } from '../firebase/collections.js';
 import { showToast } from '../core/toast.js';
 import { STEPS as CONTRACT_STEPS, getProgress } from '../core/contract-steps.js';
 import { pushMobileView, openBottomSheet } from '../core/mobile-shell.js';
+import { fmtHM, fmtChatDate } from '../core/format.js';
 
 let unsubRooms = null;
 let unsubMessages = null;
@@ -240,11 +241,7 @@ function renderMessages() {
     return;
   }
 
-  const fmt = (ts) => {
-    const d = new Date(ts);
-    const h = d.getHours(), mi = String(d.getMinutes()).padStart(2, '0');
-    return `${h < 12 ? '오전' : '오후'} ${h === 0 ? 12 : h > 12 ? h - 12 : h}:${mi}`;
-  };
+  const fmt = fmtHM;
   let lastDate = '';
   let lastSenderUid = null;
   let lastMinute = null;
@@ -255,7 +252,7 @@ function renderMessages() {
     const minuteKey = new Date(ts).toISOString().slice(0, 16);
     let dateSep = '';
     if (dk !== lastDate) {
-      dateSep = `<div class="chat-date-sep"><span>${new Date(ts).toLocaleDateString('ko', { year: 'numeric', month: 'long', day: 'numeric' })}</span></div>`;
+      dateSep = `<div class="chat-date-sep"><span>${fmtChatDate(ts)}</span></div>`;
       lastDate = dk;
       lastSenderUid = null;
       lastMinute = null;

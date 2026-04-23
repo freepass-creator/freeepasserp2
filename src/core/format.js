@@ -40,6 +40,25 @@ export function fmtMoneyFull(v) {
   return n >= 10000 ? Math.round(n / 10000) + '만원' : n.toLocaleString() + '원';
 }
 
+/** 절대 시각 "오전 9:05" / "오후 2:30" — 채팅·타임스탬프 공통.
+ *  pad 없음(2:30), 12시간제, 자정은 12로. */
+export function fmtHM(ts) {
+  if (!ts) return '';
+  const d = new Date(ts);
+  const h = d.getHours();
+  const mm = String(d.getMinutes()).padStart(2, '0');
+  const h12 = h === 0 ? 12 : h > 12 ? h - 12 : h;
+  return `${h < 12 ? '오전' : '오후'} ${h12}:${mm}`;
+}
+
+/** 채팅 날짜 구분선: "2026년 4월 23일 목요일" — 웹·모바일 공통 */
+export function fmtChatDate(ts) {
+  if (!ts) return '';
+  const d = new Date(ts);
+  const W = ['일','월','화','수','목','금','토'][d.getDay()];
+  return `${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일 ${W}요일`;
+}
+
 /** 타임스탬프 → 상대 시간 (방금 / N분 / 시:분 / 어제 / M/D) */
 export function fmtTime(ts) {
   if (!ts) return '';

@@ -9,7 +9,7 @@ import { showToast } from '../core/toast.js';
 import { uploadFile } from '../firebase/storage-helper.js';
 import { markRoomRead } from '../firebase/collections.js';
 import { setBreadcrumbTail, setBreadcrumbBrief } from '../core/breadcrumb.js';
-import { fmtMoney, fmtWon, fmtTime, cField } from '../core/format.js';
+import { fmtMoney, fmtWon, fmtTime, cField, fmtHM, fmtChatDate } from '../core/format.js';
 import { fieldInput as ffi, fieldView as ffv, bindAutoSave as bindFormAutoSave } from '../core/form-fields.js';
 import { initWs4Resize } from '../core/resize.js';
 import { getSettlementStatus, SETTLEMENT_STATUSES_BASIC } from '../core/settlement-status.js';
@@ -363,19 +363,8 @@ function renderMessages(messages) {
   let lastSenderUid = '';
   let lastMinute = '';
 
-  const fmt = (ts) => {
-    const d = new Date(ts);
-    const h = d.getHours();
-    const m = String(d.getMinutes()).padStart(2, '0');
-    const ampm = h < 12 ? '오전' : '오후';
-    const h12 = h === 0 ? 12 : h > 12 ? h - 12 : h;
-    return `${ampm} ${h12}:${m}`;
-  };
-  const fmtDate = (ts) => {
-    const d = new Date(ts);
-    const W = ['일','월','화','수','목','금','토'][d.getDay()];
-    return `${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일 ${W}요일`;
-  };
+  const fmt = fmtHM;
+  const fmtDate = fmtChatDate;
 
   el.innerHTML = sorted.map((msg, i) => {
     const isMine = msg.sender_uid === uid;
