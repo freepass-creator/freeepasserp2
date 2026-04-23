@@ -376,6 +376,8 @@
   .ctx-item.is-active { color: var(--c-accent); font-weight: var(--fw-semibold); }
   .ctx-item.is-active i { color: var(--c-accent); }
   .ctx-item .ctx-check { margin-left: auto; font-size: 12px; }
+  .ctx-item.has-submenu .ctx-caret { margin-left: auto; font-size: 11px; color: var(--c-text-muted); }
+  .ctx-item.has-submenu:hover .ctx-caret { color: var(--c-text); }
   .ctx-item.is-disabled,
   .ctx-item[disabled] { color: var(--c-text-muted); cursor: not-allowed; }
   .ctx-item.is-disabled:hover,

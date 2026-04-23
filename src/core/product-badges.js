@@ -5,44 +5,32 @@
  * 차량상태·렌트구독·신차중고·심사여부 뱃지 문자열 생성.
  */
 
-/* ── 차량상태 → {label, tone}  (B2B 톤: 의미색은 출고상태에만) ── */
-const VS_MAP = {
-  '즉시출고': { label: '즉시', tone: 'info' },
-  '즉시':     { label: '즉시', tone: 'info' },
-  '출고가능': { label: '가능', tone: 'ok' },
-  '가능':     { label: '가능', tone: 'ok' },
-  '상품화중': { label: '상품화', tone: 'muted' },
-  '상품화':   { label: '상품화', tone: 'muted' },
-  '출고협의': { label: '협의', tone: 'warn' },
-  '협의':     { label: '협의', tone: 'warn' },
-  '출고불가': { label: '불가', tone: 'err' },
-  '불가':     { label: '불가', tone: 'err' },
+/* ── 차량상태 → tone (라벨은 원래 이름 그대로 사용) ── */
+const VS_TONE = {
+  '즉시출고': 'info',
+  '출고가능': 'ok',
+  '상품화중': 'muted',
+  '출고협의': 'warn',
+  '출고불가': 'err',
 };
 
 function badgeHtml(label, tone) {
   return `<span class="badge is-filled badge-${tone}">${label}</span>`;
 }
 
-/* ── 차량상태 뱃지 (즉시/가능/협의/불가) ── */
+/* ── 차량상태 뱃지 (출고가능/출고협의/...) ── */
 function vehicleStatusBadge(product) {
-  const entry = VS_MAP[product?.vehicle_status];
-  return entry ? badgeHtml(entry.label, entry.tone) : '';
+  const vs = product?.vehicle_status;
+  const tone = VS_TONE[vs];
+  return tone ? badgeHtml(vs, tone) : '';
 }
 
-/* ── 렌트/구독 뱃지 — 구분만 표시, 색은 muted ── */
-function rentWayBadge(product) {
-  const pt = product?.product_type || '';
-  const way = /구독$/.test(pt) ? '구독' : (/렌트$/.test(pt) ? '렌트' : '');
-  if (!way) return '';
-  return badgeHtml(way, way === '구독' ? 'cyan' : 'accent');
-}
-
-/* ── 신차/중고 뱃지 ── */
-function originBadge(product) {
-  const pt = product?.product_type || '';
-  const origin = /^신차/.test(pt) ? '신차' : (/^중고/.test(pt) ? '중고' : '');
-  if (!origin) return '';
-  return badgeHtml(origin, origin === '신차' ? 'info' : 'rose');
+/* ── 상품구분 뱃지 (신차렌트/중고렌트/신차구독/중고구독) — 한 개로 합침 ── */
+function productTypeBadge(product) {
+  const pt = (product?.product_type || '').trim();
+  if (!pt) return '';
+  const isNew = /^신차/.test(pt);
+  return badgeHtml(pt, isNew ? 'info' : 'rose');
 }
 
 /* ── 심사여부 판정 (boolean) ── */
@@ -74,7 +62,7 @@ export function reviewOverlayHtml(product) {
   return `<span class="srch-thumb-tag ${need ? 'is-review-needed' : 'is-no-review'}">${need ? '심사필요' : '무심사'}</span>`;
 }
 
-/* ── 상단 뱃지 라인 (카드·갤러리 공통): [차량상태][신차중고][렌트구독][신용등급] ── */
+/* ── 상단 뱃지 라인 (카드·갤러리 공통): [차량상태][상품구분][신용등급] ── */
 export function topBadgesHtml(product) {
-  return `${vehicleStatusBadge(product)}${originBadge(product)}${rentWayBadge(product)}${creditGradeBadge(product)}`;
+  return `${vehicleStatusBadge(product)}${productTypeBadge(product)}${creditGradeBadge(product)}`;
 }

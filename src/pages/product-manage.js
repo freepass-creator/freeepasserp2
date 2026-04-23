@@ -377,35 +377,39 @@ function renderList() {
   renderListCards(el, list);
 }
 
-/** 상품 우클릭 메뉴 — 엑셀뷰·카드뷰 공통 (복제/수정/상태변경/삭제) */
+/** 상품 우클릭 메뉴 — 엑셀뷰·카드뷰 공통 (상태변경/수정/복제/삭제) */
 function buildProductMenu(p) {
   const role = store.currentUser?.role;
   const me = store.currentUser || {};
   const canEdit = role === 'admin' || role === 'provider' && p.provider_company_code === me.company_code;
   const canDelete = role === 'admin' || p.created_by === me.user_code;
 
-  const items = [
-    { icon: 'ph ph-pencil-simple', label: '수정', action: () => {
-      activeKey = p._key;
-      loadAll(p._key);
-    }},
-    { icon: 'ph ph-copy', label: '복제', action: () => createProduct(p).then(() => showToast(`${p.model || '상품'} 복제됨`)) },
-  ];
+  const items = [];
 
+  // 상태변경 — 가장 자주 쓰는 액션, 서브메뉴로 접근
   if (canEdit) {
-    items.push({ divider: true });
-    for (const s of STATUS_OPTS) {
-      items.push({
-        icon: 'ph ph-flag',
+    items.push({
+      icon: 'ph ph-flag',
+      label: `상태: ${p.vehicle_status || '-'}`,
+      submenu: STATUS_OPTS.map(s => ({
         label: s,
         active: p.vehicle_status === s,
         action: async () => {
           await updateRecord(`products/${p._key}`, { vehicle_status: s });
           showToast(`상태 → ${s}`);
         },
-      });
-    }
+      })),
+    });
+    items.push({ divider: true });
   }
+
+  items.push(
+    { icon: 'ph ph-pencil-simple', label: '수정', action: () => {
+      activeKey = p._key;
+      loadAll(p._key);
+    }},
+    { icon: 'ph ph-copy', label: '복제', action: () => createProduct(p).then(() => showToast(`${p.model || '상품'} 복제됨`)) },
+  );
 
   if (canDelete) {
     items.push({ divider: true });
@@ -428,7 +432,7 @@ function renderListCards(el, list) {
     const thumb = firstProductImage(p);
     const driveFolderUrl = !thumb ? supportedDriveSource(p) : '';
     const _trim = trimMinusSub(p.sub_model, p.trim_name || p.trim);
-    const title = [p.sub_model, _trim].filter(v => v && v !== '-').join(' > ') || p.model || '-';
+    const title = [p.sub_model, _trim].filter(v => v && v !== '-').join(' · ') || p.model || '-';
     const color = [p.ext_color, p.int_color].filter(Boolean).join('/');
     const sub = [
       p.provider_company_code,
