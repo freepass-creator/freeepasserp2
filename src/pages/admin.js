@@ -437,9 +437,10 @@ const devLog = (msg) => {
 function mountSignInbox(main) {
   main.innerHTML = `
     <div class="ws4">
+      <!-- Panel 1 (1fr): 요청 목록 -->
       <div class="ws4-panel" data-panel="list">
         <div class="ws4-head">
-          <span>계약서 발송</span>
+          <span>요청 목록</span>
           <span class="sign-inbox-badge" id="signPendCount" style="font-size:var(--fs-2xs);color:var(--c-err);"></span>
         </div>
         <div class="ws4-search">
@@ -453,10 +454,25 @@ function mountSignInbox(main) {
         <div class="ws4-body" id="signList"></div>
       </div>
       <div class="ws4-resize" data-idx="0"></div>
+
+      <!-- Panel 2 (1fr): 계약서 내용 입력 -->
       <div class="ws4-panel" data-panel="detail">
-        <div class="ws4-head">요청 상세</div>
+        <div class="ws4-head">계약 정보</div>
         <div class="ws4-body" id="signDetail">
           <div class="srch-empty"><i class="ph ph-paper-plane-tilt"></i><p>요청을 선택하세요</p></div>
+        </div>
+      </div>
+      <div class="ws4-resize" data-idx="1"></div>
+
+      <!-- Panel 3 (2fr): 계약서 미리보기 -->
+      <div class="ws4-panel" data-panel="preview" style="flex:2 1 50%;">
+        <div class="ws4-head">
+          <i class="ph ph-file-text"></i>
+          <span>계약서 미리보기</span>
+          <span id="signPreviewSub" style="margin-left:var(--sp-2);color:var(--c-text-muted);font-size:var(--fs-xs);font-weight:normal;"></span>
+        </div>
+        <div class="ws4-body" id="signPreview" style="padding:0;background:var(--c-bg-sub);">
+          <div class="srch-empty"><i class="ph ph-file-text"></i><p>계약을 선택하면 미리보기가 나타납니다</p></div>
         </div>
       </div>
     </div>
@@ -598,6 +614,39 @@ function renderSignDetail(code) {
   document.getElementById('signResendBtn')?.addEventListener('click', async () => {
     if (!confirm('기존 서명 링크를 무효화하고 새 링크를 발급합니다.\n진행하시겠습니까?')) return;
     await sendSignLink(c);
+  });
+
+  renderSignPreview(c, state, url);
+}
+
+/** Panel 3 — 계약서 미리보기. 항상 로컬 템플릿을 iframe 로드하고 데이터만 postMessage 주입
+ *  (sign.html 이 외부 URL 로 iframe 되면 Vercel DEPLOYMENT_NOT_FOUND 등 문제 발생) */
+function renderSignPreview(c, state, _url) {
+  const el = document.getElementById('signPreview');
+  const sub = document.getElementById('signPreviewSub');
+  if (!el) return;
+
+  const stateLabel = state === 'done' ? '서명 완료' : state === 'sent' ? '발송됨' : '발송 대기';
+  sub && (sub.textContent = `${stateLabel} · 개인 계약서 양식`);
+
+  el.innerHTML = `<iframe id="signPreviewFrame" src="/contract-template/contract-individual.html" style="width:100%;height:100%;border:0;background:#fff;"></iframe>`;
+  const frame = document.getElementById('signPreviewFrame');
+  const payload = {
+    type: 'contract-data',
+    data: {
+      contract_code: c.contract_code,
+      car_number: c.car_number_snapshot,
+      vehicle_name: c.vehicle_name_snapshot,
+      customer_name: c.customer_name,
+      rent_amount: c.rent_amount_snapshot,
+      rent_month: c.rent_month_snapshot,
+      deposit_amount: c.deposit_amount_snapshot,
+      signed_at: c.signed_at,
+      state,
+    },
+  };
+  frame?.addEventListener('load', () => {
+    try { frame.contentWindow?.postMessage(payload, '*'); } catch {}
   });
 }
 
@@ -1168,6 +1217,7 @@ function renderVmActions(vm) {
       <button class="btn btn-sm btn-outline" style="color:var(--c-err);" id="vmDeleteAll" title="vehicle_master 전체 soft-delete (개발용)"><i class="ph ph-trash"></i> 전체 삭제</button>
       <button class="btn btn-sm btn-primary" id="vmEncar" title="엔카 마스터 1092건 (production_start/end · maker_code · popularity 포함) — 멱등 재실행 가능"><i class="ph ph-download-simple"></i> 엔카 마스터 가져오기</button>
       <button class="btn btn-sm btn-outline" id="vmNormalize" title="products 의 maker/model/sub_model 을 엔카 마스터 표준 명칭으로 정규화"><i class="ph ph-magic-wand"></i> 상품 정규화</button>
+      <button class="btn btn-sm btn-outline" id="vmAutoReg" title="엔카 미수록 제조사·모델 상품들을 차종마스터에 자동 등록"><i class="ph ph-plus-circle"></i> 누락 차종 등록</button>
       <button class="btn btn-sm btn-primary" id="vmNew" style="margin-left:auto;"><i class="ph ph-plus"></i> 차종 추가</button>
     `;
   }
@@ -1179,6 +1229,7 @@ function renderVmActions(vm) {
   });
   document.getElementById('vmEncar')?.addEventListener('click', () => vmEncarImportAction(vm));
   document.getElementById('vmNormalize')?.addEventListener('click', () => vmNormalizeProductsAction(vm));
+  document.getElementById('vmAutoReg')?.addEventListener('click', () => vmAutoRegisterAction(vm));
   document.getElementById('vmDeleteAll')?.addEventListener('click', () => vmDeleteAllAction(vm));
   document.getElementById('vmNew')?.addEventListener('click', () => {
     _vmMode = 'new'; _vmSelectedKey = null; _vmForm = { ...VM_EMPTY_FORM };
@@ -1497,6 +1548,93 @@ async function vmSaveAction(vm) {
     renderVmActions(vm); renderVmDetail(vm);
   } catch (e) {
     showToast(`저장 실패: ${e?.message}`, 'error');
+  }
+}
+
+/** 엔카 마스터에 없는 제조사·차종을 products 에서 추출해서 vehicle_master 에 자동 등록.
+ *  정규화 실패 상품 구제용 — 람보르기니·페라리·벤틀리 등 엔카 택소노미 외 차종.
+ *  등록 후 "상품 정규화" 재실행하면 대부분 매칭됨. */
+async function vmAutoRegisterAction(vm) {
+  const products = (store.products || []).filter(p => p.status !== 'deleted' && !p._deleted);
+  if (!products.length) { showToast('상품 없음'); return; }
+
+  // 기존 마스터에 이미 있는 (maker|sub) 조합 인덱스 — 중복 등록 방지
+  const existing = new Set();
+  for (const m of _vmModels) {
+    if (m.maker && m.sub) existing.add(`${m.maker}|${m.sub}`);
+  }
+
+  // 제조사별 국산/수입 추정 — JPKerp2 DOMESTIC_MAKERS 준용
+  const DOMESTIC = new Set(['현대', '기아', '제네시스', '르노', 'KGM', '쌍용', '쉐보레']);
+
+  // 등록 후보 추출 — 중복 제거 (maker|sub_model 기준)
+  const toAdd = new Map();       // key: "maker|sub_model" → row
+  const byMakerCount = new Map();
+  for (const p of products) {
+    const mk = (p.maker || '').trim();
+    const sub = (p.sub_model || '').trim();
+    if (!mk || !sub) continue;
+    const key = `${mk}|${sub}`;
+    if (existing.has(key)) continue;
+    if (toAdd.has(key)) {
+      toAdd.get(key)._count++;
+      continue;
+    }
+    toAdd.set(key, {
+      maker: mk,
+      model: (p.model || '').trim() || sub,              // model 없으면 sub_model로 대체
+      sub,
+      car_name: sub,                                     // 등록증 매칭키 초깃값
+      origin: DOMESTIC.has(mk) ? '국산' : '수입',
+      source: 'from_products',
+      status: 'active',
+      _count: 1,
+    });
+    byMakerCount.set(mk, (byMakerCount.get(mk) || 0) + 1);
+  }
+
+  if (!toAdd.size) {
+    showToast('등록할 누락 차종이 없습니다 — 모든 상품의 차종이 이미 마스터에 있음');
+    return;
+  }
+
+  // 제조사별 요약 (상위 10개)
+  const makerSummary = [...byMakerCount.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 10)
+    .map(([mk, n]) => `  ${mk}: ${n}종`)
+    .join('\n');
+
+  if (!confirm(
+    `products 에서 미등록 차종 ${toAdd.size}종 발견\n\n`
+    + `제조사별 요약:\n${makerSummary}${byMakerCount.size > 10 ? `\n  외 ${byMakerCount.size - 10}개 제조사` : ''}\n\n`
+    + `자동 등록 (source: 'from_products')?\n`
+    + `※ category·production 등 메타는 비워두고, 이후 수동 편집 가능합니다.`
+  )) return;
+
+  devLog(`[vmAutoReg] ${toAdd.size}종 등록 시작`);
+  const { ref: dbRef, update: dbUpdate, push: dbPush } = await import('firebase/database');
+  const { db } = await import('../firebase/config.js');
+  const updates = {};
+  const now = Date.now();
+  for (const row of toAdd.values()) {
+    const key = dbPush(dbRef(db, 'vehicle_master')).key;
+    const { _count, ...payload } = row;
+    updates[`vehicle_master/${key}`] = { ...payload, created_at: now, updated_at: now };
+  }
+  try {
+    const keys = Object.keys(updates);
+    const CHUNK = 400;
+    for (let i = 0; i < keys.length; i += CHUNK) {
+      const slice = {};
+      for (const k of keys.slice(i, i + CHUNK)) slice[k] = updates[k];
+      await dbUpdate(dbRef(db), slice);
+      devLog(`[vmAutoReg] ${Math.min(i + CHUNK, keys.length)}/${keys.length} 패스`);
+    }
+    devLog(`[vmAutoReg] 완료 · ${toAdd.size}종 등록`);
+    showToast(`${toAdd.size}종 등록 — "상품 정규화" 재실행하면 매칭됩니다`);
+  } catch (e) {
+    showToast(`실패: ${e.message}`, 'error');
   }
 }
 
