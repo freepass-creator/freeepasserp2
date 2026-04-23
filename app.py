@@ -286,9 +286,9 @@ def alimtalk_send():
 
 import hmac, hashlib, secrets, datetime, json as _json
 
-SOLAPI_API_KEY = os.environ.get('SOLAPI_API_KEY', 'NCSV5JTOZ121DIDR')
-SOLAPI_API_SECRET = os.environ.get('SOLAPI_API_SECRET', 'EHWRARRBCD9UYQ3HFBM8XINKZD8BHNE0')
-SOLAPI_FROM = os.environ.get('SOLAPI_FROM', '01063930926')
+SOLAPI_API_KEY = os.environ.get('SOLAPI_API_KEY', '')
+SOLAPI_API_SECRET = os.environ.get('SOLAPI_API_SECRET', '')
+SOLAPI_FROM = os.environ.get('SOLAPI_FROM', '')
 SMS_API_ADMIN_KEY = os.environ.get('SMS_API_ADMIN_KEY', '')
 
 def _solapi_auth_header():
