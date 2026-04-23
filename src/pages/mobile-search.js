@@ -338,7 +338,7 @@ function renderActive() {
   const total = chips.length;
   el.innerHTML = chips.map(c => `
     <span class="chip is-active m-active-chip"><span>${c.label}</span><button class="chip-remove" data-remove="${c.g}::${c.cid}" aria-label="${c.label} 해제">×</button></span>
-  `).join('') + `<button class="m-search-clear-all ${total ? 'is-active' : ''}" id="mSearchClearAll" ${total ? '' : 'disabled'}>전체해제${total ? ` <span class="sb-badge is-visible" style="margin-left:4px;">${total}</span>` : ''}</button>`;
+  `).join('') + `<button class="m-search-clear-all ${total ? 'is-active' : ''}" id="mSearchClearAll" ${total ? '' : 'disabled'}>전체해제</button>`;
 }
 
 function render() {
