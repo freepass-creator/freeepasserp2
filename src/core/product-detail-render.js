@@ -6,7 +6,7 @@ import { store } from './store.js';
 import { fmtMoney, trimMinusSub } from './format.js';
 import { first, parsePol, findPolicy } from './policy-utils.js';
 import { topBadgesHtml, reviewOverlayHtml, needsReview } from './product-badges.js';
-import { productImages, productExternalImages, supportedDriveSource } from './product-photos.js';
+import { productImages, productExternalImages, supportedDriveSource, toProxiedImage } from './product-photos.js';
 import { normalizeYear } from './normalize.js';
 
 const COLOR_MAP = {
@@ -173,7 +173,8 @@ function _renderProductDetail(container, product, options = {}) {
   const price = p.price || {};
 
   // 이미지
-  const imgList = [...new Set([...productImages(p), ...productExternalImages(p)])];
+  // 모바일 cross-origin 차단 우회 — 외부 호스트 URL 은 /api/img 프록시로 자동 변환
+  const imgList = [...new Set([...productImages(p), ...productExternalImages(p)])].map(toProxiedImage);
   const driveSource = supportedDriveSource(p);
 
   // Drive 폴더/지원 사이트면 서버 API로 해석 후 재렌더
