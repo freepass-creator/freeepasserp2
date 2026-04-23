@@ -977,7 +977,7 @@
     z-index: 2;
     background: var(--c-bg-sub);
     font-size: var(--fs-xs);
-    font-weight: var(--fw-semibold);
+    font-weight: var(--fw-medium);
     color: var(--c-text);
     letter-spacing: -0.02em;
     padding: 0 var(--sp-3);
@@ -1005,7 +1005,7 @@
     vertical-align: middle;
   }
   .excl-table td.excl-sticky-left {
-    font-weight: var(--fw-semibold);
+    font-weight: var(--fw-normal);
     color: var(--c-accent);
   }
   /* zebra — :where() 로 specificity 0 : hover/active 가 확실히 덮도록 */
