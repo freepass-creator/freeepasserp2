@@ -6,7 +6,6 @@
  */
 import { store } from '../core/store.js';
 import { watchCollection, updateRecord, pushRecord } from '../firebase/db.js';
-import { uploadFile } from '../firebase/storage-helper.js';
 import { markRoomRead } from '../firebase/collections.js';
 import { showToast } from '../core/toast.js';
 import { STEPS as CONTRACT_STEPS, getProgress } from '../core/contract-steps.js';
@@ -172,8 +171,6 @@ function openRoom(roomId) {
         <div class="m-empty"><i class="ph ph-spinner ph-spin"></i></div>
       </div>
       <div class="m-chat-input-area">
-        <input type="file" id="mwsChatFile" multiple hidden accept="image/*,.pdf,.doc,.docx">
-        <button class="m-chat-attach" id="mwsChatAttach" aria-label="파일 첨부"><i class="ph ph-paperclip"></i></button>
         <input class="m-chat-input" id="mwsChatText" type="text" name="chat_message"
                placeholder="메시지 입력..."
                autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
@@ -280,8 +277,6 @@ function renderMessages() {
 function bindChatInput(roomId, room) {
   const input = document.getElementById('mwsChatText');
   const sendBtn = document.getElementById('mwsChatSend');
-  const attachBtn = document.getElementById('mwsChatAttach');
-  const fileInput = document.getElementById('mwsChatFile');
 
   const send = async () => {
     const text = input.value.trim();
@@ -304,41 +299,6 @@ function bindChatInput(roomId, room) {
   sendBtn?.addEventListener('click', send);
   input?.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
-  });
-  attachBtn?.addEventListener('click', () => fileInput.click());
-  fileInput?.addEventListener('change', async () => {
-    const files = Array.from(fileInput.files || []);
-    const MAX = 10 * 1024 * 1024;
-    const ok = files.filter(f => f.size <= MAX);
-    if (files.length > ok.length) showToast(`${files.length - ok.length}개 초과 — 제외`, 'error');
-    const user = store.currentUser;
-    for (const file of ok) {
-      try {
-        const path = `chat-files/${roomId}/${Date.now()}_${file.name}`;
-        const { url } = await uploadFile(path, file);
-        const isImage = file.type.startsWith('image/');
-        const senderCode = user.user_code || user.agent_code || user.company_code || '';
-        await pushRecord(`messages/${roomId}`, {
-          text: isImage ? '' : file.name,
-          sender_uid: user.uid, sender_role: user.role, sender_code: senderCode,
-          sender_name: user.name || '', created_at: Date.now(),
-          ...(isImage ? { image_url: url } : { file_url: url }),
-        });
-        const cur = (store.rooms || []).find(r => r._key === roomId) || {};
-        const upd = {
-          last_message: isImage ? '📷 사진' : `📎 ${file.name}`,
-          last_message_at: Date.now(), last_sender_role: user.role,
-          last_sender_uid: user.uid, last_sender_code: senderCode,
-        };
-        if (user.role === 'agent') upd.unread_for_provider = (cur.unread_for_provider || 0) + 1;
-        else if (user.role === 'provider') upd.unread_for_agent = (cur.unread_for_agent || 0) + 1;
-        await updateRecord(`rooms/${roomId}`, upd);
-      } catch (e) {
-        console.warn('[mws-upload]', e);
-        showToast(`${file.name} 업로드 실패`, 'error');
-      }
-    }
-    fileInput.value = '';
   });
 
   // 포커스 시 읽음

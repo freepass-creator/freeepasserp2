@@ -1216,6 +1216,7 @@ function renderVmActions(vm) {
       </button>
       <button class="btn btn-sm btn-outline" style="color:var(--c-err);" id="vmDeleteAll" title="vehicle_master 전체 soft-delete (개발용)"><i class="ph ph-trash"></i> 전체 삭제</button>
       <button class="btn btn-sm btn-primary" id="vmEncar" title="엔카 마스터 1092건 (production_start/end · maker_code · popularity 포함) — 멱등 재실행 가능"><i class="ph ph-download-simple"></i> 엔카 마스터 가져오기</button>
+      <button class="btn btn-sm btn-outline" id="vmResync" title="vehicle_master 전체 삭제 후 엔카 마스터 1092건만 재임포트 — JPKerp2와 정확히 일치"><i class="ph ph-arrow-clockwise"></i> JPKerp 완전 동기화</button>
       <button class="btn btn-sm btn-outline" id="vmAudit" title="products 의 (maker·model·sub_model) 조합 전수 감사 — 매칭/ambig/결측 상세 리포트"><i class="ph ph-list-magnifying-glass"></i> 차종 감사</button>
       <button class="btn btn-sm btn-outline" id="vmNormalize" title="products 의 maker/model/sub_model 을 엔카 마스터 표준 명칭으로 정규화"><i class="ph ph-magic-wand"></i> 상품 정규화</button>
       <button class="btn btn-sm btn-outline" id="vmAutoReg" title="엔카 미수록 제조사·모델 상품들을 차종마스터에 자동 등록"><i class="ph ph-plus-circle"></i> 누락 차종 등록</button>
@@ -1229,6 +1230,7 @@ function renderVmActions(vm) {
     renderVmActions(vm); renderVmList(vm);
   });
   document.getElementById('vmEncar')?.addEventListener('click', () => vmEncarImportAction(vm));
+  document.getElementById('vmResync')?.addEventListener('click', () => vmFullResyncAction(vm));
   document.getElementById('vmAudit')?.addEventListener('click', () => vmAuditAction(vm));
   document.getElementById('vmNormalize')?.addEventListener('click', () => vmNormalizeProductsAction(vm));
   document.getElementById('vmAutoReg')?.addEventListener('click', () => vmAutoRegisterAction(vm));
@@ -1897,6 +1899,62 @@ async function vmSeedAction(vm) {
     devLog(`[vmSeed] 완료: 추가 ${result.added} · 스킵 ${result.skipped}`);
     showToast(`${result.added}종 시드 완료`);
   } catch (e) { showToast(`시드 실패: ${e?.message}`, 'error'); }
+}
+
+/** JPKerp2 완전 동기화 — vehicle_master 전체 하드 삭제 후 엔카 시드만 재임포트.
+ *  결과: JPKerp2의 `import-vehicle-master.mjs --replace` 실행 결과와 1:1 일치 */
+async function vmFullResyncAction(vm) {
+  const before = _vmModels.length;
+  const msg1 = `⚠ JPKerp2 완전 동기화\n\n`
+    + `현재 vehicle_master ${before}건을 모두 하드 삭제하고\n`
+    + `엔카 마스터 1092건만 새로 임포트합니다.\n\n`
+    + `이전 "차종 시드"로 들어온 연식 suffix 형식 (예: "아반떼 CN7 22-") 이 모두 제거되고\n`
+    + `엔카 표준 ("더 뉴 아반떼 (CN7)") 만 남습니다.\n\n`
+    + `계속?`;
+  if (!confirm(msg1)) return;
+  if (!confirm(`마지막 확인 — ${before}건 삭제 후 1092건 재임포트`)) return;
+
+  const { ref: dbRef, remove: dbRemove, update: dbUpdate } = await import('firebase/database');
+  const { db } = await import('../firebase/config.js');
+
+  devLog(`[vmResync] 1/2 — vehicle_master ${before}건 전체 삭제`);
+  try {
+    await dbRemove(dbRef(db, 'vehicle_master'));
+  } catch (e) {
+    showToast(`삭제 실패: ${e.message}`, 'error');
+    return;
+  }
+
+  devLog(`[vmResync] 2/2 — 엔카 1092건 임포트`);
+  let rows;
+  try {
+    const res = await fetch('/data/encar-master-seed.json', { cache: 'no-store' });
+    rows = await res.json();
+  } catch (e) {
+    showToast(`엔카 JSON 로드 실패: ${e.message}`, 'error');
+    return;
+  }
+
+  const updates = {};
+  const now = Date.now();
+  for (const r of rows) {
+    const { _key, ...payload } = r;
+    updates[`vehicle_master/${_key}`] = { ...payload, created_at: now, updated_at: now };
+  }
+  const keys = Object.keys(updates);
+  const CHUNK = 400;
+  try {
+    for (let i = 0; i < keys.length; i += CHUNK) {
+      const slice = {};
+      for (const k of keys.slice(i, i + CHUNK)) slice[k] = updates[k];
+      await dbUpdate(dbRef(db), slice);
+      devLog(`[vmResync] 배치 ${Math.min(i + CHUNK, keys.length)}/${keys.length}`);
+    }
+    devLog(`[vmResync] 완료 · JPKerp2 와 1:1 일치 (${rows.length}건)`);
+    showToast(`완전 동기화 완료: ${rows.length}건`);
+  } catch (e) {
+    showToast(`임포트 실패: ${e.message}`, 'error');
+  }
 }
 
 /** JPKerp2 /scripts/vehicle-master-seed.json (엔카 1092건) 일괄 import
