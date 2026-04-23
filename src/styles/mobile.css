@@ -1052,13 +1052,14 @@
   .m-card-product .m-card-main-line {
     display: flex;
     align-items: baseline;
-    gap: 8px;
+    gap: 4px;
     font-variant-numeric: tabular-nums;
     line-height: 1.2;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    min-width: 0;
   }
   .m-card-price-rent {
     font-size: var(--fs-xl);           /* 20px — 대여료만 도드라지게 */
@@ -1100,14 +1101,13 @@
     display: inline-flex;
     align-items: center;
     height: 18px;
-    padding: 0 6px;
+    padding: 0 5px;
     font-size: var(--fs-2xs);
     font-weight: var(--fw-medium);
     border-radius: var(--ctrl-r);
     background: var(--c-bg-sub);
     color: var(--c-text-sub);
     line-height: 1;
-    margin-left: 4px;
   }
   .m-card-pill.is-ok          { background: var(--c-ok-bg);   color: var(--c-ok); }
   .m-card-pill.is-warn        { background: var(--c-warn-bg); color: var(--c-warn); }
