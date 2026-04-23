@@ -13,6 +13,7 @@ import { initWs4Resize } from '../core/resize.js';
 import { saveNotice, updateNotice, deleteNotice, uploadNoticeImage } from '../firebase/notices.js';
 import { setBreadcrumbBrief } from '../core/breadcrumb.js';
 import { renderExcelTable } from '../core/excel-table.js';
+import { isMobile } from '../core/mobile-shell.js';
 
 let unsubs = [];
 let activeKey = null;
@@ -32,6 +33,19 @@ export function mount(subPath) {
   else mode = 'users';
 
   const main = document.getElementById('mainContent');
+
+  // 모바일에선 PC 안내만 표시 (admin 화면은 복잡해서 모바일 미최적화)
+  if (isMobile()) {
+    main.innerHTML = `
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;padding:var(--sp-6);text-align:center;gap:var(--sp-3);">
+        <i class="ph ph-desktop" style="font-size:48px;color:var(--c-text-muted);"></i>
+        <div style="font-size:var(--fs-md);font-weight:var(--fw-semibold);">PC에서 접속해주세요</div>
+        <div style="color:var(--c-text-muted);font-size:var(--fs-sm);line-height:1.5;">
+          관리자 기능은<br>PC 화면에 최적화되어 있습니다.
+        </div>
+      </div>`;
+    return;
+  }
 
   if (mode === 'dev') { mountDev(main); return; }
   if (mode === 'sign') { mountSignInbox(main); return; }
@@ -1066,7 +1080,7 @@ const VM_SIZE_CLASSES = ['경차', '소형', '준중형', '중형', '준대형',
 
 const VM_EMPTY_FORM = {
   maker: '', model: '', sub: '', code: '',
-  year_start: '', year_end: '현재',
+  production_start: '', production_end: '현재',   // 엔카 기준 (YYYY-MM)
   category: '', fuel_type: '',
   origin: '', powertrain: '',
   seats: '', displacement: '', battery_kwh: '',
@@ -1167,6 +1181,7 @@ function renderVmActions(vm) {
       </button>
       <button class="btn btn-sm btn-outline" style="color:var(--c-err);" id="vmDeleteAll" title="vehicle_master 전체 soft-delete (개발용)"><i class="ph ph-trash"></i> 전체 삭제</button>
       <button class="btn btn-sm btn-outline" id="vmSeed" title="한국 차종 263종 일괄 등록"><i class="ph ph-flag"></i> 차종 시드</button>
+      <button class="btn btn-sm btn-primary" id="vmEncar" title="엔카 마스터 1092건 (production_start/end · maker_code · popularity 포함)"><i class="ph ph-download-simple"></i> 엔카 마스터</button>
       <button class="btn btn-sm btn-outline" id="vmEnrich" title="기존 레코드의 빈 스펙을 시드 데이터로 보완"><i class="ph ph-wrench"></i> 기존 보완</button>
       <button class="btn btn-sm btn-outline" id="vmPrep" title="products 에서 미등록 차종 조합 추출"><i class="ph ph-table"></i> 데이터 준비</button>
       <button class="btn btn-sm btn-primary" id="vmNew" style="margin-left:auto;"><i class="ph ph-plus"></i> 차종 추가</button>
@@ -1179,6 +1194,7 @@ function renderVmActions(vm) {
     renderVmActions(vm); renderVmList(vm);
   });
   document.getElementById('vmSeed')?.addEventListener('click', () => vmSeedAction(vm));
+  document.getElementById('vmEncar')?.addEventListener('click', () => vmEncarImportAction(vm));
   document.getElementById('vmEnrich')?.addEventListener('click', () => vmEnrichAction(vm));
   document.getElementById('vmPrep')?.addEventListener('click', () => vmStartPrep(vm));
   document.getElementById('vmDeleteAll')?.addEventListener('click', () => vmDeleteAllAction(vm));
@@ -1214,7 +1230,9 @@ function renderVmActions(vm) {
 function vmFormFromRow(r) {
   return {
     maker: r.maker || '', model: r.model || '', sub: r.sub || '', code: r.code || '',
-    year_start: String(r.year_start ?? ''), year_end: String(r.year_end ?? '현재'),
+    // production_* 우선, 없으면 year_* 폴백 (레거시 호환)
+    production_start: String(r.production_start ?? r.year_start ?? ''),
+    production_end: String(r.production_end ?? r.year_end ?? '현재'),
     category: r.category || '', fuel_type: r.fuel_type || '',
     origin: r.origin || '', powertrain: r.powertrain || '',
     seats: r.seats ? String(r.seats) : '',
@@ -1324,8 +1342,8 @@ function renderVmList(vm) {
         <span style="font-weight:var(--fw-medium);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${v.sub || '-'}</span>
         <span style="color:${v.origin === '수입' ? 'var(--c-accent)' : 'var(--c-text-sub)'};font-weight:${v.origin === '수입' ? 'var(--fw-semibold)' : 'normal'};">${v.origin || '-'}</span>
         <span style="color:var(--c-text-sub);">${v.category || '-'}</span>
-        <span style="color:var(--c-text-sub);font-size:var(--fs-2xs);">${v.year_start || '-'}</span>
-        <span style="color:${v.year_end === '현재' ? 'var(--c-ok)' : 'var(--c-text-sub)'};font-size:var(--fs-2xs);font-weight:${v.year_end === '현재' ? 'var(--fw-semibold)' : 'normal'};">${v.year_end || '-'}</span>
+        <span style="color:var(--c-text-sub);font-size:var(--fs-2xs);">${v.production_start || v.year_start || '-'}</span>
+        <span style="color:${(v.production_end || v.year_end) === '현재' ? 'var(--c-ok)' : 'var(--c-text-sub)'};font-size:var(--fs-2xs);font-weight:${(v.production_end || v.year_end) === '현재' ? 'var(--fw-semibold)' : 'normal'};">${v.production_end || v.year_end || '-'}</span>
         <span style="text-align:right;color:${v.asset_count > 0 ? 'var(--c-accent)' : 'var(--c-text-muted)'};font-weight:${v.asset_count > 0 ? 'var(--fw-semibold)' : 'normal'};">${v.asset_count}</span>
       </div>
     `).join('')}
@@ -1359,7 +1377,7 @@ function renderVmDetail(vm) {
           ${kv('구분', selected.origin ? `<b style="color:${selected.origin === '수입' ? 'var(--c-accent)' : 'var(--c-text)'};">${selected.origin}</b>` : '')}
           ${kv('동력', selected.powertrain ? `<b style="color:${selected.powertrain === '전기' ? 'var(--c-ok)' : selected.powertrain === '하이브리드' ? 'var(--c-warn)' : 'var(--c-text)'};">${selected.powertrain}</b>` : '')}
           ${kv('코드', selected.code)}
-          ${kv('연식', `${selected.year_start || '?'} ~ ${selected.year_end || '현재'}`)}
+          ${kv('생산기간', `${selected.production_start || selected.year_start || '?'} ~ ${selected.production_end || selected.year_end || '현재'}`)}
           ${kv('분류', selected.category)}
           ${kv('차체', selected.body_type)}
           ${kv('크기', selected.size_class)}
@@ -1411,8 +1429,8 @@ function renderVmDetail(vm) {
         ${row('세부모델 *', 'sub', f.sub, { placeholder: '아반떼 CN7 23-' })}
         ${row('내부코드', 'code', f.code, { placeholder: 'CN7' })}
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-2);">
-          ${row('생산시작', 'year_start', f.year_start, { placeholder: '2023' })}
-          ${row('생산종료', 'year_end', f.year_end, { placeholder: '현재' })}
+          ${row('생산시작', 'production_start', f.production_start, { placeholder: '2023-04 또는 2023' })}
+          ${row('생산종료', 'production_end', f.production_end, { placeholder: '현재 또는 2024-12' })}
         </div>
         ${sel('분류', 'category', f.category, VM_CATEGORIES)}
         ${sel('제조국', 'origin', f.origin, VM_ORIGINS)}
@@ -1458,8 +1476,9 @@ async function vmSaveAction(vm) {
   const payload = {
     maker: f.maker.trim(), model: f.model.trim(), sub: f.sub.trim(),
     code: f.code.trim() || undefined,
-    year_start: f.year_start.trim() || undefined,
-    year_end: f.year_end.trim() || '현재',
+    production_start: f.production_start.trim() || undefined,
+    production_end: f.production_end.trim() || '현재',
+    // year_* 레거시 필드는 저장 안 함 (기존 레코드는 읽기만)
     category: f.category || undefined,
     fuel_type: f.fuel_type || undefined,
     origin: f.origin || undefined,
@@ -1513,6 +1532,85 @@ async function vmSeedAction(vm) {
     devLog(`[vmSeed] 완료: 추가 ${result.added} · 스킵 ${result.skipped}`);
     showToast(`${result.added}종 시드 완료`);
   } catch (e) { showToast(`시드 실패: ${e?.message}`, 'error'); }
+}
+
+/** JPKerp2 /scripts/vehicle-master-seed.json (엔카 1092건) 일괄 import
+ *  _key (encar_xxx) 기반 멱등 · 기존 레코드는 엔카 필드만 merge */
+async function vmEncarImportAction(vm) {
+  let rows;
+  try {
+    const res = await fetch('/data/encar-master-seed.json', { cache: 'no-store' });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    rows = await res.json();
+  } catch (e) {
+    showToast(`엔카 JSON 로드 실패: ${e.message}`, 'error');
+    return;
+  }
+  if (!Array.isArray(rows) || !rows.length) {
+    showToast('엔카 JSON 비어있음', 'error');
+    return;
+  }
+
+  // 기존 레코드 index: maker|model|sub → key
+  const existingByCombo = new Map();
+  const existingByKey = new Map();
+  for (const m of _vmModels) {
+    if (m._key) existingByKey.set(m._key, m);
+    const combo = [m.maker, m.model, m.sub].filter(Boolean).join('|');
+    if (combo && !existingByCombo.has(combo)) existingByCombo.set(combo, m);
+  }
+
+  const toAdd = [];
+  const toMerge = [];
+  for (const r of rows) {
+    const combo = [r.maker, r.model, r.sub].filter(Boolean).join('|');
+    const byKey = r._key && existingByKey.get(r._key);
+    const byCombo = existingByCombo.get(combo);
+    const existing = byKey || byCombo;
+    if (existing) toMerge.push({ key: existing._key, row: r });
+    else toAdd.push(r);
+  }
+
+  if (!confirm(
+    `엔카 마스터 ${rows.length}건 import\n`
+    + `  신규 추가: ${toAdd.length}\n`
+    + `  기존 병합 (production_*·popularity·maker_code 채움): ${toMerge.length}\n\n`
+    + `진행?`)) return;
+
+  devLog(`[vmEncar] 시작 · 추가 ${toAdd.length} · 병합 ${toMerge.length}`);
+  const { ref: dbRef, update: dbUpdate, set: dbSet, push: dbPush, serverTimestamp }
+    = await import('firebase/database');
+  const { db } = await import('../firebase/config.js');
+
+  let ok = 0, fail = 0;
+  try {
+    for (const r of toAdd) {
+      try {
+        const payload = { ...r, created_at: Date.now(), updated_at: Date.now() };
+        // _key는 내부용 — 저장 path 자체에 쓰지 않음 (encar_xxx key로 저장)
+        const key = r._key;
+        delete payload._key;
+        await dbSet(dbRef(db, `vehicle_master/${key}`), payload);
+        ok++;
+        if (ok % 50 === 0) devLog(`[vmEncar] ${ok}/${toAdd.length} 추가`);
+      } catch (e) { fail++; console.error('[vmEncar] add 실패', r._key, e); }
+    }
+    for (const { key, row } of toMerge) {
+      try {
+        const patch = { updated_at: Date.now() };
+        // 엔카 고유 필드만 병합 (기존 데이터 보존)
+        for (const f of ['production_start','production_end','car_name','maker_eng','maker_code','popularity','model_popularity','category','archived','source']) {
+          if (row[f] !== undefined && row[f] !== null && row[f] !== '') patch[f] = row[f];
+        }
+        await dbUpdate(dbRef(db, `vehicle_master/${key}`), patch);
+        ok++;
+      } catch (e) { fail++; console.error('[vmEncar] merge 실패', key, e); }
+    }
+    devLog(`[vmEncar] 완료 · 성공 ${ok} · 실패 ${fail}`);
+    showToast(`엔카 import 완료: ${ok}건${fail ? ` (실패 ${fail})` : ''}`);
+  } catch (e) {
+    showToast(`import 실패: ${e.message}`, 'error');
+  }
 }
 
 async function vmEnrichAction(vm) {
