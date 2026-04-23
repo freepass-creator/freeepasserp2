@@ -2025,22 +2025,17 @@ async function vmNormalizeProductsAction(vm) {
       continue;
     }
 
-    // 매칭 성공 → 연식 보완 체크 (product.year 가 비어있거나 범위 밖이면 master.production_start 연도로 채움)
-    const bestStartYear = yearOf(best.production_start ?? best.year_start);
-    const py = yearNum(p);
-    const needYearFix = bestStartYear && (!py || withinRange(p, best) === false);
+    // 매칭 성공 — 단, year 는 절대 건드리지 않음 (product.year 는 실제 차량 제작연도라 정확)
     const identical = best.maker === p.maker && best.model === p.model && best.sub === p.sub_model;
 
-    if (identical && !needYearFix) {
+    if (identical) {
       unchanged++;
     } else {
       const change = {
         key: p._key,
-        from: { maker: p.maker, model: p.model, sub_model: p.sub_model, year: p.year },
-        to:   { maker: best.maker, model: best.model, sub_model: best.sub, year: needYearFix ? String(bestStartYear) : undefined },
+        from: { maker: p.maker, model: p.model, sub_model: p.sub_model },
+        to:   { maker: best.maker, model: best.model, sub_model: best.sub },
         makerChanged: best.maker !== p.maker,
-        yearChanged: needYearFix,
-        fieldChanged: !identical,
       };
       changes.push(change);
       if (change.makerChanged) changedMaker.push(change);
@@ -2075,14 +2070,9 @@ async function vmNormalizeProductsAction(vm) {
   const updates = {};
   const now = Date.now();
   for (const c of changes) {
-    if (c.fieldChanged) {
-      updates[`products/${c.key}/maker`] = c.to.maker;
-      updates[`products/${c.key}/model`] = c.to.model;
-      updates[`products/${c.key}/sub_model`] = c.to.sub_model;
-    }
-    if (c.yearChanged && c.to.year) {
-      updates[`products/${c.key}/year`] = c.to.year;
-    }
+    updates[`products/${c.key}/maker`] = c.to.maker;
+    updates[`products/${c.key}/model`] = c.to.model;
+    updates[`products/${c.key}/sub_model`] = c.to.sub_model;
     updates[`products/${c.key}/updated_at`] = now;
   }
   const keys = Object.keys(updates);

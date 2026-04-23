@@ -341,27 +341,19 @@
     height: 32px;
   }
 
-  /* 필터 칩 row — 활성필터(.m-search-active)와 동일 규격: 검색창 바로 아래 타이트 */
-  .m-filter-chips {
-    display: flex;
-    gap: var(--sp-1);
-    padding: 0 var(--sp-3) var(--sp-1);
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  .m-filter-chips::-webkit-scrollbar { display: none; }
-
-  /* 활성 필터 strip — .m-filter-chips 와 동일 간격 */
+  /* 검색창 아래 한 줄 — 필터칩(탭)·활성필터 스트립 공통 규격 */
+  .m-filter-chips,
   .m-search-active {
     display: flex;
-    flex-wrap: wrap;
     align-items: center;
     gap: var(--sp-1);
     min-height: 24px;
     padding: 0 var(--sp-3) var(--sp-1);
-    margin-bottom: 0;
+    margin: 0;
   }
+  .m-filter-chips { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .m-filter-chips::-webkit-scrollbar { display: none; }
+  .m-search-active { flex-wrap: wrap; }
   .m-search-active-empty {
     font-size: var(--fs-xs);
     color: var(--c-text-muted);
@@ -973,7 +965,7 @@
     background: var(--c-bg);
   }
 
-  /* ── 검색 헤더 (sticky) ── */
+  /* ── 검색 헤더 (sticky) — 전 페이지 공통 규격 ── */
   .m-search-head {
     position: sticky;
     top: 0;
@@ -982,7 +974,6 @@
     border-bottom: 1px solid var(--c-border);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    padding-top: var(--sp-2);
   }
 
   /* ── 검색 리스트 / 일반 페이지 body ── */
