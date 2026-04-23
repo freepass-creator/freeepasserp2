@@ -159,13 +159,23 @@ export async function markRoomRead(roomId, role, uid, room) {
   await updateRecord(`rooms/${roomId}`, updates);
 }
 
-/* ── 사용자 프로필 저장 (회원가입 시) ── */
+/* ── 사용자 프로필 저장 (회원가입 시) ──
+ * 규칙:
+ *  - user_code 는 소속과 무관하게 전역 시퀀스(U0001…)
+ *  - company_code 미지정 → 임시소속 'SP999' + role 'agent' 강제 (가입 양식 값 덮어씀)
+ *    (정식 소속·역할은 관리자 승인 시 재지정)
+ */
 export async function saveUserProfile(uid, profile) {
   const user_code = await allocateUserCode();
+  const hasCompany = !!profile.company_code;
+  const finalRole = hasCompany ? (profile.role || 'agent') : 'agent';
+  const finalCompanyCode = hasCompany ? profile.company_code : 'SP999';
   await setRecord(`users/${uid}`, {
     uid,
     ...profile,
     user_code,
+    role: finalRole,
+    company_code: finalCompanyCode,
     status: 'pending',
     created_at: Date.now(),
   });
