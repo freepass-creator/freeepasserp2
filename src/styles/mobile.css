@@ -754,6 +754,12 @@
   .m-info-row-split .m-info-row-edit + .m-info-row-edit {
     border-left: 1px solid var(--c-border-soft);
   }
+  .m-info-row-edit .m-info-suffix {
+    flex-shrink: 0;
+    margin-left: 2px;
+    font-size: var(--fs-xs);
+    color: var(--c-text-muted);
+  }
   .m-info-row-edit .m-info-label { flex-shrink: 0; }
   .m-info-row-edit .m-info-input {
     flex: 1;
