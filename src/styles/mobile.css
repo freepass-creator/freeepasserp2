@@ -742,6 +742,18 @@
     border-bottom: 1px solid var(--c-border-soft);
   }
   .m-info-row-edit:last-child { border-bottom: 0; }
+
+  /* 한 줄에 두 필드 반반 배치 (월대여료 · 보증금) */
+  .m-info-row-split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    border-bottom: 1px solid var(--c-border-soft);
+  }
+  .m-info-row-split:last-child { border-bottom: 0; }
+  .m-info-row-split .m-info-row-edit { border-bottom: 0; gap: var(--sp-2); }
+  .m-info-row-split .m-info-row-edit + .m-info-row-edit {
+    border-left: 1px solid var(--c-border-soft);
+  }
   .m-info-row-edit .m-info-label { flex-shrink: 0; }
   .m-info-row-edit .m-info-input {
     flex: 1;

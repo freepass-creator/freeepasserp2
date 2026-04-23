@@ -460,19 +460,19 @@ function renderProgressPanel(c) {
         <span class="m-info-label">대여기간</span>
         <span class="m-info-value" style="display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end;">${periodChips}</span>
       </div>
-      <div class="m-info-row-edit">
-        <span class="m-info-label">월대여료</span>
-        <input class="m-info-input" data-ct-field="rent_amount" type="text" inputmode="numeric"
-               value="${c.rent_amount ? Number(c.rent_amount).toLocaleString() : ''}" placeholder="0">
-        <span class="m-info-label" style="margin-left:2px;">원</span>
-        <span class="m-state" data-state="rent_amount"></span>
-      </div>
-      <div class="m-info-row-edit">
-        <span class="m-info-label">보증금</span>
-        <input class="m-info-input" data-ct-field="deposit_amount" type="text" inputmode="numeric"
-               value="${c.deposit_amount ? Number(c.deposit_amount).toLocaleString() : ''}" placeholder="0">
-        <span class="m-info-label" style="margin-left:2px;">원</span>
-        <span class="m-state" data-state="deposit_amount"></span>
+      <div class="m-info-row-split">
+        <div class="m-info-row-edit">
+          <span class="m-info-label">월대여료</span>
+          <input class="m-info-input" data-ct-field="rent_amount" type="text" inputmode="numeric"
+                 value="${c.rent_amount ? Number(c.rent_amount).toLocaleString() : ''}" placeholder="0">
+          <span class="m-state" data-state="rent_amount"></span>
+        </div>
+        <div class="m-info-row-edit">
+          <span class="m-info-label">보증금</span>
+          <input class="m-info-input" data-ct-field="deposit_amount" type="text" inputmode="numeric"
+                 value="${c.deposit_amount ? Number(c.deposit_amount).toLocaleString() : ''}" placeholder="0">
+          <span class="m-state" data-state="deposit_amount"></span>
+        </div>
       </div>
     </section>
   `;
