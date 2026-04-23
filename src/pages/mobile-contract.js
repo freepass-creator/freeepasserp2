@@ -101,7 +101,9 @@ export function mount() {
       <div class="m-search-head">
         <div class="m-search-bar">
           <i class="ph ph-magnifying-glass"></i>
-          <input type="search" id="mctSearch" placeholder="계약코드, 고객명, 차량번호">
+          <input type="search" id="mctSearch" placeholder="계약코드, 고객명, 차량번호"
+                 autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+                 enterkeyhint="search">
           <span class="m-search-count" id="mctCount"></span>
         </div>
         <div class="m-filter-chips">

@@ -1216,6 +1216,7 @@ function renderVmActions(vm) {
       </button>
       <button class="btn btn-sm btn-outline" style="color:var(--c-err);" id="vmDeleteAll" title="vehicle_master 전체 soft-delete (개발용)"><i class="ph ph-trash"></i> 전체 삭제</button>
       <button class="btn btn-sm btn-primary" id="vmEncar" title="엔카 마스터 1092건 (production_start/end · maker_code · popularity 포함) — 멱등 재실행 가능"><i class="ph ph-download-simple"></i> 엔카 마스터 가져오기</button>
+      <button class="btn btn-sm btn-outline" id="vmAudit" title="products 의 (maker·model·sub_model) 조합 전수 감사 — 매칭/ambig/결측 상세 리포트"><i class="ph ph-list-magnifying-glass"></i> 차종 감사</button>
       <button class="btn btn-sm btn-outline" id="vmNormalize" title="products 의 maker/model/sub_model 을 엔카 마스터 표준 명칭으로 정규화"><i class="ph ph-magic-wand"></i> 상품 정규화</button>
       <button class="btn btn-sm btn-outline" id="vmAutoReg" title="엔카 미수록 제조사·모델 상품들을 차종마스터에 자동 등록"><i class="ph ph-plus-circle"></i> 누락 차종 등록</button>
       <button class="btn btn-sm btn-primary" id="vmNew" style="margin-left:auto;"><i class="ph ph-plus"></i> 차종 추가</button>
@@ -1228,6 +1229,7 @@ function renderVmActions(vm) {
     renderVmActions(vm); renderVmList(vm);
   });
   document.getElementById('vmEncar')?.addEventListener('click', () => vmEncarImportAction(vm));
+  document.getElementById('vmAudit')?.addEventListener('click', () => vmAuditAction(vm));
   document.getElementById('vmNormalize')?.addEventListener('click', () => vmNormalizeProductsAction(vm));
   document.getElementById('vmAutoReg')?.addEventListener('click', () => vmAutoRegisterAction(vm));
   document.getElementById('vmDeleteAll')?.addEventListener('click', () => vmDeleteAllAction(vm));
@@ -1549,6 +1551,108 @@ async function vmSaveAction(vm) {
   } catch (e) {
     showToast(`저장 실패: ${e?.message}`, 'error');
   }
+}
+
+/** 차종 감사 — products 의 (maker | model | sub_model) 조합을 전수 분석.
+ *  상태별 분류 (✅ 정확 / 🔄 정규화 가능 / ⚠ 애매 (model만 같음) / ❓ 결측 / ❌ 미등록) */
+function vmAuditAction(vm) {
+  const products = (store.products || []).filter(p => p.status !== 'deleted' && !p._deleted);
+  if (!products.length) { showToast('상품 없음'); return; }
+
+  const master = _vmModels.filter(m => m.maker && m.sub && !m.archived);
+  const idxExact = new Map();            // "maker|model|sub" → m
+  const idxBySub = new Map();            // normSub → [m]
+  const byMakerModel = new Map();        // "maker|model" → [m] (ambig 감지)
+  const stripYear = s => String(s || '').replace(/\s+\d{2,4}\s*-\s*\d{0,4}\s*$/, '').replace(/\s*\(페리\d*\)\s*/g, ' ').replace(/^\s*더\s*뉴\s+/, '').trim();
+  const norm = s => stripYear(s).toLowerCase().replace(/[\s()\/\-.,~·_]/g, '');
+  for (const m of master) {
+    idxExact.set(`${m.maker}|${m.model}|${m.sub}`, m);
+    const n = norm(m.sub);
+    if (n) {
+      if (!idxBySub.has(n)) idxBySub.set(n, []);
+      idxBySub.get(n).push(m);
+    }
+    const mkm = `${m.maker}|${m.model || ''}`;
+    if (!byMakerModel.has(mkm)) byMakerModel.set(mkm, []);
+    byMakerModel.get(mkm).push(m);
+  }
+
+  // (maker | model | sub) 조합별 product 집계
+  const combos = new Map();
+  for (const p of products) {
+    const mk = (p.maker || '').trim();
+    const md = (p.model || '').trim();
+    const sub = (p.sub_model || '').trim();
+    const key = `${mk}|${md}|${sub}`;
+    if (!combos.has(key)) combos.set(key, { maker: mk, model: md, sub_model: sub, count: 0 });
+    combos.get(key).count++;
+  }
+
+  const buckets = { exact: [], normalizable: [], ambiguous: [], missing: [], unmatched: [] };
+  for (const c of combos.values()) {
+    if (!c.sub_model) {
+      // sub_model 비어있음 — 결측
+      buckets.missing.push(c);
+      continue;
+    }
+    const exactKey = `${c.maker}|${c.model}|${c.sub_model}`;
+    if (idxExact.has(exactKey)) { buckets.exact.push(c); continue; }
+
+    // sub_model 이 model 과 동일 (generic — "쏘나타")
+    if (c.sub_model === c.model) {
+      const mmList = byMakerModel.get(`${c.maker}|${c.model}`) || [];
+      c.candidates = mmList.length;
+      buckets.ambiguous.push(c);
+      continue;
+    }
+
+    // norm 매칭
+    const list = idxBySub.get(norm(c.sub_model)) || [];
+    if (list.length === 1) { c.target = list[0]; buckets.normalizable.push(c); continue; }
+    if (list.length > 1) {
+      const filtered = list.filter(m => m.maker === c.maker);
+      if (filtered.length === 1) { c.target = filtered[0]; buckets.normalizable.push(c); continue; }
+      c.candidates = list.length;
+      buckets.ambiguous.push(c);
+      continue;
+    }
+
+    // maker+model 동일한 마스터가 있으면 ambiguous, 아예 없으면 unmatched
+    const mmList = byMakerModel.get(`${c.maker}|${c.model}`) || [];
+    if (mmList.length) { c.candidates = mmList.length; buckets.ambiguous.push(c); continue; }
+    buckets.unmatched.push(c);
+  }
+
+  const sortByCount = (a, b) => b.count - a.count;
+  for (const k of Object.keys(buckets)) buckets[k].sort(sortByCount);
+
+  const total = products.length;
+  const comboCount = combos.size;
+  devLog(`=== 차종 감사 리포트 (${new Date().toLocaleString('ko')}) ===`);
+  devLog(`상품 ${total}건 · 유니크 조합 ${comboCount}개`);
+  devLog(`  ✅ 정확 일치: ${buckets.exact.reduce((s, c) => s + c.count, 0)}건 (${buckets.exact.length}조합)`);
+  devLog(`  🔄 정규화 가능: ${buckets.normalizable.reduce((s, c) => s + c.count, 0)}건 (${buckets.normalizable.length}조합) — "상품 정규화"로 자동 교정 가능`);
+  devLog(`  ⚠ 애매 (후보 여럿): ${buckets.ambiguous.reduce((s, c) => s + c.count, 0)}건 (${buckets.ambiguous.length}조합) — 세부모델 수동 지정 필요`);
+  devLog(`  ❓ 결측 (sub_model 빔): ${buckets.missing.reduce((s, c) => s + c.count, 0)}건 (${buckets.missing.length}조합)`);
+  devLog(`  ❌ 마스터 미등록: ${buckets.unmatched.reduce((s, c) => s + c.count, 0)}건 (${buckets.unmatched.length}조합) — "누락 차종 등록" 대상`);
+  devLog('');
+
+  const dump = (label, rows, show = 20) => {
+    if (!rows.length) return;
+    devLog(`--- ${label} (상위 ${Math.min(show, rows.length)}/${rows.length}) ---`);
+    for (const r of rows.slice(0, show)) {
+      const extra = r.candidates ? ` [후보 ${r.candidates}개]` : r.target ? ` → ${r.target.maker}/${r.target.model}/${r.target.sub}` : '';
+      devLog(`  ${String(r.count).padStart(4)} × ${r.maker || '?'} / ${r.model || '?'} / ${r.sub_model || '—'}${extra}`);
+    }
+  };
+  dump('🔄 정규화 가능', buckets.normalizable, 15);
+  dump('⚠ 애매', buckets.ambiguous, 20);
+  dump('❓ 결측', buckets.missing, 10);
+  dump('❌ 미등록', buckets.unmatched, 15);
+  devLog('');
+  devLog('→ 권장 순서: ① 누락 차종 등록 → ② 상품 정규화 → ③ 애매·결측은 상품관리에서 수동 수정');
+
+  showToast(`감사 완료 — 로그 확인 (총 ${comboCount}개 조합)`);
 }
 
 /** 엔카 마스터에 없는 제조사·차종을 products 에서 추출해서 vehicle_master 에 자동 등록.
