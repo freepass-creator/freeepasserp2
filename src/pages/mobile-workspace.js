@@ -182,9 +182,10 @@ function openRoom(roomId) {
         <div class="m-empty"><i class="ph ph-spinner ph-spin"></i></div>
       </div>
       <div class="m-chat-input-area">
-        <input class="m-chat-input" id="mwsChatText" type="text" name="chat_message"
+        <input class="m-chat-input" id="mwsChatText" type="text"
                placeholder="메시지 입력..."
                autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+               data-form-type="other" data-lpignore="true"
                enterkeyhint="send" inputmode="text">
         <button class="m-chat-send" id="mwsChatSend" aria-label="보내기"><i class="ph ph-paper-plane-tilt"></i></button>
       </div>
