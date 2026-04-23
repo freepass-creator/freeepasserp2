@@ -4,7 +4,7 @@
  * 각 패널 사이 드래그 리사이즈
  */
 import { store } from '../core/store.js';
-import { watchCollection, updateRecord, pushRecord, fetchRecord } from '../firebase/db.js';
+import { watchCollection, updateRecord, pushRecord, fetchRecord, incrementAtomic } from '../firebase/db.js';
 import { showToast } from '../core/toast.js';
 import { uploadFile } from '../firebase/storage-helper.js';
 import { markRoomRead } from '../firebase/collections.js';
@@ -445,12 +445,12 @@ function setupChatInput(roomId) {
     const user = store.currentUser;
     const senderCode = user.user_code || '';
     await pushRecord(`messages/${roomId}`, { text, sender_uid: user.uid, sender_role: user.role, sender_code: senderCode, sender_name: user.name||'', created_at: Date.now() });
-    const room = (store.rooms || []).find(r => r._key === roomId) || {};
     const roomUpdate = { last_message: text, last_message_at: Date.now(), last_sender_role: user.role, last_sender_uid: user.uid, last_sender_code: senderCode };
-    // 상대방 미읽음 카운트 증가
-    if (user.role === 'agent') roomUpdate.unread_for_provider = (room.unread_for_provider || 0) + 1;
-    else if (user.role === 'provider') roomUpdate.unread_for_agent = (room.unread_for_agent || 0) + 1;
     await updateRecord(`rooms/${roomId}`, roomUpdate);
+    // 상대방 미읽음 카운트 — 원자적 증가 (동시 송신 경합 방지)
+    const unreadField = user.role === 'agent' ? 'unread_for_provider'
+                      : user.role === 'provider' ? 'unread_for_agent' : null;
+    if (unreadField) incrementAtomic(`rooms/${roomId}/${unreadField}`).catch(err => console.warn('[chat] unread 증가 실패:', err));
   };
 
   sendBtn.addEventListener('click', send, { signal });
@@ -490,11 +490,11 @@ function setupChatInput(roomId) {
           const isImage = file.type.startsWith('image/');
           const senderCode = user.user_code || '';
           await pushRecord(`messages/${roomId}`, { text: isImage ? '' : file.name, sender_uid: user.uid, sender_role: user.role, sender_code: senderCode, sender_name: user.name||'', created_at: Date.now(), ...(isImage ? { image_url: url } : { file_url: url }) });
-          const room2 = (store.rooms || []).find(r => r._key === roomId) || {};
           const fileUpdate = { last_message: isImage ? '📷 사진' : `📎 ${file.name}`, last_message_at: Date.now(), last_sender_role: user.role, last_sender_uid: user.uid, last_sender_code: senderCode };
-          if (user.role === 'agent') fileUpdate.unread_for_provider = (room2.unread_for_provider || 0) + 1;
-          else if (user.role === 'provider') fileUpdate.unread_for_agent = (room2.unread_for_agent || 0) + 1;
           await updateRecord(`rooms/${roomId}`, fileUpdate);
+          const unreadField = user.role === 'agent' ? 'unread_for_provider'
+                            : user.role === 'provider' ? 'unread_for_agent' : null;
+          if (unreadField) incrementAtomic(`rooms/${roomId}/${unreadField}`).catch(err => console.warn('[chat-upload] unread 증가 실패:', err));
         } catch (e) {
           console.warn('[chat-upload] 실패', file.name, e);
           showToast(`"${file.name}" 업로드 실패`, 'error');

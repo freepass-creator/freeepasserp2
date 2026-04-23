@@ -5,7 +5,7 @@
  * - 채팅 상단 우측 버튼 → 계약진행상황 사이드 패널
  */
 import { store } from '../core/store.js';
-import { watchCollection, updateRecord, pushRecord } from '../firebase/db.js';
+import { watchCollection, updateRecord, pushRecord, incrementAtomic } from '../firebase/db.js';
 import { markRoomRead } from '../firebase/collections.js';
 import { showToast } from '../core/toast.js';
 import { STEPS as CONTRACT_STEPS, getProgress } from '../core/contract-steps.js';
@@ -322,11 +322,14 @@ function bindChatInput(roomId, room) {
         text, sender_uid: user.uid, sender_role: user.role,
         sender_code: senderCode, sender_name: user.name || '', created_at: Date.now(),
       });
-      const cur = (store.rooms || []).find(r => r._key === roomId) || {};
+      // 마지막 메시지 메타는 last-writer-wins 로 OK — unread 카운트만 원자적 증가 필요
       const upd = { last_message: text, last_message_at: Date.now(), last_sender_role: user.role, last_sender_uid: user.uid, last_sender_code: senderCode };
-      if (user.role === 'agent' || user.role === 'agent_admin') upd.unread_for_provider = (cur.unread_for_provider || 0) + 1;
-      else if (user.role === 'provider') upd.unread_for_agent = (cur.unread_for_agent || 0) + 1;
       await updateRecord(`rooms/${roomId}`, upd).catch(err => console.warn('[chat] room update 실패 (메시지는 전송됨):', err));
+      const unreadField = (user.role === 'agent' || user.role === 'agent_admin') ? 'unread_for_provider'
+                        : user.role === 'provider' ? 'unread_for_agent' : null;
+      if (unreadField) {
+        incrementAtomic(`rooms/${roomId}/${unreadField}`).catch(err => console.warn('[chat] unread 증가 실패:', err));
+      }
     } catch (err) {
       console.error('[chat] 전송 실패:', err);
       input.value = text; // 입력 복구

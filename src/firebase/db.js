@@ -84,6 +84,24 @@ export async function setRecord(path, data) {
   return trackSave(set(ref(db, path), { ...data, updated_at: Date.now() }));
 }
 
+/**
+ * 원자적 카운터 증가 — runTransaction 기반.
+ * 여러 클라이언트 동시 쓰기 시 서로 덮어쓰지 않음 (경합 방지).
+ * @param {string} path — 증가시킬 숫자 필드 경로
+ * @param {number} delta — 기본 +1
+ * @returns {Promise<number>} 증가 후 값 (트랜잭션 실패 시 null)
+ */
+export async function incrementAtomic(path, delta = 1) {
+  const { runTransaction } = await import('firebase/database');
+  try {
+    const result = await runTransaction(ref(db, path), (cur) => (Number(cur) || 0) + delta);
+    return result.committed ? result.snapshot.val() : null;
+  } catch (e) {
+    console.warn('[incrementAtomic]', path, e);
+    return null;
+  }
+}
+
 export async function updateRecord(path, data) {
   return trackSave(update(ref(db, path), { ...data, updated_at: Date.now() }));
 }
