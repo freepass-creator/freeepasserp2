@@ -341,20 +341,21 @@
     height: 32px;
   }
 
-  /* 검색창 아래 한 줄 — 필터칩(탭)·활성필터 스트립 공통 규격
-     여백은 부모 .m-search-head 가 관리, 자식은 height 와 내부 gap 만 담당 */
+  /* 검색창 아래 한 줄 — 필터칩(탭)·활성필터 스트립 완전 동일 규격
+     여백은 부모 .m-search-head 가 관리, 자식은 height·gap 만 담당 */
   .m-filter-chips,
   .m-search-active {
     display: flex;
     align-items: center;
     gap: var(--sp-1);
-    min-height: 24px;
+    height: 24px;                  /* min-height 아닌 고정 height — 페이지간 오차 제거 */
     padding: 0;
     margin: var(--sp-1) 0 0;       /* 검색바와 이 줄 사이 4px */
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
-  .m-filter-chips { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-  .m-filter-chips::-webkit-scrollbar { display: none; }
-  .m-search-active { flex-wrap: wrap; }
+  .m-filter-chips::-webkit-scrollbar,
+  .m-search-active::-webkit-scrollbar { display: none; }
   .m-search-active-empty {
     font-size: var(--fs-xs);
     color: var(--c-text-muted);

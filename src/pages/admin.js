@@ -1859,19 +1859,23 @@ async function vmNormalizeProductsAction(vm) {
   }
 
   // 연식 기간 체크 — master.production_start ~ production_end 범위 안에 product.year 가 들어가는가
-  // 다양한 형식 지원: "2023", "2023년", "2023-01", "23", 숫자
+  // product.year 뿐 아니라 trim_name/sub_model/options 에서도 연식 추출
+  //  지원 형식: "2023", "2023년", "2023-01", "23", "26MY", "2026MY"
+  const yy2to4 = yy => yy > 50 ? 1900 + yy : 2000 + yy;
+  const validYear = y => (y >= 1900 && y <= 2100 ? y : null);
   const yearNum = (p) => {
+    // 1. product.year 필드
     const raw = String(p?.year ?? '').trim();
-    let m = raw.match(/\d{4}/);                          // 4자리 우선
-    if (m) {
-      const y = Number(m[0]);
-      return y >= 1900 && y <= 2100 ? y : null;
-    }
-    m = raw.match(/^(\d{2})\s*[년-]?/);                  // 2자리 "23년"
-    if (m) {
-      const yy = Number(m[1]);
-      return yy > 50 ? 1900 + yy : 2000 + yy;           // 50 이하는 2000년대
-    }
+    let m = raw.match(/\d{4}/);
+    if (m) return validYear(Number(m[0]));
+    m = raw.match(/^(\d{2})\s*[년-]?/);
+    if (m) return validYear(yy2to4(Number(m[1])));
+    // 2. trim_name·sub_model·options 에서 "MY" 패턴 fallback
+    const ctx = [p?.trim_name, p?.trim, p?.sub_model, p?.options].filter(Boolean).join(' ');
+    m = ctx.match(/(\d{4})\s*MY\b/i);                         // "2026 MY", "2026MY"
+    if (m) return validYear(Number(m[1]));
+    m = ctx.match(/\b(\d{2})\s*MY\b/i);                       // "26MY"
+    if (m) return validYear(yy2to4(Number(m[1])));
     return null;
   };
   const yearOf = (ym) => {

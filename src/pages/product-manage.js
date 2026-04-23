@@ -9,7 +9,8 @@ import { empty, trimMinusSub } from '../core/format.js';
 import { initWs4Resize } from '../core/resize.js';
 import { setBreadcrumbBrief } from '../core/breadcrumb.js';
 import { openContextMenu } from '../core/context-menu.js';
-import { firstProductImage, supportedDriveSource } from '../core/product-photos.js';
+import { firstProductImage, supportedDriveSource, productImages, productExternalImages } from '../core/product-photos.js';
+import { openFullscreen } from '../core/product-detail-render.js';
 import { topBadgesHtml, reviewOverlayHtml } from '../core/product-badges.js';
 import { getMakers, getModelsByMaker, getSubModels, findCarModel } from '../core/car-models.js';
 import { renderExcelTable } from '../core/excel-table.js';
@@ -943,7 +944,10 @@ function renderPhotos(p, key) {
     return;
   }
 
-  const imgs = Array.isArray(p.image_urls) ? p.image_urls.filter(Boolean) : (p.image_urls ? Object.values(p.image_urls).filter(Boolean) : []);
+  const imgs = productImages(p);                          // 업로드된 사진 (image_urls 등)
+  const extImgs = productExternalImages(p);               // 외부 직접 URL 링크 (바로 img 가능)
+  const driveSource = supportedDriveSource(p);            // Drive 폴더·moderentcar (서버 해석 필요)
+  const allImgs = [...new Set([...imgs, ...extImgs])];   // 뷰어용 통합 리스트
   const photoLink = p.photo_link || '';
   const regImg = p.registration_image || '';
 
@@ -952,24 +956,45 @@ function renderPhotos(p, key) {
       <!-- 차량 사진 -->
       <div class="form-section">
         <div class="form-section-title">
-          차량 사진 <span class="form-section-hint">${imgs.length}/${MAX_PHOTOS}</span>
+          차량 사진 <span class="form-section-hint">${imgs.length}장 업로드 · ${extImgs.length}개 링크${driveSource ? ' · 폴더 1개' : ''}</span>
         </div>
         <div class="form-section-body" style="grid-template-columns:1fr;">
           <label class="pd-dropzone" id="pdDropzone" for="pdPhotoFile">
             <i class="ph ph-upload-simple" aria-hidden="true"></i>
             <div class="pd-dropzone-text">이미지를 끌어놓거나 클릭해서 파일 선택</div>
-            <div class="pd-dropzone-hint">최대 ${MAX_PHOTOS}장 · 첫 번째 이미지 = 대표</div>
+            <div class="pd-dropzone-hint">최대 ${MAX_PHOTOS}장 · 첫 번째 이미지 = 대표 · 클릭시 크게보기</div>
             <input type="file" id="pdPhotoFile" multiple hidden accept="image/*">
           </label>
           ${imgs.length ? `
             <div class="pd-photo-grid" id="pdPhotoGrid">
               ${imgs.map((url, i) => `
                 <div class="pd-photo-item" draggable="true" data-idx="${i}">
-                  <img src="${url}" loading="lazy">
+                  <img src="${url}" class="pd-photo-thumb" data-view="${i}" loading="lazy" style="cursor:zoom-in;">
                   <button class="pd-photo-del" data-idx="${i}" title="삭제"><i class="ph ph-x"></i></button>
                   ${i === 0 ? '<span class="pd-photo-badge">대표</span>' : ''}
                 </div>
               `).join('')}
+            </div>` : ''}
+          ${extImgs.length ? `
+            <div style="margin-top:var(--sp-2);padding-top:var(--sp-2);border-top:1px solid var(--c-border-soft);">
+              <div style="font-size:var(--fs-2xs);color:var(--c-text-muted);margin-bottom:var(--sp-1);">외부 링크 사진 (${extImgs.length})</div>
+              <div class="pd-photo-grid" id="pdExtPhotoGrid">
+                ${extImgs.map((url, i) => `
+                  <div class="pd-photo-item">
+                    <img src="${url}" class="pd-photo-thumb" data-view-ext="${i}" loading="lazy" style="cursor:zoom-in;">
+                    <a href="${url}" target="_blank" class="pd-photo-del" title="원본 링크 열기" style="background:var(--c-overlay-med);"><i class="ph ph-arrow-square-out"></i></a>
+                  </div>
+                `).join('')}
+              </div>
+            </div>` : ''}
+          ${driveSource ? `
+            <div style="margin-top:var(--sp-2);padding:var(--sp-2);background:var(--c-bg-sub);border-radius:var(--ctrl-r);display:flex;align-items:center;gap:var(--sp-2);">
+              <i class="ph ph-folder-simple" style="font-size:20px;color:var(--c-text-muted);"></i>
+              <div style="flex:1;min-width:0;">
+                <div style="font-size:var(--fs-xs);color:var(--c-text);">외부 폴더 · 자동 해석 중...</div>
+                <div style="font-size:var(--fs-2xs);color:var(--c-text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${driveSource}</div>
+              </div>
+              <a href="${driveSource}" target="_blank" class="btn btn-xs btn-outline"><i class="ph ph-arrow-square-out"></i> 링크</a>
             </div>` : ''}
         </div>
       </div>
@@ -1005,6 +1030,32 @@ function renderPhotos(p, key) {
   `;
 
   bindFormAutoSave(el, (field, value) => saveField(key, field, value));   // photo_link textarea
+
+  // ── 썸네일 클릭 → 풀스크린 뷰어 (업로드 + 외부 링크 통합) ──
+  el.querySelectorAll('.pd-photo-thumb').forEach(img => {
+    img.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const vi = img.dataset.view != null ? Number(img.dataset.view) : null;       // 업로드 인덱스
+      const vx = img.dataset.viewExt != null ? Number(img.dataset.viewExt) : null; // 외부링크 인덱스
+      const startIdx = vi != null ? vi : (vx != null ? imgs.length + vx : 0);
+      openFullscreen(allImgs, startIdx);
+    });
+  });
+
+  // ── Drive 폴더 자동 해석 → 썸네일 추가 렌더 ──
+  if (driveSource && !p._drive_folder_virtual) {
+    import('../core/drive-photos.js').then(m => {
+      m.fetchDriveFolderImages(driveSource).then(urls => {
+        if (!urls?.length) return;
+        // 현재 선택된 상품이 바뀌지 않았을 때만 다시 렌더
+        if (activeKey === key) {
+          p._drive_folder_virtual = true;
+          p.image_urls = [...(imgs || []), ...urls];
+          renderPhotos(p, key);
+        }
+      }).catch(() => {});
+    });
+  }
 
   // ── 차량 사진 업로드 (label for="pdPhotoFile"이 클릭 자동 트리거) ──
   const fileInput = document.getElementById('pdPhotoFile');
