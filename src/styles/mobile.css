@@ -431,9 +431,10 @@
     color: var(--c-text); margin-bottom: var(--sp-2);
   }
   .m-filter-section-title i {
-    font-size: var(--icon-base);   /* 16px — 작은 글리프 깨짐 방지 */
+    font-size: var(--icon-lg);   /* 20px — 섹션 헤더용 뚜렷하게 */
     color: var(--c-text-sub);
     flex-shrink: 0;
+    line-height: 1;              /* phosphor 아이콘은 line-height 기본 상속이 비정상적으로 커서 강제 */
   }
   /* 섹션 제목/리스트 행 내 뱃지 — 우측정렬 해제 (sb-badge 의 margin-left:auto 무시) */
   .m-filter-section-title .sb-badge,
