@@ -165,7 +165,23 @@ function renderList() {
   let list = getVisible();
   if (f === 'active') list = list.filter(c => c.contract_status !== '계약완료' && c.contract_status !== '계약취소');
   else if (f === 'done') list = list.filter(c => c.contract_status === '계약완료');
-  if (q) list = list.filter(c => [c.contract_code, c.customer_name, c.car_number_snapshot, c.model_snapshot, c.sub_model_snapshot, c.agent_code, c.provider_company_code].some(v => v && String(v).toLowerCase().includes(q)));
+  if (q) {
+    const qDigits = q.replace(/\D/g, '');
+    list = list.filter(c => {
+      const fields = [
+        c.contract_code, c.customer_name, c.customer_birth, c.delivery_region,
+        c.car_number_snapshot, c.model_snapshot, c.sub_model_snapshot, c.maker_snapshot,
+        c.agent_code, c.provider_company_code, c.contract_status,
+      ];
+      if (fields.some(v => v && String(v).toLowerCase().includes(q))) return true;
+      // 전화번호: 하이픈 무시하고 숫자만 매칭
+      if (qDigits) {
+        const phoneDigits = String(c.customer_phone || '').replace(/\D/g, '');
+        if (phoneDigits && phoneDigits.includes(qDigits)) return true;
+      }
+      return false;
+    });
+  }
   list.sort((a, b) => (b.created_at || 0) - (a.created_at || 0));
 
   const countEl = document.getElementById('mctCount');

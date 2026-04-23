@@ -12,6 +12,7 @@ import { updateRecord } from '../firebase/db.js';
 import { uploadImage, uploadFile } from '../firebase/storage-helper.js';
 import { logout, resetPassword } from '../firebase/auth.js';
 import { auth } from '../firebase/config.js';
+import { canInstall, isIOS, isStandalone, promptInstall, onInstallStateChange } from '../core/pwa-install.js';
 
 // 2개 섹션으로 분리 — 소속감 강조를 위해 회사 정보 먼저, 개인 정보 뒤
 const COMPANY_FIELDS = [
@@ -28,6 +29,7 @@ const PERSONAL_FIELDS = [
 ];
 
 let _io = null;
+let _unsubInstall = null;
 
 export function mount() {
   render();
@@ -36,6 +38,8 @@ export function mount() {
 export function unmount() {
   _io?.disconnect();
   _io = null;
+  _unsubInstall?.();
+  _unsubInstall = null;
 }
 
 /** 스크롤 위치 보존 렌더 */
@@ -299,6 +303,8 @@ function _render() {
           </section>
         ` : ''}
 
+        ${appInstallSection()}
+
         <!-- 계정 관리 -->
         <section class="m-info-section">
           <div class="m-info-section-head"><span class="m-info-section-title">계정 관리</span></div>
@@ -557,6 +563,21 @@ function bindAll(main, u) {
     await logout();
   });
 
+  // 앱 설치 — iOS 는 안내 모달, 그 외는 beforeinstallprompt 재호출
+  document.getElementById('mstInstallApp')?.addEventListener('click', async () => {
+    if (isIOS()) {
+      alert('iOS 설치 방법:\n1) Safari 에서 이 페이지 열기\n2) 하단 공유(□↑) 버튼 탭\n3) "홈 화면에 추가" 선택');
+      return;
+    }
+    const res = await promptInstall();
+    if (res.outcome === 'accepted') showToast('설치 중...');
+    else if (res.outcome === 'unavailable') showToast('브라우저가 설치를 지원하지 않거나 이미 설치됨', 'error');
+  });
+
+  // beforeinstallprompt 가 늦게 도착하거나 appinstalled 발생 시 섹션 재렌더
+  _unsubInstall?.();
+  _unsubInstall = onInstallStateChange(() => { render(); });
+
   // 헤더 우측 공지/도움말
   document.getElementById('mstHeaderNotice')?.addEventListener('click', async () => {
     const { openBottomSheet } = await import('../core/mobile-shell.js');
@@ -635,6 +656,24 @@ function menuRow(m) {
       <span class="m-info-label"><i class="${m.icon}"></i> ${m.label}</span>
       <span class="m-info-value" style="color:var(--c-text-muted);"><i class="ph ph-caret-right"></i></span>
     </button>
+  `;
+}
+
+/** 앱 설치 섹션 — 이미 standalone 이거나 설치 불가 환경이면 렌더 안 함 */
+function appInstallSection() {
+  if (isStandalone()) return '';
+  if (!canInstall()) return '';
+  const ios = isIOS();
+  const label = ios ? '홈 화면에 추가 (iOS)' : '앱으로 설치';
+  const hint = ios ? 'Safari 공유 → 홈 화면에 추가' : '1회 설치로 빠르게 실행';
+  return `
+    <section class="m-info-section">
+      <div class="m-info-section-head"><span class="m-info-section-title">앱 설치</span></div>
+      <button class="m-info-row" id="mstInstallApp">
+        <span class="m-info-label"><i class="ph ph-download-simple"></i> ${label}</span>
+        <span class="m-info-value" style="color:var(--c-text-muted);font-weight:var(--fw-normal);font-size:var(--fs-xs);">${hint}</span>
+      </button>
+    </section>
   `;
 }
 

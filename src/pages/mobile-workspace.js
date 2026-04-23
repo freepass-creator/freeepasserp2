@@ -101,7 +101,11 @@ function renderRooms() {
     rooms = rooms.filter(r => !r.hidden_for_admin);
   }
 
-  if (q) rooms = rooms.filter(r => [r.vehicle_number, r.sub_model, r.model, r.agent_code, r.provider_code, r.provider_company_code].some(v => v && String(v).toLowerCase().includes(q)));
+  if (q) rooms = rooms.filter(r => [
+    r.vehicle_number, r.sub_model, r.model, r.maker,
+    r.agent_code, r.provider_code, r.provider_company_code,
+    r.last_message, r.last_sender_code,
+  ].some(v => v && String(v).toLowerCase().includes(q)));
 
   if (rf === 'unread') {
     rooms = rooms.filter(r => {

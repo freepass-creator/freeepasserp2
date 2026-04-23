@@ -20,6 +20,8 @@ import { renderBreadcrumb } from './core/breadcrumb.js';
 import { isMobile, onMobileChange, bindGlobalHaptic } from './core/mobile-shell.js';
 // Drive 썸네일 자동 하이드레이션 옵저버 — 최초 로드부터 상시 활성화
 import './core/drive-photos.js';
+// PWA 설치 프롬프트 캡처 — import 만 해도 리스너 등록됨
+import './core/pwa-install.js';
 /* mobile.css 는 항상 로드 — .m-* 규격은 앱 어디서나 재사용 */
 import './styles/mobile.css';
 

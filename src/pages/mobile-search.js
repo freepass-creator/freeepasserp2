@@ -146,6 +146,7 @@ function getFiltered() {
       p.car_number, p.model, p.sub_model, p.maker, p.trim_name, p.trim,
       p.provider_company_code, p.product_code, p.vehicle_status, p.product_type,
       p.fuel_type, p.ext_color, p.int_color, p.year, p.vehicle_class,
+      p.options, p.memo, p.notes, p.mission, p.drive_type,
     ].some(v => v && String(v).toLowerCase().includes(query)));
   }
 
