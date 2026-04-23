@@ -83,7 +83,7 @@
   .srch-accordion-sum::-webkit-details-marker { display: none; }
 
   .srch-acc-icon {
-    font-size: 14px;
+    font-size: var(--icon-sm);
     color: var(--c-text-muted);
     flex-shrink: 0;
   }
@@ -385,7 +385,7 @@
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    font-size: 16px;
+    font-size: var(--icon-base);
     transition: background var(--dur);
   }
   .srch-gallery-nav:hover { background: var(--c-overlay-chip); }
@@ -477,7 +477,7 @@
     color: var(--c-text-inv);
     border: none;
     cursor: pointer;
-    font-size: 18px;
+    font-size: var(--icon-md);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -570,7 +570,7 @@
     background: transparent;
     letter-spacing: normal;
   }
-  .cat-section-title i { color: var(--c-accent); font-size: 14px; }
+  .cat-section-title i { color: var(--c-accent); font-size: var(--icon-sm); }
   .cat-section-hint {
     font-size: var(--fs-2xs);
     font-weight: var(--fw-normal);
@@ -638,7 +638,7 @@
     align-items: center;
     gap: 4px;
   }
-  .cat-spec-item i { font-size: 14px; color: var(--c-text-muted); }
+  .cat-spec-item i { font-size: var(--icon-sm); color: var(--c-text-muted); }
   .cat-color-dot {
     display: inline-block;
     width: 10px;
@@ -654,7 +654,7 @@
     color: var(--c-text-muted);
     font-size: var(--fs-xs);
   }
-  .cat-inquiry i { font-size: 14px; }
+  .cat-inquiry i { font-size: var(--icon-sm); }
 
   .srch-detail-header {
     padding: var(--sp-3) var(--sp-4);
@@ -824,7 +824,7 @@
     padding: 4px;
     cursor: pointer;
     color: var(--c-text-muted);
-    font-size: 16px;
+    font-size: var(--icon-base);
   }
   .pd-zip-close:hover { color: var(--c-text); }
   .pd-zip-sub {

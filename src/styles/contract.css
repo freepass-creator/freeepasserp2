@@ -221,7 +221,7 @@
   }
 
   .contract-step i {
-    font-size: 18px;
+    font-size: var(--icon-md);
   }
 
   .contract-step:hover {
@@ -256,7 +256,7 @@
   .ct-step-cell.is-pending { background: var(--c-surface); border-color: var(--c-border); color: var(--c-text); }
   .ct-step-cell.is-locked { background: var(--c-bg-sub); border-color: var(--c-border); color: var(--c-text-muted); }
   .ct-step-cell.is-rejected { background: var(--c-err-bg); border-color: var(--c-err); color: var(--c-err); }
-  .ct-step-cell i { font-size: 14px; flex-shrink: 0; }
+  .ct-step-cell i { font-size: var(--icon-sm); flex-shrink: 0; }
   .ct-step-arrow { color: var(--c-text-muted); font-size: 10px; text-align: center; }
   .ct-step-admin { font-size: var(--fs-2xs); color: var(--c-accent); margin-left: auto; opacity: 0.7; }
   .ct-step-select {
@@ -428,6 +428,6 @@
   }
 
   .settle-confirm i {
-    font-size: 20px;
+    font-size: var(--icon-lg);
   }
 }

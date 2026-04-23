@@ -116,6 +116,7 @@
     /* 아이콘 크기 — 기존 14/16/18/20px 하드코딩 산재 통일용 */
     --icon-sm:        14px;
     --icon-base:      16px;
+    --icon-md:        18px;   /* 탑바 액션·채팅 아바타 중간톤 */
     --icon-lg:        20px;
     --icon-xl:        24px;
     /* 칩 높이 — .chip 기본(24px) / .chip-xs 소형(22px) 모두 여기서 관리 */

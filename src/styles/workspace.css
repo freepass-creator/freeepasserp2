@@ -38,7 +38,7 @@
   /* .ws4-head — base styles unified in controls.css .panel-head group */
 
   .ws4-head-toggle {
-    font-size: 14px;
+    font-size: var(--icon-sm);
     color: var(--c-text-muted);
     cursor: pointer;
     padding: 2px;
@@ -124,7 +124,7 @@
     justify-content: center;
     border-radius: var(--ctrl-r);
     color: var(--c-text-muted);
-    font-size: 16px;
+    font-size: var(--icon-base);
     flex-shrink: 0;
   }
 
@@ -199,7 +199,7 @@
     border: 1px solid var(--c-border);
     user-select: none;
   }
-  .room-item-avatar i { font-size: 16px; }
+  .room-item-avatar i { font-size: var(--icon-base); }
   .room-item-avatar img {
     width: 100%;
     height: 100%;
@@ -251,7 +251,7 @@
     vertical-align: middle;
   }
   .m-shell .room-item-avatar { width: 44px; height: 44px; font-size: var(--fs-md); }
-  .m-shell .room-item-avatar i { font-size: 20px; }
+  .m-shell .room-item-avatar i { font-size: var(--icon-lg); }
 
   /* 공용 텍스트 스타일 */
   .room-item-name {
@@ -527,7 +527,7 @@
     height: var(--ctrl-h);
     border-radius: var(--ctrl-r);
     color: var(--c-text-muted);
-    font-size: 18px;
+    font-size: var(--icon-md);
   }
 
   .chat-send-btn:hover {

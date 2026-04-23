@@ -90,7 +90,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 20px;
+    font-size: var(--icon-lg);
     color: var(--c-text);
     border-radius: var(--ctrl-r);
   }
@@ -120,7 +120,7 @@
     flex-shrink: 0;
     align-items: center;
     justify-content: center;
-    font-size: 18px;
+    font-size: var(--icon-md);
     color: var(--c-text-sub);
     border-radius: var(--ctrl-r);
   }
@@ -196,7 +196,7 @@
     height: 4px;
     border-radius: var(--ctrl-r);
     background: var(--c-border-strong);
-    margin: var(--sp-2) auto var(--sp-1);
+    margin: var(--sp-2) auto;
     flex-shrink: 0;
   }
 
@@ -241,7 +241,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 18px;
+    font-size: var(--icon-md);
     color: var(--c-text-muted);
     flex-shrink: 0;
   }
@@ -478,7 +478,7 @@
     justify-content: space-between;
     gap: var(--sp-2);
     min-height: 32px;
-    padding: 6px var(--sp-3);
+    padding: 6px var(--sp-3);  /* min-height 32px 내부 센터링 위한 미세 padding */
     background: var(--c-bg-sub);
     border-bottom: 1px solid var(--c-border-soft);
   }
@@ -582,7 +582,7 @@
     transition: opacity var(--dur-slow) var(--ease), transform var(--dur-slow) var(--ease);
   }
   .m-settings-header-icon-gear {
-    font-size: 20px;
+    font-size: var(--icon-lg);
     color: var(--c-text-sub);
     opacity: 1;
     transform: scale(1);
@@ -977,7 +977,7 @@
 
   .m-settle-confirms { display: flex; gap: var(--sp-2); margin-top: var(--sp-4); }
   .settle-confirm { flex: 1; padding: var(--sp-3); text-align: center; }
-  .settle-confirm i    { font-size: 20px; display: block; margin-bottom: 4px; }
+  .settle-confirm i    { font-size: var(--icon-lg); display: block; margin-bottom: 4px; }
   .settle-confirm span { font-size: var(--fs-xs); }
 
   /* ════════════════════════════════════════════════
@@ -1393,21 +1393,7 @@
     min-height: 0;
   }
 
-  .m-chat-attach, .m-chat-send {
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 20px;
-    color: var(--c-accent);
-    background: none;
-    border: none;
-    -webkit-tap-highlight-color: transparent;
-    flex-shrink: 0;
-  }
-  .m-chat-send { color: var(--c-accent); }
-  .m-chat-attach { color: var(--c-text-muted); }
+  /* (m-chat-attach·m-chat-send 스타일은 상단 .m-chat-input-area 컨텍스트에서 정의됨 — 중복 제거) */
 
   /* ── FAB ── */
   .m-fab {

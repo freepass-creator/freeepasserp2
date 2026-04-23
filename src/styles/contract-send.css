@@ -116,7 +116,7 @@
   .cs-section-sum::-webkit-details-marker { display: none; }
 
   .cs-section-sum i {
-    font-size: 16px;
+    font-size: var(--icon-base);
     color: var(--c-text-sub);
   }
 
