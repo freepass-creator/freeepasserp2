@@ -445,7 +445,7 @@ function renderProgressPanel(c) {
   const periods = [12, 24, 36, 48, 60];
   const curMonth = Number(c.rent_month) || 36;
   const periodChips = periods.map(m =>
-    `<button class="chip chip-xs ${m === curMonth ? 'is-active' : ''}" data-ct-period="${m}">${m}개월</button>`
+    `<button class="chip chip-xs ${m === curMonth ? 'is-active' : ''}" data-ct-period="${m}">${m}M</button>`
   ).join('');
   const infoBlock = `
     <section class="m-info-section">
