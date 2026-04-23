@@ -47,7 +47,7 @@
   .ws4-head-toggle:hover { color: var(--c-text); }
 
   .ws4-search {
-    padding: var(--sp-2) var(--sp-3);
+    padding: var(--sp-2) var(--sp-3) var(--sp-1);
     border-bottom: 1px solid var(--c-border);
     flex-shrink: 0;
     display: flex;

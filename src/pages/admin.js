@@ -1833,12 +1833,23 @@ async function vmNormalizeProductsAction(vm) {
   }
 
   // 연식 기간 체크 — master.production_start ~ production_end 범위 안에 product.year 가 들어가는가
+  // 다양한 형식 지원: "2023", "2023년", "2023-01", "23", 숫자
   const yearNum = (p) => {
-    const y = Number(p?.year);
-    return Number.isFinite(y) && y >= 1900 && y <= 2100 ? y : null;
+    const raw = String(p?.year ?? '').trim();
+    let m = raw.match(/\d{4}/);                          // 4자리 우선
+    if (m) {
+      const y = Number(m[0]);
+      return y >= 1900 && y <= 2100 ? y : null;
+    }
+    m = raw.match(/^(\d{2})\s*[년-]?/);                  // 2자리 "23년"
+    if (m) {
+      const yy = Number(m[1]);
+      return yy > 50 ? 1900 + yy : 2000 + yy;           // 50 이하는 2000년대
+    }
+    return null;
   };
   const yearOf = (ym) => {
-    const m = String(ym || '').match(/^(\d{4})/);
+    const m = String(ym || '').match(/(\d{4})/);
     return m ? Number(m[1]) : null;
   };
   const withinRange = (p, m) => {
@@ -1871,10 +1882,24 @@ async function vmNormalizeProductsAction(vm) {
     if (py) {
       const inRange = cands.filter(m => withinRange(p, m) === true);
       if (inRange.length) cands = inRange;
+    } else {
+      // 연식 없으면 "최근 10년" 내 생산 레코드 우선 (대부분 상품이 최근차량이라는 사전지식)
+      const thisYear = new Date().getFullYear();
+      const recentCutoff = thisYear - 10;
+      const recent = cands.filter(m => {
+        const ys = yearOf(m.production_start ?? m.year_start) || 0;
+        const ye = m.production_end === '현재' ? thisYear + 1 : (yearOf(m.production_end ?? m.year_end) ?? 0);
+        return ye >= recentCutoff;
+      });
+      if (recent.length) cands = recent;
     }
 
     // 2-5) 점수화
     const pTks = new Set(productTokens(p));
+    const pFuel = String(p?.fuel_type || '').toLowerCase();
+    const pIsEv = pFuel === '전기' || /ev|전기/i.test(p?.powertrain || '') || /ev|전기/i.test(p?.vehicle_class || '');
+    const pIsHybrid = pFuel === '하이브리드' || /하이브리드/i.test(p?.powertrain || '');
+
     const scored = cands.map(m => {
       // 세대코드 강력 가중 — 예: master.code="MQ4" & product.trim contains "MQ4"
       const mCode = String(m.code || '').toLowerCase();
@@ -1888,10 +1913,22 @@ async function vmNormalizeProductsAction(vm) {
       const mSubTks = (String(m.sub || '').match(/[A-Za-z0-9]+|[가-힯]+/g) || []).map(x => x.toLowerCase());
       const softHits = mSubTks.filter(t => pTks.has(t) && t.length > 1).length;
 
+      // 연료/파워트레인 일치 — 전기차/하이브리드 오매칭 방지
+      // product 내연 → master "EV/전기" 포함 = −10 (거의 배제)
+      // product 전기 → master "EV/전기" 포함 = +3 (우선)
+      const mSubLc = String(m.sub || '').toLowerCase();
+      const mIsEv = /\bev\b|전기/.test(mSubLc) || m.powertrain === '전기' || m.fuel_type === '전기';
+      const mIsHybrid = /하이브리드|hybrid/.test(mSubLc) || m.powertrain === '하이브리드' || m.fuel_type === '하이브리드';
+      let fuelScore = 0;
+      if (pIsEv && mIsEv) fuelScore += 3;
+      else if (!pIsEv && mIsEv) fuelScore -= 10;       // 내연차인데 master 가 EV면 크게 감점
+      if (pIsHybrid && mIsHybrid) fuelScore += 3;
+      else if (!pIsHybrid && mIsHybrid && !pIsEv) fuelScore -= 5;  // 하이브리드도 유사
+
       const ys = yearOf(m.production_start ?? m.year_start) || 0;
       return {
         m,
-        score: codeHit + subCodeHit + softHits,
+        score: codeHit + subCodeHit + softHits + fuelScore,
         pop: Number(m.popularity || m.model_popularity || 0),
         ys,
       };
@@ -1908,9 +1945,22 @@ async function vmNormalizeProductsAction(vm) {
     if (!p.maker && !p.sub_model) { unmatched++; continue; }
     let best = null;
 
-    // Generic sub 판정 — sub_model 이 model 과 동일하거나 비어있으면 generic
-    //  ("쏘나타"만 들어있는 케이스) → ①~④ 스킵하고 maker+model 후보에서 연식·트림으로 세대 특정
-    const isGeneric = p.maker && p.model && (!p.sub_model || p.sub_model === p.model);
+    // Generic sub 판정 — 아래 세 케이스는 세대 정보가 없는 것으로 간주
+    //  1) sub_model 비어있음
+    //  2) sub_model === model ("쏘나타"만)
+    //  3) prefix(더 뉴·더뉴·올뉴·신형·뉴) 벗긴 나머지가 model 과 동일 ("더뉴아반떼" → "아반떼")
+    //     → 공식 엔카 세대코드(CN7/MQ4/DN8)가 없는 단순 표기 → generic 취급
+    //  generic 이면 ①~④ 스킵하고 maker+model 후보 풀에서 연식·트림·코드로 세대 자동 특정
+    const strippedSub = stripYear(p.sub_model || '').trim();
+    const isGeneric = p.maker && p.model && (
+      !p.sub_model ||
+      p.sub_model === p.model ||
+      strippedSub === p.model ||
+      strippedSub === '' ||
+      // 세대코드 괄호 (CN7 등) 없이 model 이름만 포함된 경우
+      // 예: "더뉴아반떼" stripped "아반떼", "신형쏘렌토" stripped "쏘렌토"
+      (strippedSub && norm(strippedSub) === norm(p.model))
+    );
 
     if (!isGeneric) {
       // ① 완전일치

@@ -44,6 +44,7 @@ export function mount() {
                  autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
                  enterkeyhint="search">
           <span class="m-search-count" id="mstCount"></span>
+          <button class="m-topbar-action" id="mstSearchClear" style="display:none;" aria-label="지우기"><i class="ph ph-x-circle"></i></button>
         </div>
         <div class="m-filter-chips">
           <button class="chip is-active" data-f="all">전체</button>
@@ -55,7 +56,17 @@ export function mount() {
     </div>
   `;
 
-  document.getElementById('mstSearch')?.addEventListener('input', renderList);
+  const mstSearchEl = document.getElementById('mstSearch');
+  const mstSearchClearEl = document.getElementById('mstSearchClear');
+  mstSearchEl?.addEventListener('input', () => {
+    if (mstSearchClearEl) mstSearchClearEl.style.display = mstSearchEl.value ? '' : 'none';
+    renderList();
+  });
+  mstSearchClearEl?.addEventListener('click', () => {
+    mstSearchEl.value = '';
+    mstSearchClearEl.style.display = 'none';
+    renderList();
+  });
   main.querySelectorAll('.chip[data-f]').forEach(chip => {
     chip.addEventListener('click', () => {
       main.querySelectorAll('.chip[data-f]').forEach(x => x.classList.remove('is-active'));

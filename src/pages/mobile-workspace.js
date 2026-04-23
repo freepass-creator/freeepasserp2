@@ -43,7 +43,17 @@ export function mount() {
   `;
 
   const listEl = document.getElementById('mwsRoomList');
-  document.getElementById('mwsSearch')?.addEventListener('input', renderRooms);
+  const mwsSearchEl = document.getElementById('mwsSearch');
+  const mwsSearchClearEl = document.getElementById('mwsSearchClear');
+  mwsSearchEl?.addEventListener('input', () => {
+    if (mwsSearchClearEl) mwsSearchClearEl.style.display = mwsSearchEl.value ? '' : 'none';
+    renderRooms();
+  });
+  mwsSearchClearEl?.addEventListener('click', () => {
+    mwsSearchEl.value = '';
+    mwsSearchClearEl.style.display = 'none';
+    renderRooms();
+  });
   main.querySelectorAll('.chip[data-rf]').forEach(chip => {
     chip.addEventListener('click', () => {
       main.querySelectorAll('.chip[data-rf]').forEach(x => x.classList.remove('is-active'));
