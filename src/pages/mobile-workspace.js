@@ -255,12 +255,18 @@ function renderMessages() {
       lastSenderUid = null;
       lastMinute = null;
     }
-    const groupStart = msg.sender_uid !== lastSenderUid || minuteKey !== lastMinute;
+    // 카톡 규격: 발신자 바뀜 = 새 그룹(배지+큰간격), 같은발신자 분만 바뀜 = 중간간격(배지생략),
+    //            시간 표시는 이전 분 마지막 말풍선에
+    const senderChanged = msg.sender_uid !== lastSenderUid;
+    const minuteChanged = minuteKey !== lastMinute;
+    const senderStart = senderChanged;
+    const minuteStart = !senderChanged && minuteChanged;
     lastSenderUid = msg.sender_uid;
     lastMinute = minuteKey;
     const next = sorted[i + 1];
-    const groupEnd = !next || next.sender_uid !== msg.sender_uid
-      || new Date(next.created_at || 0).toISOString().slice(0, 16) !== minuteKey;
+    const nextMinuteKey = next ? new Date(next.created_at || 0).toISOString().slice(0, 16) : null;
+    const senderEnd = !next || next.sender_uid !== msg.sender_uid;
+    const minuteEnd = senderEnd || nextMinuteKey !== minuteKey;
 
     // 발신자 라벨 — sender_code 우선, 없으면 role 약어
     const senderLabel = msg.sender_code
@@ -275,11 +281,19 @@ function renderMessages() {
     else if (msg.file_url) content = `<a href="${msg.file_url}" target="_blank" class="chat-file"><i class="ph ph-paperclip"></i> ${(msg.text||'파일').replace(/</g, '&lt;')}</a>`;
     else content = (msg.text || '').replace(/</g, '&lt;').replace(/\n/g, '<br>');
 
-    return `${dateSep}<div class="chat-row ${mine ? 'is-mine' : 'is-other'} ${groupStart ? 'is-start' : ''} ${groupEnd ? 'is-end' : ''}">
-      ${!mine && groupStart ? `<div class="chat-sender chat-sender-${roleTone}">${senderLabel}</div>` : (!mine ? '<div class="chat-sender-spacer"></div>' : '')}
+    const rowCls = [
+      'chat-row',
+      mine ? 'is-mine' : 'is-other',
+      senderStart ? 'is-start is-sender-start' : '',
+      minuteStart ? 'is-minute-start' : '',
+      senderEnd ? 'is-end' : '',
+    ].filter(Boolean).join(' ');
+
+    return `${dateSep}<div class="${rowCls}">
+      ${!mine && senderStart ? `<div class="chat-sender chat-sender-${roleTone}">${senderLabel}</div>` : (!mine ? '<div class="chat-sender-spacer"></div>' : '')}
       <div class="chat-bubble-wrap">
         <div class="chat-bubble chat-bubble-${roleTone}">${content}</div>
-        ${groupEnd ? `<div class="chat-meta"><span class="chat-time">${fmt(ts)}</span></div>` : ''}
+        ${minuteEnd ? `<div class="chat-meta"><span class="chat-time">${fmt(ts)}</span></div>` : ''}
       </div>
     </div>`;
   }).join('');
