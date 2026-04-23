@@ -7,7 +7,7 @@
  *  - 폰트: cache-first (영구)
  *  - API/Firebase: 캐시 안 함
  */
-const VERSION = 'v41';
+const VERSION = 'v42';
 const CACHE_SHELL = `freepass-shell-${VERSION}`;
 const CACHE_ASSETS = `freepass-assets-${VERSION}`;
 const CACHE_IMAGES = `freepass-images-${VERSION}`;
@@ -99,8 +99,13 @@ self.addEventListener('fetch', (e) => {
   // 폰트 — 영구 캐시
   if (isFont(e.request)) { e.respondWith(cacheFirst(e.request, CACHE_FONTS)); return; }
 
-  // 이미지 — cache-first
-  if (isImage(e.request)) { e.respondWith(cacheFirst(e.request, CACHE_IMAGES)); return; }
+  // 이미지 — 크로스 오리진 (Drive/lh3/Firebase Storage 등) 은 SW 패스 —
+  //  opaque 응답 캐싱 시 실패 응답 고착 + Google 호트링크 정책 충돌 방지
+  if (isImage(e.request)) {
+    if (url.origin !== self.location.origin) return; // 브라우저 기본 처리
+    e.respondWith(cacheFirst(e.request, CACHE_IMAGES));
+    return;
+  }
 
   // JS/CSS 번들 — stale-while-revalidate
   if (isAsset(e.request)) { e.respondWith(staleWhileRevalidate(e.request, CACHE_ASSETS)); return; }
