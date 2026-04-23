@@ -373,6 +373,18 @@
   .ctx-item i { font-size: 14px; color: var(--c-text-muted); }
   .ctx-item.is-danger { color: var(--c-err); }
   .ctx-item.is-danger i { color: var(--c-err); }
+  .ctx-item.is-active { color: var(--c-accent); font-weight: var(--fw-semibold); }
+  .ctx-item.is-active i { color: var(--c-accent); }
+  .ctx-item .ctx-check { margin-left: auto; font-size: 12px; }
+  .ctx-item.is-disabled,
+  .ctx-item[disabled] { color: var(--c-text-muted); cursor: not-allowed; }
+  .ctx-item.is-disabled:hover,
+  .ctx-item[disabled]:hover { background: transparent; }
+  .ctx-divider {
+    height: 1px;
+    margin: 4px 0;
+    background: var(--c-border-soft);
+  }
 
   /* ── Empty State (공용 빈 상태) ── */
   .empty-state {

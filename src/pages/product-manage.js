@@ -369,26 +369,55 @@ function renderList() {
         const name = [p.maker, p.sub_model, trimMinusSub(p.sub_model, p.trim_name || p.trim)].filter(Boolean).join(' ');
         setBreadcrumbTail({ icon: 'ph ph-car-simple', label: name || p.car_number || '차량', sub: p.car_number || '' });
       },
-      onContextMenu: (p, e) => {
-        const role = store.currentUser?.role;
-        const items = [
-          { icon: 'ph ph-copy', label: '복제', action: () => createProduct(p).then(() => showToast(`${p.model || '상품'} 복제됨`)) },
-        ];
-        if (role === 'admin' || p.created_by === store.currentUser?.user_code) {
-          items.push({ icon: 'ph ph-trash', label: '삭제', danger: true, action: async () => {
-            if (!confirm('이 상품을 삭제하시겠습니까?')) return;
-            await softDelete(`products/${p._key}`);
-            if (activeKey === p._key) activeKey = null;
-            showToast('삭제됨');
-          }});
-        }
-        openContextMenu(e, items);
-      },
+      onContextMenu: (p, e) => openContextMenu(e, buildProductMenu(p)),
     });
     return;
   }
 
   renderListCards(el, list);
+}
+
+/** 상품 우클릭 메뉴 — 엑셀뷰·카드뷰 공통 (복제/수정/상태변경/삭제) */
+function buildProductMenu(p) {
+  const role = store.currentUser?.role;
+  const me = store.currentUser || {};
+  const canEdit = role === 'admin' || role === 'provider' && p.provider_company_code === me.company_code;
+  const canDelete = role === 'admin' || p.created_by === me.user_code;
+
+  const items = [
+    { icon: 'ph ph-pencil-simple', label: '수정', action: () => {
+      activeKey = p._key;
+      loadAll(p._key);
+    }},
+    { icon: 'ph ph-copy', label: '복제', action: () => createProduct(p).then(() => showToast(`${p.model || '상품'} 복제됨`)) },
+  ];
+
+  if (canEdit) {
+    items.push({ divider: true });
+    for (const s of STATUS_OPTS) {
+      items.push({
+        icon: 'ph ph-flag',
+        label: s,
+        active: p.vehicle_status === s,
+        action: async () => {
+          await updateRecord(`products/${p._key}`, { vehicle_status: s });
+          showToast(`상태 → ${s}`);
+        },
+      });
+    }
+  }
+
+  if (canDelete) {
+    items.push({ divider: true });
+    items.push({ icon: 'ph ph-trash', label: '삭제', danger: true, action: async () => {
+      if (!confirm('이 상품을 삭제하시겠습니까?')) return;
+      await softDelete(`products/${p._key}`);
+      if (activeKey === p._key) activeKey = null;
+      showToast('삭제됨');
+    }});
+  }
+
+  return items;
 }
 
 /** 카드 뷰 렌더링 */
@@ -455,19 +484,7 @@ function bindListEvents(el) {
     if (!item) return;
     const p = allProducts.find(x => x._key === item.dataset.key);
     if (!p) return;
-    const role = store.currentUser?.role;
-    const items = [
-      { icon: 'ph ph-copy', label: '복제', action: () => createProduct(p).then(() => showToast(`${p.model || '상품'} 복제됨`)) },
-    ];
-    if (role === 'admin' || p.created_by === store.currentUser?.user_code) {
-      items.push({ icon: 'ph ph-trash', label: '삭제', danger: true, action: async () => {
-        if (!confirm('이 상품을 삭제하시겠습니까?')) return;
-        await softDelete(`products/${p._key}`);
-        if (activeKey === p._key) activeKey = null;
-        showToast('삭제됨');
-      }});
-    }
-    openContextMenu(e, items);
+    openContextMenu(e, buildProductMenu(p));
   });
 }
 

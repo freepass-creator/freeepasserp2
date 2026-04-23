@@ -12,12 +12,22 @@ export function openContextMenu(event, items) {
   const menu = document.createElement('div');
   menu.className = 'ctx-menu';
   menu.setAttribute('role', 'menu');
-  menu.innerHTML = items.map((it, i) => `
-    <button class="ctx-item ${it.danger ? 'is-danger' : ''}" role="menuitem" data-i="${i}">
-      ${it.icon ? `<i class="${it.icon}" aria-hidden="true"></i>` : ''}
-      <span>${it.label}</span>
-    </button>
-  `).join('');
+  menu.innerHTML = items.map((it, i) => {
+    if (!it || it.divider) return `<div class="ctx-divider" role="separator"></div>`;
+    const cls = [
+      'ctx-item',
+      it.danger ? 'is-danger' : '',
+      it.active ? 'is-active' : '',
+      it.disabled ? 'is-disabled' : '',
+    ].filter(Boolean).join(' ');
+    return `
+      <button class="${cls}" role="menuitem" data-i="${i}" ${it.disabled ? 'disabled' : ''}>
+        ${it.icon ? `<i class="${it.icon}" aria-hidden="true"></i>` : ''}
+        <span>${it.label}</span>
+        ${it.active ? '<i class="ph ph-check ctx-check" aria-hidden="true"></i>' : ''}
+      </button>
+    `;
+  }).join('');
   document.body.appendChild(menu);
 
   // 위치 — 화면 밖 넘치지 않게 보정
