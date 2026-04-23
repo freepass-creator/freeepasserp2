@@ -109,7 +109,7 @@ export function onMobileChange(cb) {
  * @returns {{close: ()=>void, root: HTMLElement}}
  */
 export function openBottomSheet(html, opts = {}) {
-  const { title = '', dragToDismiss = true, onMount, onClose } = opts;
+  const { title = '', footer = '', dragToDismiss = true, onMount, onClose } = opts;
 
   // 기존 시트 닫기
   document.querySelectorAll('.m-sheet-overlay, .m-sheet').forEach(el => el.remove());
@@ -128,6 +128,7 @@ export function openBottomSheet(html, opts = {}) {
       </div>
     ` : ''}
     <div class="m-sheet-body">${html}</div>
+    ${footer ? `<div class="m-sheet-footer">${footer}</div>` : ''}
   `;
 
   document.body.appendChild(overlay);

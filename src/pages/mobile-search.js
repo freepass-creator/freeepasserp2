@@ -220,19 +220,20 @@ function openFilterSheet() {
 
   const html = `
     <div class="m-filter-sheet">
-      <div class="m-filter-sheet-scroll">
-        ${sectionsHtml}
-      </div>
-      <div class="m-filter-actions">
-        <button class="btn btn-outline" id="mFilterReset">초기화</button>
-        <button class="btn btn-primary" id="mFilterApply">적용</button>
-      </div>
+      ${sectionsHtml}
+    </div>
+  `;
+  const footerHtml = `
+    <div class="m-filter-actions">
+      <button class="btn btn-outline" id="mFilterReset">초기화</button>
+      <button class="btn btn-primary" id="mFilterApply">적용</button>
     </div>
   `;
 
   const totalCount = getFilterCount();
   const sheet = openBottomSheet(html, {
     title: `필터${totalCount ? ` <span class="sb-badge is-visible">${totalCount}</span>` : ''}`,
+    footer: footerHtml,
     onMount: (root) => {
       // 섹션 접기 토글 (타이틀 클릭)
       root.addEventListener('click', (e) => {
