@@ -811,6 +811,7 @@ function renderToolsTab(el) {
           <button class="btn btn-outline btn-sm" id="devMigrateTermPolicy"><i class="ph ph-swap"></i> policies: term_* → policy_*</button>
           <button class="btn btn-outline btn-sm" id="devMigrateModelName"><i class="ph ph-swap"></i> model_name → model (products · contracts · rooms)</button>
           <button class="btn btn-outline btn-sm" id="devMigratePartnerType"><i class="ph ph-swap"></i> partner_type 영어 → 한글 (provider→공급사)</button>
+          <button class="btn btn-outline btn-sm" id="devMigrateUserCode"><i class="ph ph-identification-badge"></i> user_code 일괄부여 (미부여자만 · 회사별 시퀀스)</button>
         </div>
       </div>
     </div>
@@ -946,6 +947,73 @@ function renderToolsTab(el) {
     } finally {
       btn.disabled = false;
       btn.innerHTML = '<i class="ph ph-swap"></i> partner_type 영어 → 한글 (provider→공급사)';
+    }
+  });
+
+  document.getElementById('devMigrateUserCode').addEventListener('click', async () => {
+    if (!confirm('user_code 가 비어있는 활성 유저에게 회사별 시퀀스로 일괄 부여합니다.\n포맷: {company_code}-NNN (예: SP999-001)\n기존 user_code 있는 유저는 건드리지 않음. created_at 순.\n진행하시겠습니까?')) return;
+    const btn = document.getElementById('devMigrateUserCode');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="ph ph-spinner"></i> 부여 중...';
+    try {
+      const { ref, get, update } = await import('firebase/database');
+      const { db } = await import('../firebase/config.js');
+      const snap = await get(ref(db, 'users'));
+      const all = snap.val() || {};
+
+      // 회사별로 existing user_code / 미부여자 분리
+      const byCompany = new Map();
+      let skippedNoCompany = 0;
+      for (const [uid, u] of Object.entries(all)) {
+        if (!u || u.status === 'deleted') continue;
+        const cc = u.company_code || '';
+        if (!cc) {
+          if (!u.user_code) skippedNoCompany++;
+          continue;
+        }
+        if (!byCompany.has(cc)) byCompany.set(cc, { existing: [], missing: [] });
+        const group = byCompany.get(cc);
+        if (u.user_code) group.existing.push(u.user_code);
+        else group.missing.push({ uid, createdAt: u.created_at || 0, name: u.name || '' });
+      }
+
+      let assigned = 0;
+      for (const [cc, { existing, missing }] of byCompany) {
+        if (!missing.length) continue;
+        // 기존 user_code 중 {cc}-NNN 패턴의 seq 수집
+        const pattern = new RegExp(`^${cc.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}-(\\d+)$`);
+        const usedSeq = new Set();
+        let maxSeq = 0;
+        for (const code of existing) {
+          const m = pattern.exec(code);
+          if (m) {
+            const n = Number(m[1]);
+            usedSeq.add(n);
+            if (n > maxSeq) maxSeq = n;
+          }
+        }
+        missing.sort((a, b) => a.createdAt - b.createdAt);
+        for (const { uid, name } of missing) {
+          let seq = maxSeq + 1;
+          while (usedSeq.has(seq)) seq++;
+          usedSeq.add(seq);
+          maxSeq = Math.max(maxSeq, seq);
+          const code = `${cc}-${String(seq).padStart(3, '0')}`;
+          await update(ref(db, `users/${uid}`), { user_code: code, updated_at: Date.now() });
+          devLog(`  ${cc} · ${name || uid.slice(0,6)} → ${code}`);
+          assigned++;
+        }
+      }
+
+      devLog(`✓ user_code 부여 ${assigned}건 완료 · company_code 없어 skip ${skippedNoCompany}건`);
+      showToast(`${assigned}건 부여 완료${skippedNoCompany ? ` (skip ${skippedNoCompany})` : ''}`);
+    } catch (e) {
+      console.error(e);
+      devLog(`✗ 실패: ${e.message}`);
+      showToast('마이그레이션 실패 — 콘솔 확인', 'error');
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="ph ph-identification-badge"></i> user_code 일괄부여 (미부여자만 · 회사별 시퀀스)';
     }
   });
 }
