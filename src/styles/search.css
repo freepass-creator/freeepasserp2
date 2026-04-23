@@ -148,6 +148,18 @@
     flex-wrap: wrap;
   }
 
+  /* 색상 칩 — 좌측에 색 견본 */
+  .chip-color { padding-left: 6px; }
+  .chip-swatch {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 1px solid var(--c-border);
+    flex-shrink: 0;
+  }
+  .chip-color.is-active .chip-swatch { border-color: var(--c-text-inv); }
+
   .srch-active {
     display: flex;
     flex-wrap: wrap;

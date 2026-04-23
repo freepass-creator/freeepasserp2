@@ -700,7 +700,21 @@ function renderFilters() {
 
   el.innerHTML = Object.entries(FILTERS).map(([key, f]) => {
     const set = activeFilters[key];
-    const chip = c => `<button class="chip ${set && set.has(c.id) ? 'is-active' : ''}" data-g="${key}" data-c="${c.id}">${c.label}</button>`;
+    const isColor = key === 'color' || key === 'int_color';
+    const chip = c => {
+      if (isColor) {
+        // dynamic chip label 형식: "화이트(12)" → 이름과 카운트 분리
+        const m = c.label.match(/^(.+?)\((\d+)\)$/);
+        const name = m ? m[1] : c.label;
+        const cnt  = m ? m[2] : '';
+        const hex  = colorToHex(name);
+        return `<button class="chip chip-color ${set && set.has(c.id) ? 'is-active' : ''}" data-g="${key}" data-c="${c.id}" title="${name}">
+          <span class="chip-swatch" style="background:${hex};"></span>
+          <span>${name}${cnt ? ` (${cnt})` : ''}</span>
+        </button>`;
+      }
+      return `<button class="chip ${set && set.has(c.id) ? 'is-active' : ''}" data-g="${key}" data-c="${c.id}">${c.label}</button>`;
+    };
     let chipsHtml = '';
 
     if (f.dynamic) {
