@@ -26,11 +26,11 @@ export function isMobile() {
  *  ⚠️ iOS Safari 는 navigator.vibrate 미지원 — iPhone 에선 울리지 않음 (브라우저 제약)
  *  숫자 단위: ms. 한 줄 계층 = 가벼운 탭 / 확정 액션 / 큰 액션. 40ms 이하가 "타격감", 그 이상은 "진동" 느낌. */
 const HAPTIC_PATTERNS = {
-  light:   12,
-  medium:  25,
-  heavy:   45,
-  toggle:  [8, 40, 8],
-  success: [15, 50, 20],
+  light:   18,   // 일반 탭 — 확실한 타격감
+  medium:  35,   // 주요 액션(primary/danger) — 한 단계 더 묵직
+  heavy:   55,
+  toggle:  [10, 40, 10],
+  success: [15, 50, 25],
   error:   [40, 40, 40],
 };
 
@@ -45,28 +45,43 @@ export function haptic(type = 'light') {
   try { navigator.vibrate(HAPTIC_PATTERNS[type] ?? HAPTIC_PATTERNS.light); } catch {}
 }
 
-// 전역 버튼 탭 햅틱 — 셀렉터는 mobile.css 의 클래스 규격과 동기화
+// 전역 버튼 탭 햅틱 — 진짜 액션 요소만. 스크롤 많이 일어나는 컨테이너(m-info-row, m-card) 제외.
 const HAPTIC_TAP_SELECTORS = [
   'button', '.btn', '.chip', '[role="button"]',
-  '.m-tab-item', '.m-info-row', '.m-card',
+  '.m-tab-item',
   '.m-sheet-close', '.m-topbar-back', '.m-topbar-action', '.m-fab',
 ].join(', ');
 
-/** 전역 버튼 탭 햅틱 — 앱 부팅 시 한 번 호출하면 모든 버튼/칩/m-탭에 자동 적용.
+/** 전역 버튼 탭 햅틱 — pointerdown 에서 위치 기록, pointerup 에서 이동거리 체크해 탭으로 확정된 경우만 발화.
+ *  이유: pointerdown 시점에 바로 울리면 스크롤 시작에서도 반응. 이동 임계치(8px) 넘으면 스크롤로 판단해 스킵.
  *  HMR 안전: 핸들러 ref 를 window 에 저장해 재바인딩 시 기존 것 제거. */
 export function bindGlobalHaptic() {
-  const SLOT = '__fpHapticHandler';
-  if (window[SLOT]) {
-    document.removeEventListener('pointerdown', window[SLOT], { capture: true });
-  }
-  const handler = (e) => {
-    const el = e.target.closest(HAPTIC_TAP_SELECTORS);
+  const SLOT_DOWN = '__fpHapticDown';
+  const SLOT_UP = '__fpHapticUp';
+  if (window[SLOT_DOWN]) document.removeEventListener('pointerdown', window[SLOT_DOWN], { capture: true });
+  if (window[SLOT_UP])   document.removeEventListener('pointerup',   window[SLOT_UP],   { capture: true });
+
+  let startX = 0, startY = 0, startEl = null;
+  const down = (e) => {
+    startEl = e.target.closest(HAPTIC_TAP_SELECTORS);
+    startX = e.clientX;
+    startY = e.clientY;
+  };
+  const up = (e) => {
+    const el = startEl;
+    startEl = null;
     if (!el || el.disabled) return;
+    // 이동거리 체크 — 스크롤/스와이프 판별
+    if (Math.abs(e.clientX - startX) > 8 || Math.abs(e.clientY - startY) > 8) return;
+    // 같은 요소(또는 그 안)에서 손을 뗐을 때만 탭으로 인정
+    if (!el.contains(e.target) && e.target.closest(HAPTIC_TAP_SELECTORS) !== el) return;
     const strong = el.classList.contains('btn-danger') || el.classList.contains('btn-primary');
     haptic(strong ? 'medium' : 'light');
   };
-  window[SLOT] = handler;
-  document.addEventListener('pointerdown', handler, { passive: true, capture: true });
+  window[SLOT_DOWN] = down;
+  window[SLOT_UP] = up;
+  document.addEventListener('pointerdown', down, { passive: true, capture: true });
+  document.addEventListener('pointerup',   up,   { passive: true, capture: true });
 }
 
 /** 모바일 뷰포트 변경 감지 (debounced) */
