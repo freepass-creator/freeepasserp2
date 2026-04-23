@@ -10,7 +10,7 @@ import { markRoomRead } from '../firebase/collections.js';
 import { showToast } from '../core/toast.js';
 import { STEPS as CONTRACT_STEPS, getProgress } from '../core/contract-steps.js';
 import { pushMobileView, openBottomSheet } from '../core/mobile-shell.js';
-import { fmtHM, fmtChatDate } from '../core/format.js';
+import { renderChatMessages, getPeerReadAt } from '../core/chat-render.js';
 
 let unsubRooms = null;
 let unsubMessages = null;
@@ -240,65 +240,11 @@ function renderMessages() {
     el.innerHTML = `<div class="m-empty"><i class="ph ph-chat-circle"></i><p>메시지 없음</p></div>`;
     return;
   }
-
-  const fmt = fmtHM;
-  let lastDate = '';
-  let lastSenderUid = null;
-  let lastMinute = null;
-  el.innerHTML = sorted.map((msg, i) => {
-    const mine = msg.sender_uid === me.uid;
-    const ts = msg.created_at || 0;
-    const dk = new Date(ts).toDateString();
-    const minuteKey = new Date(ts).toISOString().slice(0, 16);
-    let dateSep = '';
-    if (dk !== lastDate) {
-      dateSep = `<div class="chat-date-sep"><span>${fmtChatDate(ts)}</span></div>`;
-      lastDate = dk;
-      lastSenderUid = null;
-      lastMinute = null;
-    }
-    // 카톡 규격: 발신자 바뀜 = 새 그룹(배지+큰간격), 같은발신자 분만 바뀜 = 중간간격(배지생략),
-    //            시간 표시는 이전 분 마지막 말풍선에
-    const senderChanged = msg.sender_uid !== lastSenderUid;
-    const minuteChanged = minuteKey !== lastMinute;
-    const senderStart = senderChanged;
-    const minuteStart = !senderChanged && minuteChanged;
-    lastSenderUid = msg.sender_uid;
-    lastMinute = minuteKey;
-    const next = sorted[i + 1];
-    const nextMinuteKey = next ? new Date(next.created_at || 0).toISOString().slice(0, 16) : null;
-    const senderEnd = !next || next.sender_uid !== msg.sender_uid;
-    const minuteEnd = senderEnd || nextMinuteKey !== minuteKey;
-
-    // 발신자 라벨 — sender_code 우선, 없으면 role 약어
-    const senderLabel = msg.sender_code
-      || (msg.sender_role === 'agent' ? '영업'
-        : msg.sender_role === 'provider' ? '공급'
-        : msg.sender_role === 'admin' ? '관리' : '');
-    const roleTone = msg.sender_role === 'agent' ? 'agent'
-                   : msg.sender_role === 'provider' ? 'provider' : 'admin';
-
-    let content;
-    if (msg.image_url) content = `<img src="${msg.image_url}" class="chat-img">`;
-    else if (msg.file_url) content = `<a href="${msg.file_url}" target="_blank" class="chat-file"><i class="ph ph-paperclip"></i> ${(msg.text||'파일').replace(/</g, '&lt;')}</a>`;
-    else content = (msg.text || '').replace(/</g, '&lt;').replace(/\n/g, '<br>');
-
-    const rowCls = [
-      'chat-row',
-      mine ? 'is-mine' : 'is-other',
-      senderStart ? 'is-start is-sender-start' : '',
-      minuteStart ? 'is-minute-start' : '',
-      senderEnd ? 'is-end' : '',
-    ].filter(Boolean).join(' ');
-
-    return `${dateSep}<div class="${rowCls}">
-      ${!mine && senderStart ? `<div class="chat-sender chat-sender-${roleTone}">${senderLabel}</div>` : (!mine ? '<div class="chat-sender-spacer"></div>' : '')}
-      <div class="chat-bubble-wrap">
-        <div class="chat-bubble chat-bubble-${roleTone}">${content}</div>
-        ${minuteEnd ? `<div class="chat-meta"><span class="chat-time">${fmt(ts)}</span></div>` : ''}
-      </div>
-    </div>`;
-  }).join('');
+  const room = (store.rooms || []).find(r => r._key === activeRoomId);
+  el.innerHTML = renderChatMessages(sorted, {
+    uid: me.uid,
+    peerReadAt: getPeerReadAt(room, me.role),
+  });
   el.scrollTop = el.scrollHeight;
 }
 

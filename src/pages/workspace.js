@@ -9,7 +9,8 @@ import { showToast } from '../core/toast.js';
 import { uploadFile } from '../firebase/storage-helper.js';
 import { markRoomRead } from '../firebase/collections.js';
 import { setBreadcrumbTail, setBreadcrumbBrief } from '../core/breadcrumb.js';
-import { fmtMoney, fmtWon, fmtTime, cField, fmtHM, fmtChatDate } from '../core/format.js';
+import { fmtMoney, fmtWon, fmtTime, cField } from '../core/format.js';
+import { renderChatMessages, getPeerReadAt } from '../core/chat-render.js';
 import { fieldInput as ffi, fieldView as ffv, bindAutoSave as bindFormAutoSave } from '../core/form-fields.js';
 import { initWs4Resize } from '../core/resize.js';
 import { getSettlementStatus, SETTLEMENT_STATUSES_BASIC } from '../core/settlement-status.js';
@@ -348,70 +349,13 @@ function openRoom(roomId) {
 function renderMessages(messages) {
   const el = document.getElementById('wsChatMsgs');
   if (!el) return;
-  const me = store.currentUser;
-  const uid = me?.uid;
-  const myRole = me?.role;
+  const me = store.currentUser || {};
   const room = (store.rooms || []).find(r => r._key === activeRoomId);
   const sorted = [...messages].sort((a,b) => (a.created_at||0) - (b.created_at||0));
-
-  // 상대방이 마지막으로 읽은 시각 — read_at_* 기준 (실제 대화 열람 시점)
-  // 관리자(admin)는 당사자가 아니므로 읽음에 영향 X
-  const peerReadAt = myRole === 'agent' ? (room?.read_at_provider || 0) : myRole === 'provider' ? (room?.read_at_agent || 0) : Infinity;
-
-  // 날짜 구분선용
-  let lastDate = '';
-  let lastSenderUid = '';
-  let lastMinute = '';
-
-  const fmt = fmtHM;
-  const fmtDate = fmtChatDate;
-
-  el.innerHTML = sorted.map((msg, i) => {
-    const isMine = msg.sender_uid === uid;
-    const ts = msg.created_at || 0;
-    const dateKey = new Date(ts).toDateString();
-    const minuteKey = new Date(ts).toISOString().slice(0, 16);
-
-    // 날짜 바뀌면 구분선
-    let dateSep = '';
-    if (dateKey !== lastDate) {
-      dateSep = `<div class="chat-date-sep"><span>${fmtDate(ts)}</span></div>`;
-      lastDate = dateKey;
-      lastSenderUid = '';
-      lastMinute = '';
-    }
-
-    // 연속 메시지 (같은 사람 + 같은 분) → 이름/시간 생략
-    const groupStart = msg.sender_uid !== lastSenderUid || minuteKey !== lastMinute;
-    lastSenderUid = msg.sender_uid;
-    lastMinute = minuteKey;
-
-    // 다음 메시지와 같은 그룹인지 (마지막 메시지에만 시간 표시)
-    const next = sorted[i + 1];
-    const groupEnd = !next || next.sender_uid !== msg.sender_uid || new Date(next.created_at || 0).toISOString().slice(0, 16) !== minuteKey;
-
-    // 코드명 — 발신자 코드 (sender_code 우선, 없으면 role 약어)
-    const senderLabel = msg.sender_code || (msg.sender_role === 'agent' ? '영업' : msg.sender_role === 'provider' ? '공급' : msg.sender_role === 'admin' ? '관리' : '');
-    const roleTone = msg.sender_role === 'agent' ? 'agent' : msg.sender_role === 'provider' ? 'provider' : 'admin';
-
-    // 읽음 여부 (내 메시지만 표시)
-    const isRead = isMine && ts <= peerReadAt;
-    const readMark = isMine ? (isRead ? '<span class="chat-read">읽음</span>' : '<span class="chat-unread">안읽음</span>') : '';
-
-    // 콘텐츠
-    let content = '';
-    if (msg.image_url) content = `<img src="${msg.image_url}" class="chat-img" onclick="window.open('${msg.image_url}','_blank')">`;
-    else if (msg.file_url) content = `<a href="${msg.file_url}" target="_blank" class="chat-file"><i class="ph ph-paperclip"></i> ${(msg.text||'파일').replace(/</g,'&lt;')}</a>`;
-    else content = (msg.text||'').replace(/</g,'&lt;').replace(/\n/g,'<br>');
-
-    return `${dateSep}<div class="chat-row ${isMine ? 'is-mine' : 'is-other'} ${groupStart ? 'is-start' : ''} ${groupEnd ? 'is-end' : ''}">
-      ${!isMine && groupStart ? `<div class="chat-sender chat-sender-${roleTone}">${senderLabel}</div>` : (!isMine ? '<div class="chat-sender-spacer"></div>' : '')}
-      <div class="chat-bubble-wrap">
-        <div class="chat-bubble chat-bubble-${roleTone}">${content}</div>
-        ${groupEnd ? `<div class="chat-meta">${readMark}<span class="chat-time">${fmt(ts)}</span></div>` : ''}
-      </div>
-    </div>`;
-  }).join('');
+  el.innerHTML = renderChatMessages(sorted, {
+    uid: me.uid,
+    peerReadAt: getPeerReadAt(room, me.role),
+  });
   el.scrollTop = el.scrollHeight;
 }
 
