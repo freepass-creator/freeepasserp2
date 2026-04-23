@@ -171,6 +171,7 @@ function getFilterCount() {
 
 // dynamic 필터 "더보기" 펼침 상태 (섹션별)
 const mDynExpanded = {};
+const mSecCollapsed = {};  // 섹션별 접힘 상태 — 기본 펼침(false)
 
 function openFilterSheet() {
   // dynamic 칩 집계 (전체 allProducts 기준)
@@ -199,12 +200,14 @@ function openFilterSheet() {
     }
     if (!chipsHtml) return '';
     const activeCount = set?.size || 0;
+    const collapsed = mSecCollapsed[key] ? 'is-collapsed' : '';
     return `
-      <div class="m-filter-section ${activeCount ? 'has-active' : ''}">
-        <div class="m-filter-section-title">
+      <div class="m-filter-section ${activeCount ? 'has-active' : ''} ${collapsed}" data-sec="${key}">
+        <div class="m-filter-section-title" data-sec-toggle="${key}">
           <i class="${f.icon}"></i>
           <span>${f.label}</span>
           ${activeCount ? `<span class="sb-badge is-visible">${activeCount}</span>` : ''}
+          <i class="ph ph-caret-down"></i>
         </div>
         <div class="m-filter-chips" data-g="${key}">${chipsHtml}</div>
       </div>
@@ -215,7 +218,9 @@ function openFilterSheet() {
 
   const html = `
     <div class="m-filter-sheet">
-      ${sectionsHtml}
+      <div class="m-filter-sheet-scroll">
+        ${sectionsHtml}
+      </div>
       <div class="m-filter-actions">
         <button class="btn btn-outline" id="mFilterReset">초기화</button>
         <button class="btn btn-primary" id="mFilterApply">적용</button>
@@ -227,6 +232,17 @@ function openFilterSheet() {
   const sheet = openBottomSheet(html, {
     title: `필터${totalCount ? ` <span class="sb-badge is-visible">${totalCount}</span>` : ''}`,
     onMount: (root) => {
+      // 섹션 접기 토글 (타이틀 클릭)
+      root.addEventListener('click', (e) => {
+        const toggleTitle = e.target.closest('[data-sec-toggle]');
+        if (!toggleTitle) return;
+        // 칩/더보기 버튼 클릭은 토글 제외 (섹션 내부에서 발생한 클릭 구분)
+        if (e.target.closest('[data-c], [data-more]')) return;
+        const key = toggleTitle.dataset.secToggle;
+        mSecCollapsed[key] = !mSecCollapsed[key];
+        toggleTitle.closest('.m-filter-section')?.classList.toggle('is-collapsed');
+      });
+
       const bindGroups = () => {
         root.querySelectorAll('[data-g]').forEach(group => {
           const g = group.dataset.g;
