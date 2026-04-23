@@ -450,9 +450,10 @@
     font-size: var(--icon-sm);
     color: var(--c-text-muted);
     transition: transform var(--dur) var(--ease);
+    transform: rotate(180deg);   /* 펼친 상태 = ▲ (접을 수 있다는 의미) */
   }
   .m-filter-section.is-collapsed .m-filter-section-title i.ph-caret-down {
-    transform: rotate(-90deg);
+    transform: rotate(0deg);     /* 접힌 상태 = ▼ (펼칠 수 있다는 의미) */
   }
   .m-filter-section.is-collapsed .m-filter-chips {
     display: none;
