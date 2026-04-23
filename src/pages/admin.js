@@ -951,7 +951,7 @@ function renderToolsTab(el) {
   });
 
   document.getElementById('devMigrateUserCode').addEventListener('click', async () => {
-    if (!confirm('user_code 가 비어있는 활성 유저에게 전역 시퀀스로 일괄 부여합니다.\n포맷: U-NNN (예: U-001, U-002)\n기존 user_code 있는 유저는 미변경. created_at 순.\n카운터(counters/user_code_seq)는 기존 최대값 이후부터 이어서 증가.\n진행하시겠습니까?')) return;
+    if (!confirm('user_code 가 비어있는 활성 유저에게 전역 시퀀스로 일괄 부여합니다.\n포맷: UNNNN (예: U0001, U0002)\n기존 user_code 있는 유저는 미변경. created_at 순.\n카운터(counters/user_code_seq)는 기존 최대값 이후부터 이어서 증가.\n진행하시겠습니까?')) return;
     const btn = document.getElementById('devMigrateUserCode');
     btn.disabled = true;
     btn.innerHTML = '<i class="ph ph-spinner"></i> 부여 중...';
@@ -961,13 +961,13 @@ function renderToolsTab(el) {
       const snap = await get(ref(db, 'users'));
       const all = snap.val() || {};
 
-      // 1) 기존 U-NNN 패턴에서 최대 seq 파악 (카운터 초기값 동기화용)
+      // 1) 기존 U 접두 패턴에서 최대 seq 파악 (카운터 초기값 동기화용)
       let maxSeq = 0;
       const missing = [];
       for (const [uid, u] of Object.entries(all)) {
         if (!u || u.status === 'deleted') continue;
         if (u.user_code) {
-          const m = /^U-(\d+)$/.exec(u.user_code);
+          const m = /^U(\d+)$/.exec(u.user_code);
           if (m) {
             const n = Number(m[1]);
             if (n > maxSeq) maxSeq = n;
@@ -996,7 +996,7 @@ function renderToolsTab(el) {
         const result = await runTransaction(counterRef, (c) => (c || 0) + 1);
         if (!result.committed) { devLog(`  ✗ seq 발급 실패: ${uid}`); continue; }
         const seq = result.snapshot.val();
-        const code = `U-${String(seq).padStart(3, '0')}`;
+        const code = `U${String(seq).padStart(4, '0')}`;
         await update(ref(db, `users/${uid}`), { user_code: code, updated_at: Date.now() });
         devLog(`  ${name || uid.slice(0,6)} → ${code}`);
         assigned++;
