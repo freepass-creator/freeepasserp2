@@ -1008,9 +1008,8 @@
     font-weight: var(--fw-semibold);
     color: var(--c-accent);
   }
-  /* zebra — :where() 로 specificity 0 : hover/active/sticky 가 확실히 덮도록
-     (:where 를 selector 전체에 적용해야 total specificity 가 0 이 됨) */
-  :where(.excl-table tbody tr:nth-child(even) td) {
+  /* zebra — :where() 로 specificity 0 : hover/active 가 확실히 덮도록 */
+  .excl-table tbody tr:nth-child(even) :where(td) {
     background-color: var(--c-bg-zebra);
   }
   .excl-table td:last-child { border-right: none; }
@@ -1023,26 +1022,26 @@
   .excl-sticky-left {
     position: sticky;
     left: 0;
-    z-index: 2;
+    z-index: 1;
     background-color: var(--c-bg);
     background-clip: border-box;
     box-shadow: 1px 0 0 0 var(--c-border);
   }
-  th.excl-sticky-left { z-index: 5; background-color: var(--c-bg-sub); }
+  th.excl-sticky-left { z-index: 4; background-color: var(--c-bg-sub); }
   .excl-row:hover .excl-sticky-left { background-color: var(--c-bg-hover); }
   .excl-row.is-active .excl-sticky-left { background-color: var(--c-accent-soft); }
 
   /* 틀고정 — 우측 대여료 (62px 기준) */
   .excl-pin-r {
     position: sticky;
-    z-index: 2;
+    z-index: 1;
     background-color: var(--c-bg);
     background-clip: border-box;
     text-align: right;
     box-shadow: 1px 0 0 0 var(--c-border-soft);
   }
   .excl-pin-r:last-child { box-shadow: none; }
-  th.excl-pin-r { z-index: 5; background-color: var(--c-bg-sub); text-align: right; }
+  th.excl-pin-r { z-index: 4; background-color: var(--c-bg-sub); text-align: right; }
   /* pinned right 오프셋은 JS가 inline으로 관리 — 첫 pin-r만 좌측 구분선 */
   .excl-pin-r:first-of-type {
     box-shadow: 1px 0 0 0 var(--c-border-soft), -1px 0 0 0 var(--c-border);
