@@ -983,14 +983,16 @@
     font-weight: var(--fw-semibold);
     color: var(--c-accent);
   }
-  .excl-table tbody tr:nth-child(even) :is(td, td.excl-sticky-left, td.excl-pin-r) {
+  /* zebra — :where() 로 specificity 0 : hover/active 가 확실히 덮도록 */
+  .excl-table tbody tr:nth-child(even) :where(td) {
     background-color: var(--c-bg-zebra);
   }
   .excl-table td:last-child { border-right: none; }
   .excl-wide { min-width: 120px; }
   .excl-row { cursor: pointer; }
-  .excl-row:hover { background: var(--c-bg-hover); }
-  .excl-row.is-active { background: var(--c-accent-soft); }
+  /* hover/active — td 에 직접 걸어서 sticky·zebra 모두 덮음 */
+  .excl-table .excl-row:hover td { background-color: var(--c-bg-hover); }
+  .excl-table .excl-row.is-active td { background-color: var(--c-accent-soft); }
   /* 틀고정 — 좌측 차량번호 */
   .excl-sticky-left {
     position: sticky;
