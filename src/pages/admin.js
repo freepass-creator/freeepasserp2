@@ -1562,99 +1562,150 @@ function vmAuditAction(vm) {
   if (!products.length) { showToast('상품 없음'); return; }
 
   const master = _vmModels.filter(m => m.maker && m.sub && !m.archived);
-  const idxExact = new Map();            // "maker|model|sub" → m
-  const idxBySub = new Map();            // normSub → [m]
-  const byMakerModel = new Map();        // "maker|model" → [m] (ambig 감지)
-  const stripYear = s => String(s || '').replace(/\s+\d{2,4}\s*-\s*\d{0,4}\s*$/, '').replace(/\s*\(페리\d*\)\s*/g, ' ').replace(/^\s*더\s*뉴\s+/, '').trim();
+
+  // 매칭 도우미 — normalize 와 동일 로직을 연산
+  const stripYear = s => String(s || '')
+    .replace(/[！-～]/g, ch => String.fromCharCode(ch.charCodeAt(0) - 0xfee0))
+    .replace(/\s+\d{2,4}\s*-\s*\d{0,4}\s*$/, '').replace(/\s+\d{4}\s*$/, '')
+    .replace(/\s*\(페리\d*\)\s*/g, ' ').replace(/\s*페리\d*\s*/g, ' ')
+    .replace(/^\s*더\s*뉴\s*/, '').replace(/^\s*신\s*형\s*/, '')
+    .replace(/^\s*올\s*뉴\s*/, '').replace(/^\s*뉴\s+/, '').trim();
   const norm = s => stripYear(s).toLowerCase().replace(/[\s()\/\-.,~·_]/g, '');
+  const yearNum = p => { const y = Number(p?.year); return Number.isFinite(y) && y >= 1900 && y <= 2100 ? y : null; };
+  const yearOf = ym => { const m = String(ym || '').match(/^(\d{4})/); return m ? Number(m[1]) : null; };
+  const withinRange = (p, m) => {
+    const y = yearNum(p); if (!y) return null;
+    const ys = yearOf(m.production_start ?? m.year_start);
+    const ye = m.production_end === '현재' || !m.production_end ? 9999 : (yearOf(m.production_end ?? m.year_end) ?? 9999);
+    if (!ys) return null;
+    return y >= ys && y <= ye;
+  };
+  const productTokens = p => {
+    const src = [p?.trim_name, p?.trim, p?.model_code, p?.engine_code, p?.options, p?.sub_model].filter(Boolean).join(' ');
+    return new Set((src.match(/[A-Za-z0-9]+|[가-힯]+/g) || []).map(x => x.toLowerCase()));
+  };
+  const pickBest = (p, cands) => {
+    if (!cands?.length) return null;
+    if (cands.length === 1) return cands[0];
+    const py = yearNum(p);
+    if (py) { const ir = cands.filter(m => withinRange(p, m) === true); if (ir.length) cands = ir; }
+    const pTks = productTokens(p);
+    const scored = cands.map(m => {
+      const mCode = String(m.code || '').toLowerCase();
+      const codeHit = mCode && pTks.has(mCode) ? 5 : 0;
+      const subCodes = (String(m.sub || '').match(/[A-Za-z0-9]{2,}/g) || []).map(x => x.toLowerCase());
+      const subCodeHit = subCodes.filter(c => pTks.has(c)).length * 3;
+      const mSubTks = (String(m.sub || '').match(/[A-Za-z0-9]+|[가-힯]+/g) || []).map(x => x.toLowerCase());
+      const softHits = mSubTks.filter(t => pTks.has(t) && t.length > 1).length;
+      return { m, score: codeHit + subCodeHit + softHits, pop: Number(m.popularity || m.model_popularity || 0), ys: yearOf(m.production_start ?? m.year_start) || 0 };
+    });
+    scored.sort((a, b) => (b.score - a.score) || (b.pop - a.pop) || (b.ys - a.ys));
+    return scored[0].m;
+  };
+
+  const idxExact = new Map();
+  const idxBySub = new Map();
+  const byMakerModel = new Map();
   for (const m of master) {
     idxExact.set(`${m.maker}|${m.model}|${m.sub}`, m);
     const n = norm(m.sub);
-    if (n) {
-      if (!idxBySub.has(n)) idxBySub.set(n, []);
-      idxBySub.get(n).push(m);
-    }
+    if (n) { if (!idxBySub.has(n)) idxBySub.set(n, []); idxBySub.get(n).push(m); }
     const mkm = `${m.maker}|${m.model || ''}`;
     if (!byMakerModel.has(mkm)) byMakerModel.set(mkm, []);
     byMakerModel.get(mkm).push(m);
   }
 
-  // (maker | model | sub) 조합별 product 집계
-  const combos = new Map();
-  for (const p of products) {
-    const mk = (p.maker || '').trim();
-    const md = (p.model || '').trim();
-    const sub = (p.sub_model || '').trim();
-    const key = `${mk}|${md}|${sub}`;
-    if (!combos.has(key)) combos.set(key, { maker: mk, model: md, sub_model: sub, count: 0 });
-    combos.get(key).count++;
-  }
-
-  const buckets = { exact: [], normalizable: [], ambiguous: [], missing: [], unmatched: [] };
-  for (const c of combos.values()) {
-    if (!c.sub_model) {
-      // sub_model 비어있음 — 결측
-      buckets.missing.push(c);
-      continue;
+  // 상품별로 matchProduct 돌려서 결과 집계
+  const matchProduct = (p) => {
+    if (!p.maker && !p.sub_model) return { stage: 'unmatched', target: null };
+    let best = null, stage = '';
+    const isGeneric = p.maker && p.model && (!p.sub_model || p.sub_model === p.model);
+    if (!isGeneric) {
+      const exactKey = `${p.maker || ''}|${p.model || ''}|${p.sub_model || ''}`;
+      if (idxExact.has(exactKey)) { best = idxExact.get(exactKey); stage = 'exact'; }
+      if (!best && p.sub_model) {
+        const list = idxBySub.get(norm(p.sub_model)) || [];
+        if (list.length === 1) { best = list[0]; stage = 'norm'; }
+        else if (list.length > 1) {
+          const byMk = list.filter(m => m.maker === p.maker && m.model === p.model);
+          const byM = list.filter(m => m.maker === p.maker);
+          best = pickBest(p, byMk.length ? byMk : byM.length ? byM : list);
+          stage = 'norm-multi';
+        }
+      }
+      if (!best && p.maker && p.sub_model) {
+        const nSub = norm(p.sub_model);
+        const cands = master.filter(m => m.maker === p.maker && nSub && (norm(m.sub).includes(nSub) || nSub.includes(norm(m.sub))));
+        best = pickBest(p, cands); if (best) stage = 'partial';
+      }
+      if (!best && p.model && p.sub_model) {
+        const nSub = norm(p.sub_model);
+        const cands = master.filter(m => m.model === p.model && (norm(m.sub) === nSub || norm(m.sub).includes(nSub) || nSub.includes(norm(m.sub))));
+        best = pickBest(p, cands); if (best) stage = 'maker-fix';
+      }
     }
-    const exactKey = `${c.maker}|${c.model}|${c.sub_model}`;
-    if (idxExact.has(exactKey)) { buckets.exact.push(c); continue; }
-
-    // sub_model 이 model 과 동일 (generic — "쏘나타")
-    if (c.sub_model === c.model) {
-      const mmList = byMakerModel.get(`${c.maker}|${c.model}`) || [];
-      c.candidates = mmList.length;
-      buckets.ambiguous.push(c);
-      continue;
+    if (!best && p.maker && p.model) {
+      const cands = master.filter(m => m.maker === p.maker && m.model === p.model);
+      if (cands.length) { best = pickBest(p, cands); stage = 'generic'; }
     }
-
-    // norm 매칭
-    const list = idxBySub.get(norm(c.sub_model)) || [];
-    if (list.length === 1) { c.target = list[0]; buckets.normalizable.push(c); continue; }
-    if (list.length > 1) {
-      const filtered = list.filter(m => m.maker === c.maker);
-      if (filtered.length === 1) { c.target = filtered[0]; buckets.normalizable.push(c); continue; }
-      c.candidates = list.length;
-      buckets.ambiguous.push(c);
-      continue;
-    }
-
-    // maker+model 동일한 마스터가 있으면 ambiguous, 아예 없으면 unmatched
-    const mmList = byMakerModel.get(`${c.maker}|${c.model}`) || [];
-    if (mmList.length) { c.candidates = mmList.length; buckets.ambiguous.push(c); continue; }
-    buckets.unmatched.push(c);
-  }
-
-  const sortByCount = (a, b) => b.count - a.count;
-  for (const k of Object.keys(buckets)) buckets[k].sort(sortByCount);
-
-  const total = products.length;
-  const comboCount = combos.size;
-  devLog(`=== 차종 감사 리포트 (${new Date().toLocaleString('ko')}) ===`);
-  devLog(`상품 ${total}건 · 유니크 조합 ${comboCount}개`);
-  devLog(`  ✅ 정확 일치: ${buckets.exact.reduce((s, c) => s + c.count, 0)}건 (${buckets.exact.length}조합)`);
-  devLog(`  🔄 정규화 가능: ${buckets.normalizable.reduce((s, c) => s + c.count, 0)}건 (${buckets.normalizable.length}조합) — "상품 정규화"로 자동 교정 가능`);
-  devLog(`  ⚠ 애매 (후보 여럿): ${buckets.ambiguous.reduce((s, c) => s + c.count, 0)}건 (${buckets.ambiguous.length}조합) — 세부모델 수동 지정 필요`);
-  devLog(`  ❓ 결측 (sub_model 빔): ${buckets.missing.reduce((s, c) => s + c.count, 0)}건 (${buckets.missing.length}조합)`);
-  devLog(`  ❌ 마스터 미등록: ${buckets.unmatched.reduce((s, c) => s + c.count, 0)}건 (${buckets.unmatched.length}조합) — "누락 차종 등록" 대상`);
-  devLog('');
-
-  const dump = (label, rows, show = 20) => {
-    if (!rows.length) return;
-    devLog(`--- ${label} (상위 ${Math.min(show, rows.length)}/${rows.length}) ---`);
-    for (const r of rows.slice(0, show)) {
-      const extra = r.candidates ? ` [후보 ${r.candidates}개]` : r.target ? ` → ${r.target.maker}/${r.target.model}/${r.target.sub}` : '';
-      devLog(`  ${String(r.count).padStart(4)} × ${r.maker || '?'} / ${r.model || '?'} / ${r.sub_model || '—'}${extra}`);
-    }
+    return { stage: best ? stage : 'unmatched', target: best };
   };
-  dump('🔄 정규화 가능', buckets.normalizable, 15);
-  dump('⚠ 애매', buckets.ambiguous, 20);
-  dump('❓ 결측', buckets.missing, 10);
-  dump('❌ 미등록', buckets.unmatched, 15);
-  devLog('');
-  devLog('→ 권장 순서: ① 누락 차종 등록 → ② 상품 정규화 → ③ 애매·결측은 상품관리에서 수동 수정');
 
-  showToast(`감사 완료 — 로그 확인 (총 ${comboCount}개 조합)`);
+  // 상품 전수 매칭 → 결과별 집계
+  const agg = new Map(); // key: "fromMaker|fromModel|fromSub → toMaker|toModel|toSub" → { count, stage }
+  const unmatched = [];
+  for (const p of products) {
+    const r = matchProduct(p);
+    if (!r.target) {
+      unmatched.push(p);
+      continue;
+    }
+    const from = `${p.maker || '?'} / ${p.model || '?'} / ${p.sub_model || '—'}`;
+    const to = `${r.target.maker} / ${r.target.model} / ${r.target.sub}`;
+    const key = `${from} → ${to}`;
+    if (!agg.has(key)) agg.set(key, { from, to, stage: r.stage, count: 0, sampleYears: new Set() });
+    const a = agg.get(key);
+    a.count++;
+    if (p.year) a.sampleYears.add(String(p.year));
+  }
+
+  const rows = [...agg.values()].sort((a, b) => b.count - a.count);
+  const total = products.length;
+  const changeRows = rows.filter(r => {
+    const [from, to] = r.from === r.to ? [null, null] : [r.from, r.to];
+    return from && to && r.from !== r.to;
+  });
+  const sameRows = rows.filter(r => r.from === r.to);
+
+  devLog(`=== 차종 감사 (${new Date().toLocaleString('ko')}) ===`);
+  devLog(`상품 ${total}건 · 매칭 성공 ${total - unmatched.length}건 · 실패 ${unmatched.length}건`);
+  devLog(`변경 필요 ${changeRows.reduce((s,r)=>s+r.count,0)}건 (${changeRows.length}조합) · 이미 표준 ${sameRows.reduce((s,r)=>s+r.count,0)}건`);
+  devLog('');
+
+  devLog(`--- 변경 필요 (상위 30, stage=매칭단계) ---`);
+  for (const r of changeRows.slice(0, 30)) {
+    const yrs = r.sampleYears.size ? ` [yr: ${[...r.sampleYears].sort().slice(0, 4).join(',')}${r.sampleYears.size > 4 ? '+' : ''}]` : '';
+    devLog(`  ${String(r.count).padStart(4)} × ${r.from}`);
+    devLog(`       → ${r.to}  (${r.stage})${yrs}`);
+  }
+
+  if (unmatched.length) {
+    devLog('');
+    devLog(`--- ❌ 매칭 실패 (상위 10) ---`);
+    const byCombo = new Map();
+    for (const p of unmatched) {
+      const k = `${p.maker || '?'} / ${p.model || '?'} / ${p.sub_model || '—'}`;
+      byCombo.set(k, (byCombo.get(k) || 0) + 1);
+    }
+    const sorted = [...byCombo.entries()].sort((a, b) => b[1] - a[1]).slice(0, 10);
+    for (const [k, n] of sorted) devLog(`  ${String(n).padStart(4)} × ${k}`);
+    devLog('→ "누락 차종 등록" 실행 후 재감사');
+  }
+
+  devLog('');
+  devLog(`매칭 단계: exact=정확 / norm=정규화 / partial=부분일치 / maker-fix=제조사교정 / generic=세대추론`);
+
+  showToast(`감사 완료 — 로그 확인 (변경 ${changeRows.reduce((s,r)=>s+r.count,0)}건 / 실패 ${unmatched.length}건)`);
 }
 
 /** 엔카 마스터에 없는 제조사·차종을 products 에서 추출해서 vehicle_master 에 자동 등록.
@@ -1798,40 +1849,54 @@ async function vmNormalizeProductsAction(vm) {
     if (!ys) return null;
     return y >= ys && y <= ye;
   };
-  // 트림 토큰 기반 추가 점수 (예: "인스퍼레이션" 이 master.sub 에 들어있으면 +1)
-  const trimTokens = p => {
-    const t = String(p?.trim_name || p?.trim || '');
-    return (t.match(/[A-Za-z]+|[0-9]+|[가-힯]+/g) || []).map(x => x.toLowerCase());
+  // 토큰 추출 — 영숫자는 붙여서 ("MQ4" 가 ["MQ","4"] 로 쪼개지지 않도록)
+  //  product 의 모든 식별 필드 (trim·모델코드·엔진코드·옵션·sub_model) 에서 추출
+  const productTokens = p => {
+    const src = [p?.trim_name, p?.trim, p?.model_code, p?.engine_code, p?.options, p?.sub_model]
+      .filter(Boolean).join(' ');
+    return (src.match(/[A-Za-z0-9]+|[가-힯]+/g) || []).map(x => x.toLowerCase());
   };
-  /** 여러 후보 중 최선 선택 — 연식을 HARD FILTER 로 우선 사용
-   *  1. product.year 가 있으면 → 범위 일치하는 것만 후보로 축소 (있으면 그 안에서만 선택)
-   *  2. 트림 토큰 일치 수 내림차순
-   *  3. popularity 내림차순
-   *  4. production_start 내림차순 (최신) */
+  /** 여러 후보 중 최선 선택 — 연식 HARD FILTER + 세대코드 가중치
+   *  1. product.year 범위 매칭 → 범위 일치만 후보로 축소
+   *  2. master.code ("CN7", "MQ4") 가 product 의 토큰에 있으면 세대 확정 (+5)
+   *  3. master.sub 토큰이 product 토큰에 있으면 +1 (양방향)
+   *  4. popularity 내림차순
+   *  5. production_start 내림차순 (최신) */
   const pickBest = (p, cands) => {
     if (!cands || !cands.length) return null;
     if (cands.length === 1) return cands[0];
 
-    // 1) 연식 hard filter — product.year 가 있으면 범위 맞는 것 우선
+    // 1) 연식 hard filter
     const py = yearNum(p);
     if (py) {
       const inRange = cands.filter(m => withinRange(p, m) === true);
       if (inRange.length) cands = inRange;
     }
 
-    // 2-4) 남은 후보를 토큰→popularity→최신 순으로 정렬
-    const tks = trimTokens(p);
+    // 2-5) 점수화
+    const pTks = new Set(productTokens(p));
     const scored = cands.map(m => {
-      const tokenHits = tks.reduce((s, t) => norm(m.sub).includes(t) ? s + 1 : s, 0);
+      // 세대코드 강력 가중 — 예: master.code="MQ4" & product.trim contains "MQ4"
+      const mCode = String(m.code || '').toLowerCase();
+      const codeHit = mCode && pTks.has(mCode) ? 5 : 0;
+
+      // master.sub 내 영숫자 코드(괄호 안) 도 동일하게 체크 — 예: "(CN7)"
+      const subCodes = (String(m.sub || '').match(/[A-Za-z0-9]{2,}/g) || []).map(x => x.toLowerCase());
+      const subCodeHit = subCodes.filter(c => pTks.has(c)).length * 3;
+
+      // master.sub 전체 토큰 일치 수 (부드러운 가중)
+      const mSubTks = (String(m.sub || '').match(/[A-Za-z0-9]+|[가-힯]+/g) || []).map(x => x.toLowerCase());
+      const softHits = mSubTks.filter(t => pTks.has(t) && t.length > 1).length;
+
       const ys = yearOf(m.production_start ?? m.year_start) || 0;
       return {
         m,
-        tokens: tokenHits,
+        score: codeHit + subCodeHit + softHits,
         pop: Number(m.popularity || m.model_popularity || 0),
         ys,
       };
     });
-    scored.sort((a, b) => (b.tokens - a.tokens) || (b.pop - a.pop) || (b.ys - a.ys));
+    scored.sort((a, b) => (b.score - a.score) || (b.pop - a.pop) || (b.ys - a.ys));
     return scored[0].m;
   };
 

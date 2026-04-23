@@ -781,17 +781,14 @@ function renderActiveChips() {
     else { countEl.textContent = ''; countEl.classList.remove('is-visible'); }
   }
 
-  if (!total) {
-    el.innerHTML = `<span class="srch-active-empty">전체해제</span>`;
-    return;
-  }
-
   el.innerHTML = entries.flatMap(([g, set]) =>
     [...set].map(cid => {
       const c = FILTERS[g].chips.find(x => x.id === cid);
       return `<span class="chip is-active">${c?.label || cid} <span class="chip-remove" data-g="${g}" data-c="${cid}">&times;</span></span>`;
     })
-  ).join('') + `<button class="btn btn-sm" style="color:var(--c-accent);font-size:var(--fs-2xs);" id="srchClear">전체해제</button>`;
+  ).join('') + `<button class="srch-clear-all ${total ? 'is-active' : ''}" id="srchClear" ${total ? '' : 'disabled'}>전체해제</button>`;
+
+  if (!total) return;
 
   el.querySelectorAll('.chip-remove').forEach(x => {
     x.addEventListener('click', (e) => {
