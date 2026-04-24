@@ -971,6 +971,7 @@
     letter-spacing: -0.015em;
     table-layout: fixed;
   }
+  /* header — panel-head 규격과 완전 일치 (높이·폰트·bg·테두리) */
   .excl-table th {
     position: sticky;
     top: 0;
@@ -979,18 +980,17 @@
     font-size: var(--fs-xs);
     font-weight: var(--fw-medium);
     color: var(--c-text);
-    letter-spacing: -0.02em;
+    letter-spacing: -0.01em;
     padding: 0 var(--sp-3);
-    height: calc(var(--panel-head-h) - 1px);
-    line-height: calc(var(--panel-head-h) - 1px);
+    height: var(--panel-head-h);
+    line-height: var(--panel-head-h);
     white-space: nowrap;
-    border-right: 1px solid var(--c-border-soft);
     border-bottom: 1px solid var(--c-border);
     text-align: left;
     user-select: none;
     box-sizing: border-box;
   }
-  .excl-table th:last-child { border-right: none; }
+  /* cell — 밀도형 8px padding / 32px 높이 (데이터 그리드 기준) */
   .excl-table td {
     padding: 0 8px;
     height: 32px;
@@ -1000,7 +1000,6 @@
     overflow: hidden;
     text-overflow: ellipsis;
     border-bottom: 1px solid var(--c-border-soft);
-    border-right: 1px solid var(--c-border-soft);
     max-width: 200px;
     vertical-align: middle;
   }
@@ -1008,16 +1007,11 @@
     font-weight: var(--fw-semibold);
     color: var(--c-accent);
   }
-  /* zebra — :where() 로 specificity 0 : hover/active 가 확실히 덮도록 */
-  .excl-table tbody tr:nth-child(even) :where(td) {
-    background-color: var(--c-bg-zebra);
-  }
-  .excl-table td:last-child { border-right: none; }
   .excl-wide { min-width: 120px; }
   .excl-row { cursor: pointer; }
-  /* hover/active — td 에 직접 걸어서 sticky·zebra 모두 덮음 */
+  /* hover/active — list-row 와 동일 규격 (bg-hover 로 일체감) */
   .excl-table .excl-row:hover td { background-color: var(--c-bg-hover); }
-  .excl-table .excl-row.is-active td { background-color: var(--c-accent-soft); }
+  .excl-table .excl-row.is-active td { background-color: var(--c-bg-hover); }
   /* 틀고정 — 좌측 차량번호 */
   .excl-sticky-left {
     position: sticky;
@@ -1029,7 +1023,7 @@
   }
   th.excl-sticky-left { z-index: 4; background-color: var(--c-bg-sub); }
   .excl-row:hover .excl-sticky-left { background-color: var(--c-bg-hover); }
-  .excl-row.is-active .excl-sticky-left { background-color: var(--c-accent-soft); }
+  .excl-row.is-active .excl-sticky-left { background-color: var(--c-bg-hover); }
 
   /* 틀고정 — 우측 대여료 (62px 기준) */
   .excl-pin-r {
@@ -1047,7 +1041,7 @@
     box-shadow: 1px 0 0 0 var(--c-border-soft), -1px 0 0 0 var(--c-border);
   }
   .excl-row:hover .excl-pin-r { background-color: var(--c-bg-hover); }
-  .excl-row.is-active .excl-pin-r { background-color: var(--c-accent-soft); }
+  .excl-row.is-active .excl-pin-r { background-color: var(--c-bg-hover); }
 
   .excl-price { text-align: right; }
   .excl-rent {

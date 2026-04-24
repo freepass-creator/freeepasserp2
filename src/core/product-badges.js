@@ -15,8 +15,8 @@ const VS_TONE = {
   '출고불가': 'err',
 };
 
-function badgeHtml(label, tone) {
-  return `<span class="badge is-filled badge-${tone}">${label}</span>`;
+function badgeHtml(label, tone, variant = 'is-filled') {
+  return `<span class="badge ${variant} badge-${tone}">${label}</span>`;
 }
 
 /* ── 차량상태 뱃지 (출고가능/출고협의/...) ── */
@@ -26,13 +26,17 @@ function vehicleStatusBadge(product) {
   return tone ? badgeHtml(vs, tone) : '';
 }
 
-/* ── 상품구분 뱃지 (신차렌트/중고렌트/신차구독/중고구독) — 한 개로 합침
- *    재렌트/재구독 같은 레거시 값은 중고렌트/중고구독으로 정규화 */
+/* ── 상품구분 뱃지 — 계열 분리 + 중고는 soft 변형
+ *    렌트  = 파랑(info)  · 구독  = 초록(ok)
+ *    신차  = is-filled (진하게) · 중고 = is-soft (연하게) */
 function productTypeBadge(product) {
   const pt = normalizeProductType(product?.product_type);
   if (!pt) return '';
   const isNew = /^신차/.test(pt);
-  return badgeHtml(pt, isNew ? 'info' : 'rose');
+  const isRent = /렌트$/.test(pt);
+  const tone = isRent ? 'info' : 'ok';
+  const variant = isNew ? 'is-filled' : 'is-soft';
+  return badgeHtml(pt, tone, variant);
 }
 
 /* ── 심사여부 판정 (boolean) ── */

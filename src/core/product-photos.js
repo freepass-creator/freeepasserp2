@@ -14,9 +14,17 @@ const NEEDS_SERVER_RE = /drive\.google\.com\/(drive\/folders\/|drive\/u\/\d+\/fo
 // 모바일 브라우저의 cross-origin 이미지 차단 이슈 우회용 프록시 대상 호스트
 const PROXY_HOSTS_RE = /(^|\.)(googleusercontent\.com|drive\.google\.com)$/;
 
+/** 로컬 dev 판별 — Vite 에서는 /api/img 서버리스가 없으니 직접 URL 을 쓴다. */
+export function isLocalDev() {
+  if (typeof location === 'undefined') return false;
+  const h = location.hostname;
+  return h === 'localhost' || h === '127.0.0.1' || /^192\.168\./.test(h) || /^10\./.test(h);
+}
+
 /** 외부 이미지 URL 을 /api/img 프록시로 감싸서 우리 오리진으로 서빙 —
  *  Samsung Internet / Chrome Android 등에서 Drive/lh3 직접 로딩 실패 해결.
- *  이미 프록시됐거나 같은 오리진이면 그대로 반환. */
+ *  이미 프록시됐거나 같은 오리진이면 그대로 반환.
+ *  로컬 dev 에서는 프록시를 스킵 (데스크톱 브라우저는 직접 로딩 가능). */
 export function toProxiedImage(url) {
   if (!url || typeof url !== 'string') return url;
   if (url.startsWith('/api/img')) return url;               // 이미 프록시됨
@@ -25,6 +33,7 @@ export function toProxiedImage(url) {
     const u = new URL(url, (typeof location !== 'undefined' ? location.origin : 'https://x/'));
     if (typeof location !== 'undefined' && u.origin === location.origin) return url;
     if (!PROXY_HOSTS_RE.test(u.hostname)) return url;       // 화이트리스트 외 호스트는 그대로
+    if (isLocalDev()) return url;                           // dev: /api/img 없음 → 원본 사용
     return `/api/img?url=${encodeURIComponent(url)}`;
   } catch { return url; }
 }

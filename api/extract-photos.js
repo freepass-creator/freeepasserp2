@@ -156,7 +156,7 @@ export default async function handler(req, res) {
       if (!promise) {
         promise = fetchDriveImages(folderId, size, apiKey);
         _inflight.set(cacheKey, promise);
-        promise.finally(() => _inflight.delete(cacheKey));
+        promise.finally(() => _inflight.delete(cacheKey)).catch(() => {});
       }
       const urls = await promise;
       res.setHeader('Cache-Control', 's-maxage=3600, stale-while-revalidate=600');
@@ -179,7 +179,7 @@ export default async function handler(req, res) {
       if (!promise) {
         promise = scrapePageImages(url);
         _inflight.set(cacheKey, promise);
-        promise.finally(() => _inflight.delete(cacheKey));
+        promise.finally(() => _inflight.delete(cacheKey)).catch(() => {});
       }
       const urls = await promise;
       res.setHeader('Cache-Control', 's-maxage=3600, stale-while-revalidate=600');

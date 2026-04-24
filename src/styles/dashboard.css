@@ -37,18 +37,20 @@
     display: flex;
     align-items: center;
     gap: var(--sp-3);
-    padding: var(--sp-3);
+    padding: var(--sp-3) var(--sp-4);
     background: var(--c-surface);
-    border: 1px solid var(--c-border);
-    border-radius: var(--ctrl-r);
+    border: 1px solid transparent;
+    border-radius: var(--card-r);
+    box-shadow: var(--shadow-xs);
     font-size: var(--fs-sm);
     cursor: pointer;
-    transition: all var(--dur) var(--ease);
+    transition: box-shadow var(--dur) var(--ease), transform var(--dur) var(--ease), border-color var(--dur) var(--ease);
   }
 
   .dash-todo:hover {
-    border-color: var(--c-border-strong);
-    box-shadow: var(--shadow-sm);
+    border-color: var(--c-border);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-1px);
   }
 
   .dash-todo-clear {
@@ -57,8 +59,9 @@
   }
 
   .dash-todo-clear:hover {
-    border-color: var(--c-border);
-    box-shadow: none;
+    border-color: transparent;
+    box-shadow: var(--shadow-xs);
+    transform: none;
   }
 
   .dash-todo i:first-child {
@@ -95,19 +98,27 @@
     gap: var(--sp-3);
     padding: var(--sp-4);
     background: var(--c-surface);
-    border: 1px solid var(--c-border);
-    border-radius: var(--ctrl-r);
+    border: 1px solid transparent;
+    border-radius: var(--card-r);
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow var(--dur) var(--ease), transform var(--dur) var(--ease);
+  }
+  .dash-kpi:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-1px);
   }
 
   .dash-kpi-icon {
-    width: 40px;
-    height: 40px;
+    width: 44px;
+    height: 44px;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: var(--ctrl-r);
+    border-radius: 12px;
     font-size: var(--icon-lg);
     flex-shrink: 0;
+    background: var(--c-accent-soft);   /* 투명 톤 기본 — tone variant 가 덮어씀 */
+    color: var(--c-accent);
   }
 
   .dash-kpi-value {

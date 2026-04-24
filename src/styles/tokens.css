@@ -19,7 +19,8 @@
     /* freepass mobility CI — main navy + accent sky */
     --c-accent:       #1B2A4A;    /* main — 딥 네이비 */
     --c-accent-hover: #0F1B35;    /* 진한 네이비 (hover) */
-    --c-accent-soft:  #E6EEF8;    /* 아주 연한 스카이 (배경) */
+    --c-accent-soft:  rgba(27, 42, 74, 0.06);  /* 투명 네이비 — 선택/hover 배경 (다크모드 호환) */
+    --c-accent-soft-solid: #F0F3F9;  /* 불투명 버전 — sticky/overlay 등 투명 못쓰는 곳 */
     --c-brand-base:   #7F93B3;    /* base (슬레이트) */
     --c-brand-sky:    #9EC5F3;    /* 악센트 (강조 링크) */
 
@@ -70,7 +71,7 @@
 
     /* ── Typography ── */
     --font:           'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-    --fs-2xs:         10px;
+    --fs-2xs:         10px;   /* 뱃지·아주 작은 보조텍스트 */
     --fs-xs:          11px;
     --fs-sm:          12px;
     --fs-base:        13px;
@@ -106,8 +107,8 @@
     --ctrl-h-sm:      28px;
     --ctrl-h:         32px;
     --ctrl-h-lg:      40px;
-    --ctrl-r:         4px;     /* 기본 라운드 — 버튼·입력·칩 */
-    --card-r:         8px;     /* 카드·섹션 */
+    --ctrl-r:         6px;     /* 기본 라운드 — 버튼·입력·칩 (4→6, 모던 톤) */
+    --card-r:         10px;    /* 카드·섹션 (8→10, 소프트) */
     --bubble-r:       16px;    /* 말풍선·리치 카드 */
     --pill-r:         999px;   /* 동그란 버튼·태그 */
     --ctrl-pad:       6px 10px;
@@ -126,11 +127,12 @@
     /* ── Sidebar ── */
     --sb-w:           200px;
 
-    /* ── Shadows — 최소화 (보더로 구분) ── */
-    --shadow-sm:      0 1px 2px rgba(0,0,0,.05);
-    --shadow-md:      0 1px 4px rgba(0,0,0,.08);
-    --shadow-lg:      0 2px 8px rgba(0,0,0,.1);
-    --shadow-popup:   0 4px 16px rgba(0,0,0,.14);
+    /* ── Shadows — 은은한 depth (border 단독 감성 탈피) ── */
+    --shadow-xs:      0 1px 2px rgba(17, 17, 17, 0.04);
+    --shadow-sm:      0 1px 3px rgba(17, 17, 17, 0.06), 0 1px 2px rgba(17, 17, 17, 0.04);
+    --shadow-md:      0 2px 6px rgba(17, 17, 17, 0.08), 0 1px 2px rgba(17, 17, 17, 0.04);
+    --shadow-lg:      0 4px 12px rgba(17, 17, 17, 0.10), 0 2px 4px rgba(17, 17, 17, 0.05);
+    --shadow-popup:   0 8px 24px rgba(17, 17, 17, 0.14), 0 2px 6px rgba(17, 17, 17, 0.06);
 
     /* ── Z-index ── */
     --z-base:         1;

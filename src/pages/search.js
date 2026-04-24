@@ -866,7 +866,7 @@ function renderList() {
       return `<td class="excl-price ${cls}" style="${style}"><span class="excl-rent">${fmtMoney(rent)}</span>${dep ? `<br><span class="excl-dep">${fmtMoney(dep)}</span>` : ''}</td>`;
     };
     const pol = p => p._policy || {};
-    const cols = [88,64,64,52,76,160,160,140,52,68,52,72,52,52,62,62,62,62];
+    const cols = [88,76,76,52,76,140,140,140,52,68,52,72,52,52,62,62,62,62];
     const totalW = cols.reduce((s,w) => s+w, 0);
     const colgroup = `<colgroup>${cols.map(w => `<col style="width:${w}px">`).join('')}</colgroup>`;
     el.innerHTML = `
@@ -1279,7 +1279,9 @@ function bindListDelegation(el) {
     const item = e.target.closest('.srch-item');
     if (!item) return;
     selectedProductKey = item.dataset.key;
-    renderList();
+    // 전체 재렌더 대신 is-active 클래스만 토글 (img 태그 유지 — 썸네일 번쩍임 방지)
+    el.querySelector('.srch-item.is-active')?.classList.remove('is-active');
+    item.classList.add('is-active');
     renderDetail(item.dataset.key);
     const p = allProducts.find(x => x._key === item.dataset.key);
     if (p) {
@@ -1316,7 +1318,13 @@ function getActionsFor(product) {
     acts.push({ icon: 'ph ph-share-network', label: '공유', tone: 'rose', action: () => shareProduct(product) });
     return acts;
   }
-  // 관리자·공급사·기타: 공유만
+  // 관리자: 계약생성(대리입력) + 공유 — 회원사 대신 ERP 에 계약 만들어 유도
+  if (role === 'admin') {
+    acts.push({ icon: 'ph ph-file-plus', label: '계약생성', tone: 'emerald', action: () => startContractFromProduct(product) });
+    acts.push({ icon: 'ph ph-share-network', label: '공유', tone: 'rose', action: () => shareProduct(product) });
+    return acts;
+  }
+  // 공급사·기타: 공유만
   acts.push({ icon: 'ph ph-share-network', label: '공유', tone: 'rose', action: () => shareProduct(product) });
   return acts;
 }

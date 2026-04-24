@@ -10,19 +10,24 @@
     font-size: var(--fs-sm);
     font-weight: var(--fw-medium);
     border-radius: var(--ctrl-r);
-    transition: all var(--dur) var(--ease);
+    transition: background var(--dur) var(--ease),
+                box-shadow var(--dur) var(--ease),
+                transform var(--dur) var(--ease),
+                border-color var(--dur) var(--ease);
     white-space: nowrap;
     user-select: none;
   }
 
   .btn:hover { background: var(--c-bg-hover); }
-  .btn:active { background: var(--c-bg-active); }
+  .btn:active { background: var(--c-bg-active); transform: translateY(0.5px); }
 
   .btn-primary {
     background: var(--c-accent);
     color: var(--c-text-inv);
+    box-shadow: var(--shadow-xs);
   }
-  .btn-primary:hover { background: var(--c-accent-hover); }
+  .btn-primary:hover { background: var(--c-accent-hover); box-shadow: var(--shadow-sm); }
+  .btn-primary:active { background: var(--c-accent-hover); box-shadow: var(--shadow-xs); transform: translateY(0.5px); }
 
   .btn-outline {
     border: 1px solid var(--c-border);
@@ -502,11 +507,12 @@
   }
   .chip-remove:hover { opacity: 1; }
 
-  /* ── Badge — outlined pill, 라인색 고정, 텍스트 색만 상태별 ── */
-  /* ── 뱃지 (outlined, B2B톤) — 배경 없음, 테두리·글자색만 ── */
+  /* ── Badge — 기존 outlined + 상태색 (B2B 톤, 각진 소형) ──
+   *  filled 변형만 solid 배경 (출고가능/중고렌트 등 상품 뱃지) */
   .badge {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     height: 18px;
     padding: 0 6px;
     font-size: var(--fs-2xs);
@@ -514,29 +520,27 @@
     background: transparent;
     border: 1px solid currentColor;
     border-radius: var(--ctrl-r);
-    letter-spacing: 0.2px;
     white-space: nowrap;
-    line-height: 1;
+    line-height: 18px;    /* height 와 일치 — 한글 수직 중앙 정렬 확실히 */
     color: var(--c-text-muted);
+    box-sizing: border-box;
   }
 
-  /* 각 상태값별 고유 색상 — 텍스트 + 테두리(currentColor) + 연한 배경 */
-  /* 시맨틱 4색 (색 = 상태 의미) */
+  /* 시맨틱 — outlined 기본 (green/blue/gray 기조) */
   .badge-ok      { color: var(--c-ok); }
   .badge-warn    { color: var(--c-warn); }
   .badge-err     { color: var(--c-err); }
   .badge-info    { color: var(--c-info); }
   .badge-accent  { color: var(--c-accent); }
   .badge-muted   { color: var(--c-text-muted); border-color: var(--c-border); }
-  /* legacy aliases — 전부 muted 외곽선으로 통합 (기존 호출부 호환) */
+  /* legacy aliases — muted outline 으로 통합 */
   .badge-rose, .badge-cyan, .badge-lime, .badge-emerald,
   .badge-gold, .badge-green, .badge-purple, .badge-sky, .badge-pink {
     color: var(--c-text-muted);
     border-color: var(--c-border);
   }
 
-  /* Filled variant — 카운트 뱃지·필터 뱃지·알림 수 등 "강조 필요" 한정.
-   *  일반 상태 표시는 outlined 기본 유지. */
+  /* Filled variant — 강조 필요 (신차·즉시 등 primary) */
   .badge.is-filled {
     color: var(--c-text-inv);
     background: currentColor;
@@ -551,6 +555,20 @@
   .badge.is-filled.badge-rose  { color: var(--c-text-inv); background: var(--c-rose);       border-color: var(--c-rose); }
   .badge.is-filled.badge-cyan  { color: var(--c-text-inv); background: var(--c-cyan);       border-color: var(--c-cyan); }
   .badge.is-filled.badge-muted { color: var(--c-text-inv); background: var(--c-text-muted); border-color: var(--c-text-muted); }
+
+  /* Soft variant — 은은한 tinted (중고 등 secondary) */
+  .badge.is-soft {
+    background: var(--c-bg-sub);
+    border-color: transparent;
+    color: var(--c-text-sub);
+  }
+  .badge.is-soft.badge-ok     { color: var(--c-ok);     background: var(--c-ok-bg); }
+  .badge.is-soft.badge-warn   { color: var(--c-warn);   background: var(--c-warn-bg); }
+  .badge.is-soft.badge-err    { color: var(--c-err);    background: var(--c-err-bg); }
+  .badge.is-soft.badge-info   { color: var(--c-info);   background: var(--c-info-bg); }
+  .badge.is-soft.badge-accent { color: var(--c-accent); background: var(--c-accent-soft); }
+  .badge.is-soft.badge-muted  { color: var(--c-text-muted); background: var(--c-bg-sub); }
+
   .badge.is-pill { border-radius: var(--pill-r); min-width: 18px; justify-content: center; font-variant-numeric: tabular-nums; }
 
   /* ── Status Dot ── */

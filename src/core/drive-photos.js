@@ -10,7 +10,9 @@
  * 서버(localhost:5200) 로 포워드.
  */
 
-const SESSION_CACHE_KEY = 'fp_drive_folder_cache_v3';  /* v3: /api/img 프록시 URL 전환 */
+import { isLocalDev } from './product-photos.js';
+
+const SESSION_CACHE_KEY = 'fp_drive_folder_cache_v4';  /* v4: dev 에서는 프록시 스킵 */
 const SESSION_CACHE_TTL = 60 * 60 * 1000;
 const MEMORY = new Map();
 
@@ -69,8 +71,11 @@ export function fetchDriveFolderImages(sourceUrl, size = SIZE_FULL) {
     .then((j) => {
       const rawUrls = j && j.ok && Array.isArray(j.urls) ? j.urls : [];
       // 외부 Drive URL 을 /api/img 프록시로 감싸 모바일 cross-origin 이슈 우회
+      // 로컬 dev 에서는 프록시 서버리스가 없으니 원본 URL 그대로 사용
+      const wrap = !isLocalDev();
       const urls = rawUrls.map(u => {
         if (!u || u.startsWith('/api/img')) return u;
+        if (!wrap) return u;
         try {
           const host = new URL(u, location.origin).hostname;
           if (/(^|\.)(googleusercontent\.com|drive\.google\.com)$/.test(host)) {

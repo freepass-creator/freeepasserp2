@@ -711,27 +711,26 @@
   .login-page select { user-select: text; }
 
   .login-brand {
-    font-family: 'Exo 2', 'Pretendard', -apple-system, system-ui, sans-serif;
-    font-size: var(--icon-lg);
-    letter-spacing: normal;
+    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    font-size: 22px;
+    letter-spacing: -0.035em;   /* 모던 워드마크 — 살짝 타이트 */
     display: flex;
     align-items: baseline;
     justify-content: center;
     gap: 2px;
     text-transform: lowercase;
   }
-  /* Exo 2 워드마크 전용 — Pretendard fw 토큰 적용 제외 (CI 고정) */
-  .login-brand-main { font-weight: 500; color: var(--c-accent); }
-  .login-brand-base { font-weight: 300; color: var(--c-brand-base); }
+  .login-brand-main { font-weight: 700; color: var(--c-accent); }
+  .login-brand-base { font-weight: 400; color: var(--c-brand-base); }
 
   .login-card {
     position: relative;
     width: 100%;
     max-width: 400px;
     background: var(--c-surface);
-    border-radius: var(--ctrl-r);
+    border-radius: 16px;    /* 로그인 카드는 더 부드럽게 */
     padding: 40px 32px;
-    box-shadow: 0 2px 10px rgba(0,0,0,.04), 0 10px 30px rgba(0,0,0,.06);
+    box-shadow: var(--shadow-lg);
     display: flex;
     flex-direction: column;
     gap: var(--sp-6);
