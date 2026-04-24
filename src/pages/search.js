@@ -25,7 +25,8 @@ let selectedProductKey = null;
 const LIST_PERIODS = [36, 48, 60];
 let sortCol = null;
 let sortDir = null;
-let viewMode = 'excel';
+// 카탈로그 모드(손님용)는 카드뷰 강제 — 엑셀뷰 / 우측 상세패널 없음
+let viewMode = store.catalogMode ? 'card' : 'excel';
 
 // FILTERS / TOP_N / matchFilter / getField / buildDynamicChips — src/core/product-filters.js 로 이관됨
 
@@ -44,10 +45,12 @@ export function mount() {
         <div class="srch-panel-head">
           <span style="display:flex;align-items:center;gap:var(--sp-1);"><span>조건</span><span class="sb-badge" id="srchFilterCount"></span></span>
           <span style="display:flex;gap:var(--sp-1);">
-            <button class="btn btn-sm btn-outline" id="srchExcel" title="Excel 다운로드"><i class="ph ph-download-simple"></i> Excel</button>
-            <button class="btn btn-sm btn-outline" id="srchPhotoZip" title="사진 ZIP"><i class="ph ph-file-zip"></i> 사진</button>
-            <button class="btn btn-sm btn-outline" id="srchCatalogShare" title="카탈로그 공유" style="display:${store.currentUser?.role === 'admin' ? 'inline-flex' : 'none'};"><i class="ph ph-share-network"></i> 카탈로그</button>
-            <button class="btn btn-sm btn-outline" id="srchViewToggle2" title="${viewMode === 'excel' ? '카드뷰로 전환' : '엑셀뷰로 전환'}"><i class="ph ph-${viewMode === 'excel' ? 'cards' : 'table'}"></i> ${viewMode === 'excel' ? '카드보기' : '엑셀보기'}</button>
+            ${store.catalogMode ? '' : `
+              <button class="btn btn-sm btn-outline" id="srchExcel" title="Excel 다운로드"><i class="ph ph-download-simple"></i> Excel</button>
+              <button class="btn btn-sm btn-outline" id="srchPhotoZip" title="사진 ZIP"><i class="ph ph-file-zip"></i> 사진</button>
+              <button class="btn btn-sm btn-outline" id="srchCatalogShare" title="카탈로그 공유" style="display:${store.currentUser?.role === 'admin' ? 'inline-flex' : 'none'};"><i class="ph ph-share-network"></i> 카탈로그</button>
+              <button class="btn btn-sm btn-outline" id="srchViewToggle2" title="${viewMode === 'excel' ? '카드뷰로 전환' : '엑셀뷰로 전환'}"><i class="ph ph-${viewMode === 'excel' ? 'cards' : 'table'}"></i> ${viewMode === 'excel' ? '카드보기' : '엑셀보기'}</button>
+            `}
             <span class="ws4-head-toggle" id="srchFilterToggle" title="조건 접기"><i class="ph ph-caret-left"></i></span>
           </span>
         </div>
@@ -881,7 +884,10 @@ function renderList() {
         const credit = pol(p).credit_grade || pol(p).screening_criteria || p.credit_grade || '';
         const age = pol(p).basic_driver_age || '';
         return `<tr class="excl-row ${selectedProductKey === p._key ? 'is-active' : ''}" data-key="${p._key}">
-          <td class="excl-sticky-left">${p.car_number || ''}</td>
+          <td class="excl-sticky-left excl-car-cell" title="클릭하면 공유 링크 복사">
+            <span class="excl-car-number">${p.car_number || ''}</span>
+            <i class="ph ph-share-network excl-car-share-icon"></i>
+          </td>
           <td>${p.vehicle_status || ''}</td>
           <td>${normalizeProductType(p.product_type)}</td>
           <td>${p.maker || ''}</td>
@@ -907,6 +913,17 @@ function renderList() {
     if (!el._exclBound) {
       el._exclBound = true;
       el.addEventListener('click', (e) => {
+        // 차량번호 셀 클릭 — 공유 링크 다이얼로그 (행 선택과 별도)
+        const carCell = e.target.closest('.excl-car-cell');
+        if (carCell) {
+          const row = carCell.closest('.excl-row');
+          const p = allProducts.find(x => x._key === row?.dataset.key);
+          if (p) {
+            e.stopPropagation();
+            shareProduct(p);
+            return;
+          }
+        }
         const row = e.target.closest('.excl-row');
         if (!row || !el.contains(row)) return;
         if (tooltip) { tooltip.remove(); tooltip = null; }
@@ -1309,6 +1326,8 @@ function bindListDelegation(el) {
  */
 function getActionsFor(product, { forContextMenu = false } = {}) {
   const role = store.currentUser?.role;
+  // 카탈로그 모드 (손님) — 액션 없음 (하단 전화 CTA 로 대체)
+  if (store.catalogMode) return [];
   const acts = [];
   // 영업자(영업관리자): 소통 · 계약 · 공유
   if (role === 'agent' || role === 'agent_admin') {
@@ -1438,69 +1457,174 @@ function shareProduct(p) {
   const url = car
     ? `${location.origin}/catalog.html?car=${encodeURIComponent(car)}${agentQS}`
     : `${location.origin}/catalog.html?pid=${encodeURIComponent(p._key)}${agentQS}`;
-  navigator.clipboard?.writeText(url).then(() => showToast('링크 복사됨'));
+  openShareDialog('상품 공유 링크', `${p.car_number || ''} ${[p.maker, p.model].filter(Boolean).join(' ')}`, url);
 }
 
-/** 관리자 전용 — 카탈로그 공유 3가지 모드 선택 다이얼로그 */
-function openShareCatalog() {
-  const me = store.currentUser || {};
-  const agentQS = me.user_code ? `?a=${encodeURIComponent(me.user_code)}` : '';
-  // 현재 활성 필터에서 provider 선택 1개면 공급사 모드 옵션 제공
-  const providerSet = activeFilters.provider_company_code;
-  const providerCode = providerSet && providerSet.size === 1 ? [...providerSet][0] : '';
-
+/** 공유 URL 다이얼로그 — MarkAny 등 clipboard 차단 환경 대응.
+ *  QR 스캔 / 문자 전송 / 새 탭 / 복사 시도 제공. */
+function openShareDialog(title, subtitle, url) {
   const dlg = document.createElement('dialog');
-  dlg.className = 'submodel-dialog';
+  dlg.className = 'share-dialog';
   dlg.innerHTML = `
-    <div class="submodel-head">
-      <span><i class="ph ph-share-network"></i> 카탈로그 공유</span>
-      <button class="submodel-close" aria-label="닫기"><i class="ph ph-x"></i></button>
+    <div class="share-head">
+      <span><i class="ph ph-share-network"></i> ${title}</span>
+      <button class="share-close" aria-label="닫기" data-act="close"><i class="ph ph-x"></i></button>
     </div>
-    <div class="submodel-body">
-      <div class="submodel-label">공유 범위</div>
-      <div class="submodel-options">
-        <button class="submodel-opt" data-mode="all">
-          <strong>전체 상품</strong>
-          <div style="font-size:var(--fs-xs);color:var(--c-text-muted);margin-top:2px;">모든 차량을 한 페이지로</div>
-        </button>
-        ${providerCode ? `
-          <button class="submodel-opt" data-mode="provider">
-            <strong>이 공급사 상품만</strong>
-            <div style="font-size:var(--fs-xs);color:var(--c-text-muted);margin-top:2px;">현재 필터 공급사(${providerCode}) 상품만</div>
-          </button>
-        ` : `
-          <div class="submodel-empty" style="padding:var(--sp-2) var(--sp-3);font-size:var(--fs-xs);">공급사 단일 선택 시 "공급사 상품만" 공유 옵션이 활성화됩니다</div>
-        `}
+    <div class="share-body">
+      ${subtitle ? `<div class="share-sub">${subtitle}</div>` : ''}
+      <div class="share-hint-top">아래 URL 선택해서 카톡·문자에 붙여넣으세요</div>
+      <textarea class="share-url" readonly rows="2">${url}</textarea>
+      <div class="share-actions">
+        <button class="btn btn-sm btn-primary" data-act="copy"><i class="ph ph-copy"></i> 복사</button>
+        <a class="btn btn-sm btn-outline" href="${url}" target="_blank" rel="noopener"><i class="ph ph-arrow-square-out"></i> 새 탭에서 열기</a>
       </div>
-    </div>
-    <div class="submodel-foot">
-      <button class="btn btn-sm btn-outline" data-act="cancel">취소</button>
     </div>
   `;
   document.body.appendChild(dlg);
   dlg.showModal();
 
   const close = () => { if (dlg.open) dlg.close(); dlg.remove(); };
-  dlg.querySelector('.submodel-close').addEventListener('click', close);
-  dlg.querySelector('[data-act="cancel"]').addEventListener('click', close);
-  dlg.addEventListener('click', e => { if (e.target === dlg) close(); });
+  const input = dlg.querySelector('.share-url');
 
-  dlg.querySelectorAll('[data-mode]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const m = btn.dataset.mode;
-      let url = `${location.origin}/catalog.html${agentQS}`;
-      if (m === 'provider' && providerCode) {
-        url += (agentQS ? '&' : '?') + `provider=${encodeURIComponent(providerCode)}`;
+  setTimeout(() => {
+    try { input.focus(); input.select(); input.setSelectionRange(0, url.length); } catch {}
+  }, 100);
+  input.addEventListener('focus', () => input.setSelectionRange(0, url.length));
+  input.addEventListener('click', () => input.setSelectionRange(0, url.length));
+
+  dlg.addEventListener('click', async (e) => {
+    const btn = e.target.closest('[data-act]');
+    if (btn) {
+      const act = btn.dataset.act;
+      if (act === 'close') { close(); return; }
+      if (act === 'copy') {
+        let ok = false;
+        try { await navigator.clipboard.writeText(url); ok = true; }
+        catch {
+          try { input.focus(); input.select(); ok = document.execCommand('copy'); }
+          catch { ok = false; }
+        }
+        if (ok) { showToast('링크 복사됨'); close(); }
+        else { showToast('자동 복사 차단 — QR 스캔 또는 문자 전송 이용', 'error'); input.focus(); input.select(); }
+        return;
       }
-      navigator.clipboard?.writeText(url).then(() => {
-        showToast(`${m === 'all' ? '전체' : '공급사'} 카탈로그 링크 복사됨`);
-        close();
-      });
-    });
+    }
+    if (e.target === dlg) close();
+  });
+}
+
+/** 관리자 전용 — 카탈로그 공유 (모드 선택 + URL 복사 통합 다이얼로그) */
+function openShareCatalog() {
+  const me = store.currentUser || {};
+  const agentQS = me.user_code ? `?a=${encodeURIComponent(me.user_code)}` : '';
+  // 현재 활성 필터에서 공급사 1개만 선택됐으면 공급사 모드 옵션 제공
+  const providerSet = activeFilters.provider;
+  let providerCode = '';
+  if (providerSet && providerSet.size === 1) {
+    const chipId = [...providerSet][0];
+    providerCode = String(chipId).replace(/^provider_/, '');
+  }
+
+  const buildUrl = (mode) => {
+    let url = `${location.origin}/catalog.html${agentQS}`;
+    if (mode === 'provider' && providerCode) {
+      url += (agentQS ? '&' : '?') + `provider=${encodeURIComponent(providerCode)}`;
+    }
+    return url;
+  };
+
+  let currentMode = 'all';
+  const dlg = document.createElement('dialog');
+  dlg.className = 'share-dialog';
+  dlg.innerHTML = `
+    <div class="share-head">
+      <span><i class="ph ph-share-network"></i> 카탈로그 공유</span>
+      <button class="share-close" aria-label="닫기" data-act="close"><i class="ph ph-x"></i></button>
+    </div>
+    <div class="share-body">
+      <div class="share-mode-row">
+        <button class="share-mode-btn is-active" data-mode="all">
+          <i class="ph ph-grid-four"></i>
+          <div>
+            <div class="share-mode-title">전체 상품</div>
+            <div class="share-mode-desc">모든 차량을 한 페이지로</div>
+          </div>
+        </button>
+        <button class="share-mode-btn ${providerCode ? '' : 'is-disabled'}" data-mode="provider" ${providerCode ? '' : 'disabled'}>
+          <i class="ph ph-buildings"></i>
+          <div>
+            <div class="share-mode-title">공급사 상품만</div>
+            <div class="share-mode-desc">${providerCode ? `공급사 ${providerCode} 기준` : '필터에서 공급사 1개 선택 필요'}</div>
+          </div>
+        </button>
+      </div>
+      <div class="share-hint-top">아래 URL 선택해서 카톡·문자에 붙여넣으세요</div>
+      <textarea class="share-url" readonly rows="2">${buildUrl('all')}</textarea>
+      <div class="share-actions">
+        <button class="btn btn-sm btn-primary" data-act="copy"><i class="ph ph-copy"></i> 복사</button>
+        <a class="btn btn-sm btn-outline" data-act="open" target="_blank" rel="noopener"><i class="ph ph-arrow-square-out"></i> 새 탭에서 열기</a>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(dlg);
+  dlg.showModal();
+
+  const input = dlg.querySelector('.share-url');
+  const openLink = dlg.querySelector('[data-act="open"]');
+  const updateUrl = () => {
+    const url = buildUrl(currentMode);
+    input.value = url;
+    openLink.href = url;
+    setTimeout(() => { input.focus(); input.select(); input.setSelectionRange(0, url.length); }, 30);
+  };
+  updateUrl();
+
+  input.addEventListener('focus', () => input.setSelectionRange(0, input.value.length));
+  input.addEventListener('click', () => input.setSelectionRange(0, input.value.length));
+
+  const close = () => { if (dlg.open) dlg.close(); dlg.remove(); };
+
+  dlg.addEventListener('click', async (e) => {
+    // 모드 전환
+    const modeBtn = e.target.closest('[data-mode]');
+    if (modeBtn && !modeBtn.disabled) {
+      currentMode = modeBtn.dataset.mode;
+      dlg.querySelectorAll('[data-mode]').forEach(b => b.classList.toggle('is-active', b === modeBtn));
+      updateUrl();
+      return;
+    }
+    // 액션 버튼
+    const btn = e.target.closest('[data-act]');
+    if (btn) {
+      const act = btn.dataset.act;
+      if (act === 'close') { close(); return; }
+      if (act === 'copy') {
+        const url = input.value;
+        let ok = false;
+        try { await navigator.clipboard.writeText(url); ok = true; }
+        catch {
+          try { input.focus(); input.select(); ok = document.execCommand('copy'); }
+          catch { ok = false; }
+        }
+        if (ok) { showToast('링크 복사됨'); close(); }
+        else { showToast('자동 복사 차단 — 위 URL 선택 후 Ctrl+C', 'error'); input.focus(); input.select(); }
+        return;
+      }
+      if (act === 'share') {
+        try { await navigator.share({ title: '카탈로그', url: input.value }); close(); } catch {}
+        return;
+      }
+    }
+    if (e.target === dlg) close();
   });
 }
 
 function renderDetail(key) {
+  // 카탈로그 모드: 우측 상세 패널 대신 모달로
+  if (store.catalogMode) {
+    openCatalogDetailModal(key);
+    return;
+  }
   const el = document.querySelector('.srch-detail-content') || document.getElementById('srchDetail');
   if (!el) return;
   const p = allProducts.find(x => x._key === key);
@@ -1510,6 +1634,38 @@ function renderDetail(key) {
     shouldRerender: () => selectedProductKey === key,
     actionButtons: getActionsFor(p),
   });
+}
+
+/** 카탈로그(손님용) 상품 상세 모달 — 중앙 dialog, 액션 버튼 없음 */
+function openCatalogDetailModal(key) {
+  const p = allProducts.find(x => x._key === key);
+  if (!p) return;
+
+  // 기존 모달 닫기
+  document.querySelector('.catalog-detail-modal')?.remove();
+
+  const dlg = document.createElement('dialog');
+  dlg.className = 'catalog-detail-modal';
+  dlg.innerHTML = `
+    <div class="catalog-detail-head">
+      <span class="catalog-detail-title">${[p.maker, p.model, p.sub_model].filter(Boolean).join(' ')} ${p.car_number ? `<span class="catalog-detail-carno">${p.car_number}</span>` : ''}</span>
+      <button class="catalog-detail-close" aria-label="닫기"><i class="ph ph-x"></i></button>
+    </div>
+    <div class="catalog-detail-body" id="catalogDetailContent"></div>
+  `;
+  document.body.appendChild(dlg);
+  dlg.showModal();
+
+  const content = dlg.querySelector('#catalogDetailContent');
+  renderProductDetail(content, p, {
+    shouldRerender: () => selectedProductKey === key,
+    actionButtons: null,    // 카탈로그엔 내부 액션 없음 — 하단 전화 CTA 만
+    showActions: false,
+  });
+
+  const close = () => { if (dlg.open) dlg.close(); dlg.remove(); };
+  dlg.querySelector('.catalog-detail-close').addEventListener('click', close);
+  dlg.addEventListener('click', e => { if (e.target === dlg) close(); });
 }
 
 function updateFoot() {

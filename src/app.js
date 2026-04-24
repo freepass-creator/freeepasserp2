@@ -91,6 +91,21 @@ function renderMenuItems(role) {
   return html;
 }
 
+/* ── catalog 모드 하단 "담당자 전화" CTA ── */
+function renderCatalogCallCta() {
+  const agent = store.catalogAgent;
+  if (!agent || !agent.phone) return '';
+  const name = agent.name || '담당자';
+  const pos = agent.position ? ' · ' + agent.position : '';
+  return `
+    <a class="catalog-call-cta" href="tel:${agent.phone}">
+      <i class="ph ph-phone-call"></i>
+      <span class="catalog-call-cta-label">${name}${pos}에게 전화</span>
+      <span class="catalog-call-cta-num">${agent.phone}</span>
+    </a>
+  `;
+}
+
 /* ── App Shell ── */
 function renderShell() {
   const app = document.getElementById('app');
@@ -128,6 +143,7 @@ function renderShell() {
           </button>
         `).join('')}
       </nav>
+      ${store.catalogMode ? renderCatalogCallCta() : ''}
     </div>
   `;
 
@@ -500,9 +516,11 @@ async function init() {
   };
 
   // 모바일/데스크톱 분기 loader — 뷰포트 기준 다른 모듈 선택
+  // catalog 모드는 데스크톱에서도 모바일 UI 강제 (손님용 단일 레이아웃)
   const pageLoader = (desktopImport, mobileImport) => async () => {
     currentCleanup?.();
-    const loader = (mobileImport && isMobile()) ? mobileImport : desktopImport;
+    const useMobile = mobileImport && (isMobile() || store.catalogMode);
+    const loader = useMobile ? mobileImport : desktopImport;
     const { mount, unmount } = await loader();
     mount();
     currentCleanup = unmount;
@@ -601,6 +619,50 @@ async function init() {
   // 현재 URL 기억 (새로고침 복원용)
   const savedPath = location.pathname || '/search';
   const landingPage = localStorage.getItem('fp.landing') || '/search';
+
+  // ── catalog 모드 (손님 공개 — 모바일에서만 SPA 재사용) ──
+  const isCatalog = document.body.dataset.mode === 'catalog';
+  if (isCatalog) {
+    const params = new URLSearchParams(location.search);
+    store.catalogMode = true;
+    store.catalogParams = {
+      agentCode: params.get('a') || '',
+      provider: params.get('provider') || '',
+      car: params.get('car') || '',
+      pid: params.get('pid') || '',
+    };
+    document.body.classList.add('is-catalog-mode');
+    store.currentUser = { uid: 'guest', role: 'guest', name: '', company_name: '' };
+    store.authReady = true;
+
+    // 보낸사람 정보 로드 (실패해도 계속)
+    if (store.catalogParams.agentCode) {
+      try {
+        const { fetchCollection } = await import('./firebase/db.js');
+        const users = await fetchCollection('users').catch(() => null);
+        if (users) {
+          const list = Array.isArray(users) ? users : Object.values(users);
+          store.catalogAgent = list.find(u => u.user_code === store.catalogParams.agentCode) || null;
+        }
+      } catch {}
+    }
+
+    renderShell();
+    if (isMobile()) bindGlobalHaptic();
+    if (store.catalogParams.car) sessionStorage.setItem('fp.pendingCar', store.catalogParams.car);
+
+    // URL 은 /catalog.html 유지 (새로고침 시에도 카탈로그 복원)
+    const originalUrl = location.pathname + location.search;
+    navigate('/search', { transition: false });
+    history.replaceState(null, '', originalUrl);
+
+    // 공개 데이터 구독
+    import('./firebase/db.js').then(({ watchCollection }) => {
+      watchCollection('products', d => { store.products = d; });
+      watchCollection('partners', d => { store.partners = d; });
+    });
+    return;
+  }
 
   // 엑셀 "문의" 링크 진입 — ?car=XXX 쿼리 캡처 후 URL 정리
   const incomingCar = new URLSearchParams(location.search).get('car');

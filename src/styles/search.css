@@ -1071,6 +1071,24 @@
     font-weight: var(--fw-semibold);
     color: var(--c-accent);
   }
+  /* 차량번호 셀 — 클릭 시 공유 링크 */
+  .excl-car-cell {
+    cursor: copy;
+    position: relative;
+  }
+  .excl-car-share-icon {
+    opacity: 0;
+    margin-left: 4px;
+    font-size: var(--fs-xs);
+    color: var(--c-text-muted);
+    transition: opacity var(--dur);
+    vertical-align: middle;
+  }
+  .excl-car-cell:hover .excl-car-share-icon { opacity: 1; }
+  .excl-car-cell:hover .excl-car-number {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
   .excl-wide { min-width: 120px; }
   .excl-row { cursor: pointer; }
   /* hover/active — list-row 와 동일 규격 (bg-hover 로 일체감) */
@@ -1291,6 +1309,150 @@
     padding: var(--sp-3) var(--sp-4);
     border-top: 1px solid var(--c-border-soft);
     background: var(--c-bg-sub);
+  }
+
+  /* ── 공유 링크 다이얼로그 (MarkAny 등 clipboard 차단 환경 대응) ── */
+  .share-dialog {
+    width: 520px;
+    max-width: 92vw;
+    padding: 0;
+    margin: auto;                 /* 화면 중앙 고정 */
+    border: none;
+    border-radius: var(--card-r);
+    box-shadow: var(--shadow-popup);
+    overflow: hidden;
+  }
+  .share-dialog::backdrop { background: var(--c-overlay-dark); }
+  .share-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--sp-3) var(--sp-4);
+    background: var(--c-bg-sub);
+    border-bottom: 1px solid var(--c-border);
+    font-size: var(--fs-sm);
+    font-weight: var(--fw-semibold);
+  }
+  .share-head i { color: var(--c-accent); margin-right: 6px; }
+  .share-close {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--c-text-muted);
+    padding: 4px;
+    border-radius: var(--ctrl-r);
+  }
+  .share-close:hover { background: var(--c-bg-hover); color: var(--c-text); }
+  .share-body {
+    padding: var(--sp-4);
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-3);
+  }
+  .share-sub {
+    font-size: var(--fs-sm);
+    color: var(--c-text-sub);
+  }
+  .share-hint-top {
+    font-size: var(--fs-sm);
+    color: var(--c-text-sub);
+    text-align: center;
+    padding: 8px 12px;
+    background: var(--c-accent-soft);
+    border-radius: var(--ctrl-r);
+  }
+  .share-hint-top b { color: var(--c-accent); }
+  .share-url {
+    width: 100%;
+    padding: 10px var(--sp-3);
+    font-size: var(--fs-sm);
+    font-family: ui-monospace, 'SF Mono', Consolas, monospace;
+    background: var(--c-surface);
+    border: 2px solid var(--c-accent);
+    border-radius: var(--ctrl-r);
+    color: var(--c-text);
+    outline: none;
+    resize: none;
+    word-break: break-all;
+    line-height: 1.5;
+  }
+  .share-url::selection { background: var(--c-accent); color: #fff; }
+  .share-actions {
+    display: flex;
+    gap: var(--sp-2);
+    flex-wrap: wrap;
+  }
+  .share-actions .btn { flex: 1; min-width: 100px; }
+
+  /* 공유 모드 선택 버튼 (카탈로그 다이얼로그 상단) */
+  .share-mode-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--sp-2);
+  }
+  .share-mode-btn {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+    padding: var(--sp-3);
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--ctrl-r);
+    cursor: pointer;
+    text-align: left;
+    transition: all var(--dur) var(--ease);
+  }
+  .share-mode-btn:hover:not(:disabled) {
+    border-color: var(--c-accent);
+    background: var(--c-accent-soft);
+  }
+  .share-mode-btn.is-active {
+    border-color: var(--c-accent);
+    background: var(--c-accent-soft);
+    border-width: 2px;
+    padding: calc(var(--sp-3) - 1px);
+  }
+  .share-mode-btn:disabled,
+  .share-mode-btn.is-disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  .share-mode-btn i {
+    font-size: 20px;
+    color: var(--c-accent);
+    flex-shrink: 0;
+  }
+  .share-mode-title {
+    font-size: var(--fs-sm);
+    font-weight: var(--fw-semibold);
+    color: var(--c-text);
+  }
+  .share-mode-desc {
+    font-size: var(--fs-xs);
+    color: var(--c-text-muted);
+    margin-top: 2px;
+  }
+
+  /* QR 코드 영역 */
+  .share-qr-wrap {
+    display: flex;
+    justify-content: center;
+    padding: var(--sp-3) 0;
+  }
+  .share-qr {
+    display: block;
+    width: 200px;
+    height: 200px;
+    border-radius: var(--ctrl-r);
+    background: #fff;
+    padding: 8px;
+    border: 1px solid var(--c-border);
+  }
+  .share-url-label {
+    font-size: var(--fs-xs);
+    color: var(--c-text-muted);
+    margin-top: var(--sp-2);
+    margin-bottom: -4px;
   }
 
 }

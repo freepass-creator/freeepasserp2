@@ -470,11 +470,12 @@ function renderCard(p) {
 function openProductSheet(p) {
   const title = `${p.car_number || ''} ${p.sub_model || p.model || ''}`.trim() || '차량';
   const me = store.currentUser || {};
-  // 웹 규격: 영업자=소통·계약·공유 / 관리자=계약생성·공유 / 공급사·기타=공유만
   const isAgent = me.role === 'agent' || me.role === 'agent_admin';
   const isAdmin = me.role === 'admin';
-
-  const headerRight = isAgent
+  // 카탈로그 모드(손님)는 상단 액션 버튼 없음 — 하단 전화 CTA 로 대체
+  const headerRight = store.catalogMode
+    ? ''
+    : isAgent
     ? `
       <button class="m-topbar-action" data-act="inquire" title="소통"><i class="ph ph-chat-circle"></i></button>
       <button class="m-topbar-action" data-act="contract" title="계약"><i class="ph ph-file-text"></i></button>
