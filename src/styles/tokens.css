@@ -107,9 +107,9 @@
     --ctrl-h-sm:      28px;
     --ctrl-h:         32px;
     --ctrl-h-lg:      40px;
-    --ctrl-r:         6px;     /* 기본 라운드 — 버튼·입력·칩 (4→6, 모던 톤) */
-    --card-r:         10px;    /* 카드·섹션 (8→10, 소프트) */
-    --bubble-r:       16px;    /* 말풍선·리치 카드 */
+    --ctrl-r:         4px;     /* 기본 라운드 — 버튼·입력·칩 (ERP 각진 패널과 톤 맞춤) */
+    --card-r:         6px;     /* 카드·섹션 */
+    --bubble-r:       12px;    /* 말풍선·리치 카드 */
     --pill-r:         999px;   /* 동그란 버튼·태그 */
     --ctrl-pad:       6px 10px;
     --panel-head-h:   40px;
